@@ -1,0 +1,24 @@
+{
+  "html_sha256": "4415e0277d44002dd8beb373b8914a9e7c5a3c28d8521a08a7deb708758d5d52",
+  "html_bytes": 3061684,
+  "builtin_questions": 0,
+  "storage_prefix": "cqframe.",
+  "resources": {
+    "res-tcc": "e8fe2e6e0159f2f5751175e6a0fb698916e2f4793da701dc1b3af9765041f929",
+    "res-libc": "e3967d5a4228244e7c9978d8bce62e8cbf767ef8979be20b1e88920973b3ef61",
+    "res-wabt": "c346fe9e15593caec00444337526f3f2dbce831e3778256ef192e7e243bb9198",
+    "res-runtime": "d0e5eb44f73376dcb5206897b352c15f4c91d2d012996df0a780f8c167b64c5e",
+    "res-ide": "e37ccb7536fd5867aea46d869855a020cd40ef6e1ca22b72fd52943201752b07",
+    "res-engine": "c73ce8df142fc714e15ea3dc2c2dd8a67a88ae9dbe2d9a0c0e33002dca249078",
+    "res-worker": "63cc0246578999c4fb7eba46df028bdf4116c2cbbcf1b17eea3bb8c8de976b55",
+    "res-program-worker": "bf2e55e34b66993659e05f5ae0c8a1ad64e64e46d0ed3146785ebaf8c30982c1"
+  },
+  "files": {
+    "CHECKS.md": "fa808ce73535f0f896b8fd4f56aaf6c17e0b39b2274032753471e0b5c775667e",
+    "README.md": "6924df7f0abeda3ec708917f9f993430ad1b09599fcce95d8a6b19493d0f95f7",
+    "做题器.html": "4415e0277d44002dd8beb373b8914a9e7c5a3c28d8521a08a7deb708758d5d52",
+    "第三方组件说明.md": "3227f217d705bfa125cf6bf16b8931466f5b2beadddbdb8dcb34c52e7add7cfc",
+    "licenses/TCC-COPYING.txt": "512d2d21b6b3384ba64781abb0208a1b87740bc31e2df48e2b206ddb7e4d5779",
+    "licenses/WABT-LICENSE.txt": "1d2c1da880eb3805f6033e90d80205a8e44e826c5747ecf23853f4a33e909850"
+  }
+}
