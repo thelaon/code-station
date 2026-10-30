@@ -1,0 +1,3290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob:; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>代码航站 · 离线编程练习</title>
+<style>
+  :root{
+    --font-size:16px;
+    --bg:#f5f6f8; --panel:#ffffff; --ink:#1f2329; --dim:#6b7280; --line:#e3e6ea;
+    --brand:#2563eb; --ok:#15803d; --ok-bg:#e8f6ec; --bad:#c2410c; --bad-bg:#fdeee6;
+    --mark:#b45309; --warn-bg:#fff8e1; --warn-line:#f0d48a;
+    /* 发丝线：页脚分隔线、自测区外框用它。用户 2026-10-15 反馈亮色下 --line 太浅，
+       那条虚线看不出有没有；深色下 --line 已经够显眼，所以暗色主题另给一个。 */
+    --hair:#9aa3af;
+    --due:#7c3aed; --due-bg:#f1ebfd; --flash:#fde68a;
+    --exam-done-bg:#285978;--exam-done-ink:#fffdf5;--exam-done-line:#173f59;
+    --exam-part-bg:#f6d784;--exam-part-ink:#503c0c;--exam-part-line:#92700d;
+  }
+  html[data-theme="dark"]{
+    --bg:#101317; --panel:#1c2129; --ink:#e8eaee; --dim:#98a2b3; --line:#2f3742;
+    --hair:#4b5563;
+    --brand:#60a5fa; --ok:#4ade80; --ok-bg:#14301f; --bad:#fb923c; --bad-bg:#3a2113;
+    --mark:#fbbf24; --warn-bg:#3a3016; --warn-line:#6b5a20;
+    --due:#c4b5fd; --due-bg:#251f3d; --flash:#5b4a12;
+    --exam-done-bg:#9ec9e2;--exam-done-ink:#102b3f;--exam-done-line:#c5e4f4;
+    --exam-part-bg:#dbc276;--exam-part-ink:#312505;--exam-part-line:#f2dea7;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-size:var(--font-size);line-height:1.6;
+    font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;}
+  code,pre,.mono{font-family:Consolas,"Cascadia Mono","Courier New",monospace;font-size:.94em}
+  a{color:var(--brand)}
+  button{font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:.46em .9em;min-height:40px;line-height:1.4;cursor:pointer;
+    transition:background .12s,border-color .12s,color .12s,box-shadow .12s}
+  button:hover{border-color:var(--brand);color:var(--brand);background:var(--bg)}
+  button.primary:hover{background:var(--brand)}
+  /* 焦点框只在键盘操作时出现，鼠标点完不再留一圈蓝边 */
+  button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  button:focus:not(:focus-visible){outline:none}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+  button.primary:hover{opacity:.9;color:#fff}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button:disabled:hover{border-color:var(--line);color:inherit}
+  button.seg{background:var(--bg);border-radius:10px}
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+  .pick-modes{margin-top:16px}
+  .pick-types{margin-top:16px}
+  .fix-bar{align-items:baseline}
+  .fix-bar .grow{align-self:center;text-align:center;white-space:nowrap}
+  .footbar{align-items:baseline}
+  .fix-stat{white-space:nowrap}
+  /* 卡片里「直接挂上去」的竖排按钮（复习池、成绩页）：原来紧贴在一起。
+     ⚠ 必须用直接子选择器：写成 `.card button + button` 会连 .toolbar / .footbar /
+     .fix-bar 里的横向按钮一起命中，第二个按钮被 margin-top:8px 顶下去 8px，
+     同一排里就参差不齐了（用户 2026-10-14 报的「横向的按钮没法对齐」）。 */
+  .card > button + button{margin-top:12px}
+  .card > .stack > button + button{margin-top:14px}
+  .stack{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+  /* 右栏窄，竖排按钮拉满整宽看着像一条长条；改成「按内容宽度、左对齐」 */
+  .stack button{margin-top:0;text-align:center;min-width:11em}
+  button.idle{opacity:.5}
+  button.seg.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+  html[data-theme="dark"] button.primary,html[data-theme="dark"] button.seg.on,
+  html[data-theme="dark"] button.cont.on{color:#101317}
+  input[type=number],input[type=text]{font:inherit;color:inherit;background:var(--panel);
+    border:1px solid var(--line);border-radius:8px;padding:.3em .5em;width:6em}
+  .wrap{max-width:1180px;margin:0 auto;padding:14px}
+  h2{font-size:1.15em;margin:.2em 0 .6em}
+  h3{font-size:1em;margin:1.2em 0 .4em}
+
+  header.top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+  header.top h1{font-size:1.05em;margin:0 10px 0 0;font-weight:700;white-space:nowrap}
+  @media (max-width:700px){
+    header.top{display:grid;grid-template-columns:1fr auto;gap:10px}
+    header.top h1{margin:0}
+    header.top .spacer{display:none}
+    header.top #nav{grid-column:1 / -1;grid-row:2;display:flex;flex-wrap:wrap;gap:8px}
+    header.top #nav button{flex:1 0 auto;font-size:.88em;padding:.45em .55em}
+    header.top .header-tools{grid-column:2;grid-row:1;flex-wrap:nowrap;gap:8px}
+  }
+  /* 顶栏模式切换（选卷/继续练习/复习/统计）是普通按钮，要留缝；
+     唯独段控（.seg）要拼接成一块 —— 用户 2026-10-14 反馈「横向缝太大」就是段控那两排。 */
+  .spacer{flex:1}
+  .nbadge{display:inline-block;min-width:1.4em;padding:0 .35em;margin-left:.35em;
+    background:var(--due);color:#fff;border-radius:99px;font-size:.8em;text-align:center}
+  html[data-theme="dark"] .nbadge{color:#1a1526}
+
+  /* 右栏固定 288px：答题卡是 auto-fill 网格，宽度一变列数就跳，整页会看着错位。 */
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 288px;gap:16px;margin-top:14px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+  .grid > *{min-width:0}
+  .table-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+  .table-scroll table{min-width:460px}
+  .table-scroll th{white-space:nowrap}
+  .table-scroll td{vertical-align:top}
+  .table-scroll:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:6px}
+  .table-scroll button,.toolbar button,.footbar button,header.top button{white-space:nowrap}
+  .table-scroll td > button + button{margin-left:8px}
+  .result-grid{grid-template-columns:minmax(0,1fr)}
+  .result-grid > .card + .card{margin-top:0}
+  .result-card .stat{display:grid;grid-template-columns:1.6fr 1.1fr repeat(4,1fr);gap:16px;
+    margin:16px 0 24px}
+  .result-card .stat > div{min-width:0}
+  .result-card .big{font-size:clamp(1.3rem,2.3vw,1.9rem);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .table-scroll .result-table{min-width:760px}
+  .result-table td:first-child,.result-table td:nth-child(2),.result-table td:nth-child(5){white-space:nowrap}
+  .result-table td:nth-child(3),.result-table td:nth-child(4){overflow-wrap:anywhere}
+  .result-table .tag{margin-left:0;white-space:nowrap}
+  .result-jump > summary{color:var(--ink);font-weight:600}
+  .result-jump .sheet{margin-top:14px;grid-template-columns:repeat(auto-fill,minmax(40px,1fr))}
+  @media (max-width:700px){
+    .result-card .stat{grid-template-columns:repeat(auto-fit,minmax(min(100%,9em),1fr));gap:16px 12px}
+    .result-card .big{font-size:1.5rem}
+    .table-scroll .result-table{min-width:0}
+    .result-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+    .result-table tbody{display:grid;gap:12px}
+    .result-table tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 12px;
+      padding:12px;border:1px solid var(--line);border-radius:10px}
+    .result-table td{display:block;min-width:0;border:0;padding:0}
+    .result-table td::before{content:attr(data-label);display:block;color:var(--dim);font-size:.8em}
+    .result-table td:first-child{grid-column:1 / -1;font-weight:600;white-space:normal}
+    .result-table td:first-child::before,.result-table td:last-child::before{display:none}
+    .result-table td:nth-child(3),.result-table td:nth-child(4){grid-column:1 / -1;white-space:normal}
+    .result-table td:nth-child(6){grid-column:2;grid-row:2}
+    .result-table td:last-child{grid-column:2;align-self:end;justify-self:end}
+  }
+  .fix-wrap:focus-within{outline:2px solid var(--brand);outline-offset:2px}
+  .fix-ta{min-width:0}
+  .card + .card{margin-top:14px}
+  .meta{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;color:var(--dim);
+    font-size:.92em;margin-bottom:10px}
+  .bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;
+    flex:1 1 140px;min-width:100px}
+  .bar > i{display:block;height:100%;background:var(--brand);width:0;transition:width .2s}
+
+  .stem{font-size:1.06em;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;
+    margin:2px 0 14px}
+  .stem.code{font-family:Consolas,"Cascadia Mono","Courier New",monospace;font-size:.98em}
+  .stem .num{font-weight:700}
+
+  .figs{margin:0 0 14px}
+  .figs .fig{margin:0 0 10px;max-width:100%}
+  .figs img{display:block;max-width:100%;height:auto;background:#fff;
+    border:1px solid var(--line);border-radius:8px;padding:6px;cursor:zoom-in}
+  .figs .cap{color:var(--dim);font-size:.84em;margin-top:3px}
+
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99;
+    display:flex;align-items:center;justify-content:center;padding:3vh 3vw;cursor:zoom-out}
+  .modal img{max-width:100%;max-height:94vh;background:#fff;border-radius:8px;padding:8px}
+  .path{font-family:Consolas,monospace;background:var(--bg);border:1px solid var(--line);
+    border-radius:6px;padding:2px 6px;user-select:all;word-break:break-all}
+
+  .opts{display:flex;flex-direction:column;gap:8px}
+  .opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);
+    border-radius:8px;padding:9px 11px;cursor:pointer;background:var(--panel);
+    transition:border-color .12s,background .12s}
+  .opt:hover{border-color:var(--brand)}
+  .opt .lt{font-weight:700;min-width:1.6em;flex:none}
+  .opt .tx{white-space:pre-wrap;word-break:break-word;flex:1}
+  .opt .kb{color:var(--dim);font-size:.82em;flex:none;border:1px solid var(--line);
+    border-radius:5px;padding:0 .35em}
+  .opt .mk{flex:none;font-weight:700}
+  .opt.right{background:var(--ok-bg);border-color:var(--ok)}
+  .opt.right .mk{color:var(--ok)}
+  .opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+  .opt.wrong .mk{color:var(--bad)}
+  .opt.chosen{border-width:2px}
+  button.opt{text-align:left;width:100%;font-weight:400}
+  .opt.exam-picked{border:2px solid var(--brand);background:var(--bg)}
+  button.cell{padding:0;min-height:36px}
+  .exam-clock{font-weight:700;font-variant-numeric:tabular-nums;color:var(--brand);font-size:1.1em}
+  .exam-clock.urgent{color:var(--bad)}
+  .exam-setup{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:16px 0}
+  .exam-setup label{display:flex;align-items:center;gap:8px}
+  .exam-feedback pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  .fix-ta.exam-code{height:28rem;min-height:20rem}
+  .opt.locked{cursor:default}
+  .opt.flash{animation:flashbg 1.1s ease-in-out infinite alternate}
+  @keyframes flashbg{from{background:var(--ok-bg)}to{background:var(--flash)}}
+  @media (prefers-reduced-motion:reduce){.opt.flash{animation:none;background:var(--flash)}}
+
+  .warn{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:8px;
+    padding:8px 10px;margin-bottom:12px;font-size:.94em;display:flex;gap:10px;
+    align-items:center;flex-wrap:wrap}
+  .info{background:var(--due-bg);border:1px solid var(--due);border-radius:8px;
+    padding:8px 10px;margin-bottom:12px;font-size:.94em;display:flex;gap:10px;
+    align-items:center;flex-wrap:wrap}
+  /* 页脚按钮换行时两排别贴在一起（用户 2026-10-15：「上下按钮间隔还是那么近」）：
+     行间距 14px、列间距保持 8px；分隔线换成可见的发丝线。 */
+  .footbar{display:flex;gap:14px 12px;flex-wrap:wrap;margin-top:16px;padding-top:14px;
+    border-top:1px dashed var(--hair);align-items:center}
+
+  /* 答题卡：21 格挤在 288px 栏里，38px 会撑到换行/溢出，收到 34px；
+     当前题不再只靠 outline，改成加粗边框更醒目（outline 在深色下偏弱）。 */
+  .sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(34px,1fr));gap:6px}
+  .cell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);border-radius:7px;background:var(--panel);cursor:pointer;
+    font-size:.9em;position:relative;user-select:none}
+  .cell:hover{border-color:var(--brand)}
+  .cell.ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .cell.bad{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+  .cell.part{background:var(--warn-bg);border-color:var(--warn-line);color:var(--mark)}
+  .cell.cur{outline:2px solid var(--brand);outline-offset:1px;border-width:2px;font-weight:700}
+  .cell.mastered::after{content:"";position:absolute;left:3px;top:3px;width:6px;height:6px;
+    border-radius:50%;background:var(--ok);opacity:.75}
+  .cell .star{position:absolute;top:-5px;right:-1px;font-size:.7em;color:var(--mark)}
+  /* 考试只表达作答状态，独立于主题色以及交卷后的对错配色。 */
+  .sheet.exam-sheet .cell.answered{background:var(--exam-done-bg);color:var(--exam-done-ink);border:2px solid var(--exam-done-line);font-weight:700}
+  .sheet.exam-sheet .cell.part{background:var(--exam-part-bg);color:var(--exam-part-ink);border:2px dashed var(--exam-part-line)}
+  .sheet.exam-sheet .cell.cur{outline:3px solid var(--ink);outline-offset:2px}
+  .sheet.exam-sheet .cell.answered .star{color:var(--exam-done-ink)}
+  .exam-sheet-legend{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:12px;font-size:.82em;color:var(--ink)}
+  .exam-legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .exam-legend-swatch{display:inline-block;width:15px;height:15px;flex:none;border:1px solid var(--line);border-radius:2px;background:var(--ns-paper,var(--panel))}
+  .exam-legend-swatch.exam-legend-answered{background:var(--exam-done-bg);border:2px solid var(--exam-done-line)}
+  .exam-legend-swatch.exam-legend-partial{background:var(--exam-part-bg);border:2px dashed var(--exam-part-line)}
+  .exam-legend-swatch.exam-legend-current{border:2px solid var(--ink)}
+  .tip{color:var(--dim);font-size:.86em;margin-top:10px;display:flex;gap:12px;flex-wrap:wrap}
+  .note{color:var(--dim);font-size:.82em;margin-top:10px}
+  .kbd{color:var(--dim);font-size:.86em;margin-top:10px;line-height:1.9}
+  .kbd b{font-weight:600;color:var(--ink)}
+
+  table{width:100%;border-collapse:collapse;font-size:.95em}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-weight:600;font-size:.9em}
+  tr.clickable{cursor:pointer}
+  tr.clickable:hover{background:var(--bg)}
+  .big{font-size:1.9em;font-weight:700;line-height:1.2}
+  .stat{display:flex;gap:26px;flex-wrap:wrap;margin:6px 0 14px}
+  .stat div span{display:block;color:var(--dim);font-size:.86em}
+  .empty{color:var(--dim);padding:18px;background:var(--bg);border:1px dashed var(--line);
+    border-radius:10px;margin:14px 0;line-height:1.8}
+  select{font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:.3em .5em}
+  footer.foot{color:var(--dim);font-size:.85em;margin:16px 2px 26px}
+  hr.sep{border:none;border-top:1px dashed var(--line);margin:12px 0}
+  .tag{display:inline-block;font-size:.8em;color:var(--dim);border:1px solid var(--line);
+    border-radius:5px;padding:0 .4em;margin-left:.4em}
+  .tag.due{color:var(--due);border-color:var(--due)}
+  .tag.mastered{color:var(--ok);border-color:var(--ok)}
+  details{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:10px}
+  summary{cursor:pointer;color:var(--dim)}
+
+  /* ---- 顶栏「继续练习」：只在做题界面变蓝；不在做题界面但有未做完的卷 → 小红点 ---- */
+  button.cont.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+  button.cont.on:hover{opacity:.9;color:#fff}
+  button.cont.dot{position:relative}
+  button.cont.dot::after{content:"";position:absolute;top:-3px;right:-3px;width:8px;height:8px;
+    border-radius:50%;background:#e11d48;box-shadow:0 0 0 2px var(--panel)}
+  html[data-theme="dark"] button.cont.dot::after{background:#fb7185}
+
+  /* ---- 问号帮助按钮 ---- */
+  button.icon{width:2.1em;padding:.3em 0;text-align:center;font-weight:700}
+
+  /* ---- 设置 / 帮助 里的分板块 ---- */
+  .sec{margin:0 0 4px}
+  .sec h4{margin:16px 0 6px;font-size:.95em;color:var(--brand);
+    border-bottom:1px solid var(--line);padding-bottom:4px}
+  .sec h4:first-child{margin-top:4px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:9px 0}
+  .row .lbl{flex:1 1 12em;min-width:9em;font-size:.95em}
+  .row .hint{color:var(--dim);font-size:.85em;flex-basis:100%;margin-top:-2px}
+  .row .ctl{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .numval{display:inline-block;min-width:2.2em;text-align:center;font-weight:700}
+  .dbig{font-size:1.5em;font-weight:700;color:var(--danger, #b91c1c)}
+  html[data-theme="dark"] .dbig{color:#f87171}
+
+  /* ---- 帮助弹窗排版 ---- */
+  .help h4{margin:16px 0 4px;font-size:.95em;color:var(--brand)}
+  .help table{margin:2px 0 4px}
+  .help td{padding:5px 8px;vertical-align:top}
+  .help td:first-child{white-space:nowrap;width:1%;font-family:Consolas,"Cascadia Mono",monospace;
+    color:var(--ink)}
+  .help ul{margin:4px 0 4px 1.1em;padding:0}
+  .help li{margin:3px 0}
+  .esc{color:var(--dim);font-size:.86em;margin-top:14px}
+
+  /* ---- 填空题（程序填空）---- */
+  .codebox{font-family:Consolas,"Cascadia Mono","Courier New",monospace;font-size:.96em;
+    line-height:2.1;background:var(--bg);border:1px solid var(--line);border-radius:8px;
+    padding:10px 12px;overflow-x:auto;white-space:pre;margin:0 0 12px}
+  .codebox .ln{display:block}
+  .blk{font-family:inherit;font-size:.95em;color:var(--ink);background:var(--panel);
+    border:1px solid var(--brand);border-bottom-width:2px;border-radius:6px;
+    padding:1px 6px;margin:0 2px;width:9.5em;min-width:5em}
+  .blk:focus{outline:2px solid var(--brand);outline-offset:1px}
+  .blk.ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .blk.bad{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+  .blk:disabled{opacity:.95;cursor:default}
+  .blkno{color:var(--dim);font-size:.86em;margin-left:2px}
+  .keybox{margin:2px 0 12px}
+  .keybox table{font-size:.92em}
+  .keybox .k{font-family:Consolas,monospace;color:var(--ok);white-space:pre-wrap}
+  .keybox .k.bad{color:var(--bad)}
+  .keybox .alt{color:var(--dim);font-size:.9em}
+  .keybox .mine{color:var(--dim);font-size:.9em}
+  .keybox .mine.half{color:var(--bad);font-weight:600}
+  .blk.half{border-color:var(--bad);border-style:dashed}
+  .warnline{color:var(--bad);font-size:.9em;margin:2px 0 8px}
+  .papermeta{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 12px}
+  .chip{border:1px solid var(--line);border-radius:99px;padding:1px 9px;font-size:.86em;
+    color:var(--dim)}
+  .chip b{color:var(--ink)}
+
+  /* ---- 程序改错题（第 3 问）----
+     编辑器用「行号栏 + textarea」两栏，超长行横向滚动时行号仍然对齐；
+     判题报告复用填空页的配色变量（--ok / --bad / --warn）。 */
+  .fix-wrap{display:flex;gap:0;border:1px solid var(--line);border-radius:8px;
+    overflow:hidden;margin:0 0 10px;background:var(--bg)}
+  .fix-gut{flex:0 0 auto;padding:8px 6px 8px 10px;text-align:right;color:var(--dim);
+    font-family:Consolas,"Cascadia Mono","Courier New",monospace;font-size:.92em;
+    line-height:1.5;background:var(--panel);user-select:none;border-right:1px solid var(--line);
+    white-space:pre;overflow:hidden}
+  /* 用户 m08149：不要编辑器自己的拖拽手柄；高度由「上面程序 / 下面输入输出」
+     的分配决定，并限定最小高度（拖到再小也留 18em，约 12 行可见）。 */
+  /* ⚠ 高度必须用 rem 不能用 em：这个元素的 font-size 是 .92em（= 14.72px），
+     写 26em 得到的是 26 × 14.72 ≈ 383px，只够 17 行可见（实测），
+     而最长的一题正文有 42 行 —— 这就是「编辑器看着变小了」的原因。
+     1 行 = 14.72 × 1.5 ≈ 22.08px ⇒ 42rem ≈ 30 行可见。 */
+  .fix-ta{flex:1 1 auto;border:0;outline:0;resize:none;background:transparent;
+    color:var(--ink);padding:8px 10px;font-family:Consolas,"Cascadia Mono","Courier New",monospace;
+    font-size:.92em;line-height:1.5;height:42rem;min-height:28rem;max-height:none;
+    white-space:pre;overflow-wrap:normal;overflow:auto;tab-size:4}
+  /* 洛谷式：动作按钮在编辑器**上方**（原来在 18 行编辑器下面，要滚到底才点得到）。
+     用户 2026-10-14 提的方案：动作条置顶、下方保留可反复运行的能力。 */
+  .fix-filebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    background:var(--bg);border:1px solid var(--line);border-bottom:0;
+    border-radius:9px 9px 0 0;padding:7px 10px;font-family:Consolas,"Cascadia Mono",monospace;
+    font-size:.88em;color:var(--dim)}
+  .fix-filebar button{font-family:inherit;font-size:.95em;padding:2px 10px}
+  .fix-filebar > span:first-child{margin-right:auto}
+  .fix-statbar{margin:5px 0 0;font-size:.86em}
+  .fix-wrap{border-radius:0 0 9px 9px;border-top:0}
+  .fix-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:6px 0 12px}
+  .fix-bar .grow{flex:1 1 auto}
+  .fix-stat{color:var(--dim);font-size:.9em}
+  .fix-stem{background:var(--bg);border:1px solid var(--line);border-radius:9px;
+    padding:9px 12px;margin:0 0 10px;font-size:.93em;line-height:1.6;white-space:pre-wrap}
+  .fix-rep{font:inherit;font-size:.92em;line-height:1.6;white-space:normal;overflow-wrap:anywhere}
+  .report-score{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px;margin:8px 0}
+  .report-score strong{font-size:1.8em;line-height:1.2;font-variant-numeric:tabular-nums}
+  .report-score strong small{font-size:.5em;font-weight:500;color:var(--dim)}
+  .report-status{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  .report-tag{display:inline-flex;align-items:center;border-radius:6px;padding:3px 8px;
+    background:var(--bg);color:var(--dim);font-size:.88em}
+  .report-tag.is-ok{color:var(--ok);background:var(--ok-bg)}
+  .report-tag.is-bad{color:var(--bad);background:var(--bad-bg)}
+  .report-tag.is-warning{color:var(--mark);background:var(--warn-bg)}
+  .report-next{color:var(--dim);margin:10px 0;font-size:.92em}
+  .report-detail{padding:0;margin-top:10px;border-radius:10px}
+  .report-detail > summary{padding:10px 12px;color:var(--ink);font-weight:600}
+  .report-detail > .report-body{padding:0 12px 12px}
+  .report-body p{margin:8px 0}
+  .report-fault{padding:10px 0;border-top:1px solid var(--line)}
+  .report-fault:first-child{border-top:0}
+  .report-code{display:grid;grid-template-columns:1fr;gap:3px;margin:8px 0 0}
+  .report-code dt{color:var(--dim);font-size:.86em}
+  .report-code dd{margin:0 0 5px;min-width:0}
+  .report-code pre{margin:0;padding:7px 9px;background:var(--bg);border-radius:6px;
+    white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+  .report-case{padding:8px 10px}
+  .report-case > summary{color:var(--ink)}
+  .progress-label{min-width:6.5em;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .time-cell{white-space:nowrap;font-variant-numeric:tabular-nums}
+  .fix-rep .ok{color:var(--ok)} .fix-rep .bad{color:var(--bad)} .fix-rep .warn{color:var(--mark)}
+  html[data-theme="dark"] .fix-rep .warn{color:#fbbf24}
+  .fix-rep .muted{color:var(--dim)}
+  /* ---- 自测输入 / 输出（用户 2026-10-14 要求：像洛谷那样能自己喂输入看输出）---- */
+  /* 自测区：洛谷式「左输入 / 右输出」 */
+  .fix-io{margin-top:10px;border:1px solid var(--hair);border-radius:10px}
+  /* 输入区：撑满所在面板、自己不留拖拽手柄，最小 8em（约 5 行） */
+  .fix-io textarea{width:100%;box-sizing:border-box;border:0;
+    background:transparent;color:var(--ink);font-family:Consolas,"Cascadia Mono","Courier New",monospace;
+    font-size:.92em;line-height:1.5;padding:8px 10px;flex:1 1 auto;
+    height:8em;min-height:6em;max-height:22em;resize:none;display:block;overflow:auto}
+  .fix-io textarea:focus{outline:none}
+  .fix-io .out{font-family:Consolas,"Cascadia Mono","Courier New",monospace;font-size:.92em;
+    white-space:pre-wrap;word-break:break-all;padding:8px 10px;flex:1 1 auto;
+    height:8em;min-height:6em;max-height:22em;overflow:auto;margin:0;color:var(--ink)}
+  .fix-io .out .dim{color:var(--dim)}
+  .fix-io .out .err{color:var(--bad)}
+  .fix-io .step{color:var(--dim);font-size:.88em;margin-left:2px}
+  /* 左右两栏：各自「标题条 + 内容」，标题条写清这是输入还是输出 */
+  .fix-io .cols{display:grid;grid-template-columns:1fr 1fr}
+  .fix-io .pane{display:flex;flex-direction:column;min-width:0}
+  .fix-io .pane + .pane{border-left:1px solid var(--hair)}
+  /* 「输入 / 输出」标题条：下边框用发丝线；与内容之间留一点缝（m08149 说贴得太紧） */
+  .fix-io .ph{display:flex;align-items:center;gap:8px;padding:5px 10px;
+    background:var(--bg);border-bottom:1px solid var(--hair);color:var(--dim);font-size:.88em}
+  .fix-io .ph .sp{flex:1 1 auto}
+  .fix-io .ph button{padding:1px 9px;font-size:.94em}
+  .fix-io .pane textarea,.fix-io .pane .out{border:0;border-radius:0}
+  @media (max-width:900px){.fix-io .cols{grid-template-columns:1fr}
+    .fix-io .pane + .pane{border-left:0;border-top:1px solid var(--hair)}}
+  /* 题干下方的「案例」：输入 / 输出 并排，照着自测用 */
+  .fix-case{margin:2px 0 10px;border:1px solid var(--hair);border-radius:9px;overflow:hidden}
+  .fix-case .ch{display:flex;align-items:center;gap:8px;padding:5px 10px;
+    background:var(--bg);border-bottom:1px solid var(--hair);color:var(--dim);font-size:.88em}
+  .fix-case .ch .sp{flex:1 1 auto}
+  .fix-case .cb{display:grid;grid-template-columns:1fr 1fr}
+  .fix-case .cb > div{padding:6px 10px;font-family:Consolas,"Cascadia Mono",monospace;
+    font-size:.92em;white-space:pre-wrap;word-break:break-all}
+  .fix-case .cb > div + div{border-left:1px solid var(--hair)}
+  .fix-case .cl{color:var(--dim);font-size:.86em;display:block;margin-bottom:2px;font-family:inherit}
+  @media (max-width:900px){.fix-case .cb{grid-template-columns:1fr}
+    .fix-case .cb > div + div{border-left:0;border-top:1px solid var(--hair)}}
+  .week7{margin:12px 0 20px;padding:16px;background:var(--bg);border-radius:12px}
+  .week7-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    flex-wrap:wrap;margin-bottom:18px;color:var(--dim);font-size:.9em}
+  .week7-head strong{color:var(--ink);font-size:1.1em}
+  .week7-bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px}
+  .week7-day{min-width:0;display:flex;flex-direction:column;align-items:center;gap:7px}
+  .week7-value{font-size:.85em;font-variant-numeric:tabular-nums;color:var(--dim)}
+  .week7-track{height:96px;width:100%;max-width:40px;display:flex;align-items:flex-end;
+    background:var(--panel);border-radius:7px;overflow:hidden}
+  .week7-fill{width:100%;background:var(--brand);border-radius:7px;min-height:0}
+  .week7-day.is-today .week7-label{color:var(--brand);font-weight:600}
+  .week7-label{font-size:.8em;white-space:nowrap;color:var(--dim)}
+  /* chip 里的次要文字：和 .chip 同字号，只降色，不再额外缩小 */
+  .chip .muted{color:var(--dim);font-size:1em}
+  .chip.focus{border-color:var(--brand)}
+  .fix-line{background:var(--panel);border-left:3px solid var(--line);padding:2px 8px;margin:3px 0;
+    white-space:pre-wrap;word-break:break-all;font-family:inherit;font-size:.95em}
+  .fix-line.ok{border-left-color:var(--ok)} .fix-line.bad{border-left-color:var(--bad)}
+  .fix-badge{display:inline-block;border:1px solid var(--line);border-radius:99px;
+    padding:0 7px;margin-right:6px;font-size:.85em;color:var(--dim)}
+  .fix-io textarea:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+  @media (max-width:600px){
+    .wrap{padding:10px}
+    .card{padding:12px}
+    header.top{padding:10px;gap:8px}
+    header.top #nav{width:100%}
+    .toolbar,.row .ctl{gap:10px}
+    .week7{padding:12px}
+    .week7-bars{gap:6px}
+    .fix-stat,.fix-bar .grow{white-space:normal;overflow-wrap:anywhere}
+    .fix-bar .grow{flex-basis:100%;text-align:left}
+  }
+====CQ-VISUAL-STYLE====
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1><span class="classic-brand" aria-hidden="true"><span class="station-emblem"></span></span><span class="classic-brand-copy">代码航站<small>离线学习 · 进度保存在本机</small></span><span class="nasa-brand" aria-hidden="true"><span class="station-emblem"></span></span><span class="legacy-brand-copy">代码航站<small class="nasa-brand-caption">编程学习 · 练习档案</small></span></h1>
+    <div class="toolbar" id="nav"></div>
+    <div class="spacer"></div>
+    <div class="toolbar header-tools">
+      <button id="btnSet" title="设置（界面风格 / 字号 / 深浅色 / 数据管理）">设置</button>
+      <button id="btnHelp" title="使用说明">?</button>
+    </div>
+  </header>
+  <div id="view"></div>
+  <footer class="foot" id="foot"></footer>
+</div>
+
+<script id="programming-data" type="application/json">====CQ-PROGRAMMING-DATA====</script>
+<script id="bank-data" type="application/json">====DSH-BANK-DATA====</script>
+<script id="blank-data" type="application/json">====DSH-BLANK-DATA====</script>
+<script id="fix-data" type="application/json">====DSH-FIX-DATA====</script>
+
+<script>
+====DSH-FIX-ENGINE====
+</script>
+
+<script>
+====DSH-FIX-CODE====
+</script>
+<script>
+====CQ-BOOTSTRAP====
+</script>
+<script>
+CQStorage.start(function(){
+"use strict";
+
+
+var BANK = JSON.parse(document.getElementById('bank-data').textContent);
+var PAPERS = BANK.papers;
+var PMAP = {}; PAPERS.forEach(function(p){ PMAP[p.id] = p; });
+var TOTALQ = PAPERS.reduce(function(a,p){ return a + p.count; }, 0);
+
+
+var BBANK = JSON.parse(document.getElementById('blank-data').textContent);
+var BPAPERS = (BBANK && BBANK.papers) || [];
+var BPMAP = {}; BPAPERS.forEach(function(p){ BPMAP[p.id] = p; });
+var TOTALB = BPAPERS.reduce(function(a,p){ return a + p.count; }, 0);
+var TOTALB_BLANK = BPAPERS.reduce(function(a,p){ return a + (p.blanks||0); }, 0);
+var HAS_BLANK = TOTALB > 0;
+
+
+var FBANK = JSON.parse(document.getElementById('fix-data').textContent);
+var FPAPERS = (FBANK && FBANK.papers) || [];
+var FIXQ = {};                       
+var FXBY = {};                       
+(FBANK.questions || []).forEach(function(q){
+  
+  if(q.num == null) q.num = q.no;
+  FIXQ[q.paper + '#x' + q.num] = q;
+  (FXBY[q.paper] = FXBY[q.paper] || []).push(q);
+});
+Object.keys(FXBY).forEach(function(pid){
+  FXBY[pid].sort(function(a,b){ return a.num - b.num; });
+});
+var TOTALF = (FBANK.questions || []).length;
+var HAS_FIX = TOTALF > 0;
+
+
+var BUILD = 'dev';
+var DATA_BUILD = 'dev';
+var DATA_BUILD_KEY = 'cqframe.build.v1';
+var GUIDE_SEEN_KEY = 'cqframe.guide.seen.v1';
+
+function clearStoredUserData(){
+  try{
+    var keys = [];
+    for(var i = 0; i < localStorage.length; i++){
+      var key = localStorage.key(i);
+      if(key && key.indexOf('cqframe.') === 0 && key !== GUIDE_SEEN_KEY) keys.push(key);
+    }
+    keys.forEach(function(key){ localStorage.removeItem(key); });
+    localStorage.setItem(DATA_BUILD_KEY, DATA_BUILD);
+    CQStorage.reset();
+  }catch(e){}
+}
+
+try{
+  if(DATA_BUILD !== 'dev' && localStorage.getItem(DATA_BUILD_KEY) !== DATA_BUILD)
+    clearStoredUserData();
+}catch(e){}
+
+
+function footText(s){
+  if(CQStorage.hasPending())s=s.replace('进度自动保存','存在未保存更改');
+  var tag = (BUILD && BUILD !== 'dev') ? ('　·　构建 ' + BUILD) : '';
+  return s + tag;
+}
+
+var LSKEY = {
+  session:'cqframe.session.v1', review:'cqframe.review.v2', marks:'cqframe.marks.v1',
+  pref:'cqframe.pref.v1', stats:'cqframe.stats.v1', wrongLegacy:'cqframe.wrong.v1',
+  blanks:'cqframe.blanks.v1'
+};
+
+
+try{recoverPackTransaction();}catch(e){CQStorage.recovery(e,false);return;}
+function load(k, dft){
+  try{ var s = CQStorage.read(k); return s ? JSON.parse(s) : dft; }
+  catch(e){ return dft; }
+}
+function save(k, v){
+  return CQStorage.setRaw(k,JSON.stringify(v));
+}
+var SESSION = load(LSKEY.session, null);
+var MARKS   = load(LSKEY.marks, {});      
+var STATS   = load(LSKEY.stats, {log:{}});
+var PREF    = load(LSKEY.pref, {theme:'light', fontSize:16, uiStyle:'classic', motion:true});
+var LS_OK   = true;
+try{ localStorage.setItem('cqframe.probe','1'); localStorage.removeItem('cqframe.probe'); }
+catch(e){ LS_OK = false; }
+
+
+var IVS = [1, 3, 7, 14, 30, 60];
+var REC = load(LSKEY.review, null);
+if(!REC){
+  
+  var old = load(LSKEY.wrongLegacy, {});
+  REC = {};
+  Object.keys(old || {}).forEach(function(k){
+    var o = old[k] || {};
+    REC[k] = { total:o.n||1, wrong:o.n||1, last:o.ts||Date.now(),
+               stage:0, ivIdx:0, iv:0, due:o.ts||Date.now(), master:false };
+  });
+}
+var WRONG = load(LSKEY.wrongLegacy, null);
+var migratedSession = false;
+if(!WRONG) WRONG = {};                    
+
+
+function poolDue(now){
+  now = now || Date.now();
+  var out = [];
+  Object.keys(REC).forEach(function(k){
+    var r = REC[k];
+    if(r.master) return;
+    if(!packQuestionEnabled(k))return;
+    if(!r.due || r.due <= now) out.push(k);
+  });
+  return out;
+}
+function poolActive(){        
+  return Object.keys(REC).filter(function(k){ return !REC[k].master&&packQuestionEnabled(k); });
+}
+function poolMastered(){
+  return Object.keys(REC).filter(function(k){ return !!REC[k].master&&packQuestionEnabled(k); });
+}
+function dueCount(now){ return poolDue(now).length; }
+
+
+var AUTO_NEXT_TIMER=null,AUTO_NEXT_SEQ=0;
+var DEF_SET = { needCorrect:2, dailyMax:20, flashSec:5, autoNext:0, autoNextSec:3 };
+var SET = load('cqframe.set.v1', null) || {};
+Object.keys(DEF_SET).forEach(function(k){ if(typeof SET[k] !== 'number') SET[k] = DEF_SET[k]; });
+function normalizeAutoNext(){
+  SET.autoNext=SET.autoNext===1?1:0;
+  SET.autoNextSec=Number.isFinite(SET.autoNextSec)?Math.max(1,Math.min(60,Math.round(SET.autoNextSec))):DEF_SET.autoNextSec;
+}
+normalizeAutoNext();
+function saveSet(){normalizeAutoNext();cancelAutoNext();save('cqframe.set.v1', SET);}
+function cancelAutoNext(){
+  AUTO_NEXT_SEQ++;
+  if(AUTO_NEXT_TIMER!==null)clearTimeout(AUTO_NEXT_TIMER);
+  AUTO_NEXT_TIMER=null;
+}
+function responseCorrect(o,s){
+  var k=qid(o.pid,o.num);
+  if(o.program){var pr=programVerdict(s,o);return !!pr&&pr.good;}
+  if(o.blank){var q=findAny(o.pid,o.num);return !!q&&!!s.bsnap&&s.bsnap[k]===q.blankNums.length;}
+  if(o.fix){var r=s.fix&&s.fix[fxid(o.pid,o.num)],qf=findF(o.pid,o.num);return !!r&&!!qf&&r.total>0&&r.fixed>=r.total&&r.score>=fixScoreOf(qf);}
+  return !(s.reveal&&s.reveal[k])&&okOf(o.pid,o.num,s.picks[k]);
+}
+function queueAutoNext(o,correct,navToken){
+  var s=SESSION,cur=s&&s.order[s.idx];
+  if(!s||!cur||qid(cur.pid,cur.num)!==qid(o.pid,o.num)||
+    (navToken!==undefined&&(s.jt||0)!==navToken))return;
+  cancelAutoNext();
+  if(!correct||SET.autoNext!==1||VIEW!=='practice'||s.done||isExam(s)||s.idx>=s.order.length-1||!responseCorrect(o,s))return;
+  var idx=s.idx,jt=s.jt||0,seq=AUTO_NEXT_SEQ;
+  AUTO_NEXT_TIMER=setTimeout(function(){
+    if(seq!==AUTO_NEXT_SEQ)return;
+    AUTO_NEXT_TIMER=null;
+    if(SET.autoNext!==1||SESSION!==s||VIEW!=='practice'||s.done||isExam(s)||s.idx!==idx||
+      (s.jt||0)!==jt||document.hidden||document.querySelector('.modal')||!responseCorrect(o,s))return;
+    move(1);
+  },SET.autoNextSec*1000);
+}
+
+
+function scheduleAfter(pid, num, good){
+  var k = qid(pid,num), now = Date.now();
+  var r = REC[k] || {total:0, wrong:0, last:0, stage:0, iv:0, due:0, master:false};
+  r.total++;
+  r.last = now;
+  if(!good){
+    r.wrong++;
+    r.stage = 0;
+    r.iv = 0;
+    r.ivIdx = Math.max(0, (r.ivIdx || 0) - 1);   
+    r.due = now;                                 
+    r.master = false;
+  }else{
+    r.stage++;
+    
+    var idx = Math.min(Math.max(r.ivIdx || 0, 0), IVS.length-1);
+    r.iv = IVS[idx];
+    if(r.stage >= SET.needCorrect){
+      r.master = true;
+      r.due = (r.iv >= IVS[IVS.length-1]) ? 0 : now + r.iv*86400000;
+    }else{
+      r.master = false;
+      r.due = now + r.iv*86400000;
+    }
+    r.ivIdx = Math.min(idx+1, IVS.length-1);
+  }
+  REC[k] = r;
+  
+  if(r.master){ delete WRONG[k]; }
+  else { WRONG[k] = {n:r.wrong, ts:r.last}; }
+  save(LSKEY.review, REC);
+  save(LSKEY.wrongLegacy, WRONG);
+  return r;
+}
+function resetOne(pid, num){
+  delete REC[qid(pid,num)];
+  save(LSKEY.review, REC);
+  delete MARKS[qid(pid,num)];
+  save(LSKEY.marks, MARKS);
+}
+function resetAllMastered(){
+  var now = Date.now();
+  poolMastered().forEach(function(k){
+    var r = REC[k];
+    r.master = false; r.stage = 0; r.iv = 0; r.ivIdx = 0; r.due = now;
+  });
+  save(LSKEY.review, REC);
+}
+
+var SNAP = 'none';
+function snapOf(k){
+  var r = REC[k];
+  return r ? JSON.parse(JSON.stringify(r)) : SNAP;
+}
+function restoreSnap(k, snap){
+  if(!snap) return;
+  if(snap === SNAP){
+    delete REC[k];
+  }else{
+    REC[k] = snap;
+  }
+  save(LSKEY.review, REC);
+  WRONG = {};
+  Object.keys(REC).forEach(function(kk){
+    var r = REC[kk];
+    if(!r.master) WRONG[kk] = {n:r.wrong, ts:r.last};
+  });
+  save(LSKEY.wrongLegacy, WRONG);
+}
+function dueLabel(r){
+  if(r.master) return '已掌握';
+  if(!r.stage) return '待复习';
+  if(!r.due) return '长期计划';
+  var d = Math.ceil((r.due - Date.now())/86400000);
+  return d <= 0 ? '今天到期' : (d + ' 天后');
+}
+
+
+var IDMAP_RE = /^(\d{4})-([A-Za-z0-9\u4e00-\u9fa5-]+[A-Za-z])$/;
+function migrateOldId(pid){
+  var m = IDMAP_RE.exec(pid);
+  if(!m) return null;
+  var tail = m[2];
+  if(/^[A-D]卷$/.test(tail)) return null;              
+  var mm = /^([A-D])(?:卷|场)/.exec(tail);
+  var letter = mm ? mm[1] : tail.slice(-1).toUpperCase();
+  if(!/[A-D]/.test(letter)) return null;
+  return m[1] + '-' + letter + '卷';
+}
+function migrateKey(k){
+  var i = String(k).indexOf('#');
+  if(i < 0){                                   
+    var only = migrateOldId(k);
+    return only || k;
+  }
+  var pid = k.slice(0, i), rest = k.slice(i);
+  var np = migrateOldId(pid);
+  return (np || pid) + rest;
+}
+function migrateOldData(){
+  var moved = 0, touched = false;
+  
+  var rec = load(LSKEY.review, null);
+  if(rec){
+    var nr = {};
+    Object.keys(rec).forEach(function(k){
+      var nk = migrateKey(k);
+      if(nk !== k) moved++;
+      nr[nk] = rec[k];
+    });
+    if(moved){ REC = nr; save(LSKEY.review, REC); touched = true; }
+  }
+  
+  var mk = load(LSKEY.marks, null);
+  if(mk){
+    var nm = {}, n2 = 0;
+    Object.keys(mk).forEach(function(k){
+      var nk = migrateKey(k);
+      if(nk !== k) n2++;
+      nm[nk] = mk[k];
+    });
+    if(n2){ MARKS = nm; save(LSKEY.marks, MARKS); touched = true; }
+  }
+  
+  var ss = load(LSKEY.session, null);
+  if(ss && ss.order){
+    var ch = false;
+    ss.order.forEach(function(o){
+      var np = migrateOldId(o.pid);
+      if(np){ o.pid = np; ch = true; }
+    });
+    if(ss.bans){
+      var nb = {};
+      Object.keys(ss.bans).forEach(function(k){
+        var nk = migrateKey(k);
+        if(nk !== k) ch = true;
+        nb[nk] = ss.bans[k];
+      });
+      ss.bans = nb;
+    }
+    if(ch){
+      SESSION = ss; save(LSKEY.session, SESSION);
+      migratedSession = true;
+      touched = true;
+    }
+  }
+  return moved;
+}
+
+
+function $(s){ return document.querySelector(s); }
+function el(tag, cls, text){
+  var n = document.createElement(tag);
+  if(cls) n.className = cls;
+  if(text != null) n.textContent = text;
+  return n;
+}
+function scrollTable(table){
+  var box = el('div', 'table-scroll');
+  box.tabIndex = 0;
+  box.setAttribute('role','region');
+  box.setAttribute('aria-label','题目表格，可横向滚动');
+  box.appendChild(table);
+  return box;
+}
+function qid(pid, num){ return pid + '#' + num; }
+
+function bqid(pid, num){ return pid + '#b' + num; }
+
+function fxnum(num){
+  var s = String(num == null ? '' : num).replace(/^[^0-9]*/, '');
+  return s === '' ? String(num == null ? '' : num) : s;
+}
+function fxid(pid, num){ return pid + '#x' + fxnum(num); }
+function isBKey(k){ return /#b\d+$/.test(k); }
+function isXKey(k){ return /#x\d+$/.test(k); }
+function splitKey(k){
+  var a = k.split('#');
+  var t = a[1];
+  if(/^p\d+$/.test(t)) return {pid:a[0],num:parseInt(t.slice(1),10),program:true};
+  if(/^b\d+$/.test(t)) return { pid:a[0], num:parseInt(t.slice(1),10), blank:true };
+  if(/^x\d+$/.test(t)) return { pid:a[0], num:parseInt(t.slice(1),10), fix:true };
+  return { pid:a[0], num:parseInt(t,10) };
+}
+function findQ(pid, num){
+  var p = PMAP[pid]; if(!p) return null;
+  for(var i=0;i<p.questions.length;i++) if(p.questions[i].num === num) return p.questions[i];
+  return null;
+}
+function findB(pid, num){
+  var p = BPMAP[pid]; if(!p) return null;
+  for(var i=0;i<p.questions.length;i++) if(p.questions[i].num === num) return p.questions[i];
+  return null;
+}
+function findF(pid, num){
+  
+  var n = String(num).replace(/^x/, '');
+  var p0 = String(pid).split('#')[0];
+  var q = FIXQ[p0 + '#x' + n];
+  if(q) return q;
+  
+  var m = String(pid).split('#')[0];
+  if(m === String(pid)) return null;
+  return FIXQ[m + '#x' + n] || null;
+}
+function anyOf(pid, num){
+  var s = splitKey(pid + '#' + num);
+  if(s.program)return findP(s.pid,s.num);
+  if(s.blank) return findB(s.pid, s.num);
+  if(s.fix)   return findF(s.pid, s.num);
+  return findQ(s.pid, s.num);
+}
+
+function findAny(pid, num){
+  if(typeof num === 'string'){
+    if(/^p\d+$/.test(num))return findP(pid,num);
+    if(/^b\d+$/.test(num)) return findB(pid, parseInt(num.slice(1),10));
+    if(/^x\d+$/.test(num)) return findF(pid, parseInt(num.slice(1),10));
+  }
+  return findQ(pid, num);
+}
+
+function existsKey(k){
+  var o = splitKey(k);
+  if(o.program)return !!findP(o.pid,o.num);
+  if(o.blank) return !!findB(o.pid, o.num);
+  if(o.fix)   return !!findF(o.pid, o.num);
+  return !!findQ(o.pid, o.num);
+}
+
+function papLabel(pid){
+  if(PMAP[pid]&&PMAP[pid].label)return PMAP[pid].label;
+  var at=typeof pid==='string'?pid.indexOf(' · '):-1,base=at>0?pid.slice(0,at):'';
+  return PMAP[base]&&PMAP[base].label?PMAP[base].label+pid.slice(at):pid;
+}
+
+function numOf(num){ return parseInt(String(num).replace(/^[bxp]/, ''), 10); }
+function orderQuestion(o){return o.program?findP(o.pid,o.num):o.blank?findB(o.pid,numOf(o.num)):o.fix?findF(o.pid,o.num):findQ(o.pid,o.num);}
+function sheetNumber(o,i){var q=orderQuestion(o);return q&&q.group?QuestionPackSchema.questionNumber(q):String(i+1);}
+function decorateSubquestionCell(cell,o,sheet){
+  var q=orderQuestion(o);if(q&&q.group){cell.classList.add('subquestion');sheet.classList.add('subquestion-sheet');}
+  cell.title=qLabel(o);cell.setAttribute('aria-label',qLabel(o));return cell;
+}
+function qLabel(o){
+  var groupedQuestion=orderQuestion(o);
+  if(groupedQuestion&&groupedQuestion.group)return (o.blank?'填空':isMultipleQuestion(groupedQuestion)?'多选':'单选')+' 第'+QuestionPackSchema.questionNumber(groupedQuestion)+'题';
+  if(o.program)return '编程 第'+numOf(o.num)+' 题';
+  if(o.blank) return '填空 第' + numOf(o.num) + ' 题';
+  if(o.fix)   return '改错 第' + numOf(o.num) + ' 题';
+  
+  return (isMultipleQuestion(findQ(o.pid,o.num))?'多选':'单选')+' 第' + numOf(o.num) + ' 题';
+}
+function answerOf(pid, num){ var q = findAny(pid,num); return q ? q.answer : null; }
+function okOf(pid, num, pick){ return pick === answerOf(pid,num); }
+
+function perOf(pid, num){
+  if(num != null && typeof num === 'string' && /^b\d+$/.test(num)){
+    var bq = findB(pid, parseInt(num.slice(1),10));
+    return (bq && bq.per) || 2.5;
+  }
+  var q=findQ(pid,numOf(num));if(q&&Number.isFinite(q.points))return q.points;
+  var p = PMAP[pid]; return p ? p.per : 1.5;
+}
+
+function blankTotal(pid, num){
+  var bq = findB(pid, parseInt(String(num).slice(1),10));
+  return bq ? bq.per * bq.blankNums.length : 10;
+}
+
+
+
+var FULLWIDTH_RE = /[\uFF01-\uFF5E\u3000“”‘’]/g;
+function fullwidthChars(s){
+  var hit = String(s == null ? '' : s).match(FULLWIDTH_RE);
+  return hit ? Array.from(new Set(hit)) : [];
+}
+function hasFullwidth(s){ return fullwidthChars(s).length > 0; }
+function fullwidthHint(s){
+  var c = fullwidthChars(s);
+  return c.length ? ('含全角字符 ' + c.join(' ') + '（考试与编译器都要求半角）') : '';
+}
+
+function normalizeAns(s){
+  s=String(s==null?'':s);
+  var tokens=[],i=0;
+  while(i<s.length){
+    var rest=s.slice(i),m;
+    if((m=/^[ \t\r\n\v\f]+/.exec(rest))){i+=m[0].length;continue;}
+    if(rest.slice(0,2)==='//' || rest.slice(0,2)==='/*') return null;
+    if((m=/^(?:u8|u|U|L)?["']/.exec(rest))){
+      var start=i,quote=m[0].slice(-1),closed=false;
+      i+=m[0].length;
+      while(i<s.length){
+        var c=s[i++];
+        if(c==='\n'||c==='\r') return null;
+        if(c==='\\'){
+          if(i>=s.length||s[i]==='\n'||s[i]==='\r') return null;
+          i++;
+        }else if(c===quote){closed=true;break;}
+      }
+      if(!closed) return null;
+      tokens.push(s.slice(start,i));continue;
+    }
+    m=/^[_A-Za-z][_A-Za-z0-9]*/.exec(rest) ||
+      /^(?:[0-9]|\.[0-9])(?:[eEpP][+-]|[0-9A-Za-z_.])*/.exec(rest) ||
+      /^(?:%:%:|>>=|<<=|\.\.\.|->|\+\+|--|<<|>>|<=|>=|==|!=|&&|\|\||\*=|\/=|%=|\+=|-=|&=|\^=|\|=|##|<:|:>|<%|%>|%:|[{}\[\]().&*+\-~!\/%<>=^|?:;,#])/.exec(rest);
+    if(!m) return null;
+    tokens.push(m[0]);i+=m[0].length;
+  }
+  return tokens.length?JSON.stringify(tokens):null;
+}
+
+function blankContext(q,n){
+  var code=String(q.code||''),at=code.indexOf('___'+n+'___');
+  if(at<0) return 'code';
+  var state='code',prefix='';
+  for(var i=0;i<at;i++){
+    var c=code[i],next=code[i+1];
+    if(state==='line'){if(c==='\n'){state='code';prefix='';}continue;}
+    if(state==='comment'){
+      if(c==='\n')prefix='';
+      if(c==='*'&&next==='/'){state='code';i++;}
+      continue;
+    }
+    if(state==='"'||state==="'"){
+      if(c==='\\'){i++;continue;}
+      if(c===state) state='code';
+      continue;
+    }
+    if(state==='header'){if(c==='>')state='code';continue;}
+    if(c==='\n'){prefix='';continue;}
+    if(c==='/'&&next==='/'){state='line';i++;continue;}
+    if(c==='/'&&next==='*'){state='comment';prefix+=' ';i++;continue;}
+    if(c==='"'||c==="'"){state=c;prefix+=c;continue;}
+    if(c==='<'&&/^[ \t]*#[ \t]*include[ \t]*$/.test(prefix))state='header';
+    prefix+=c;
+  }
+  return state==='"'||state==="'"||state==='header'?'text':'code';
+}
+
+function blankOk(input, cands, context){
+  if(hasFullwidth(input)) return false;
+  var text=context==='text';
+  var a = text?String(input==null?'':input):normalizeAns(input);
+  if(!a) return false;
+  for(var i=0;i<(cands||[]).length;i++){
+    if((text?String(cands[i]):normalizeAns(cands[i])) === a) return true;
+  }
+  return false;
+}
+
+function gradeBlank(q, ansMap){
+  if(q.normal)return gradeObjectiveBlank(q,ansMap);
+  var out = [];
+  for(var i=0;i<q.blankNums.length;i++){
+    var n = q.blankNums[i];
+    out.push(blankOk(ansMap[n] || '', q.answers[i] || [], blankContext(q,n)));
+  }
+  return out;
+}
+
+function assertBlankSnapshots(s){
+  if(!s||!s.bsnap) return;
+  Object.keys(s.bsnap).forEach(function(k){
+    var o=splitKey(k);
+    if(!o.blank) return;
+    var q=findB(o.pid,o.num),got=s.bsnap[k],ans=s.bans&&s.bans[k];
+    if(!q || !Number.isInteger(got) || got< -1 || got>q.blankNums.length ||
+      (got!==-1 && gradeBlank(q,ans||{}).filter(Boolean).length!==got)){
+      throw new Error('旧填空判分与当前规则不一致（'+k+'），未导入任何记录；请保留原备份，并在当前版本重新作答。');
+    }
+  });
+}
+function todayKey(d){
+  d = d || new Date();
+  var m = d.getMonth()+1, day = d.getDate();
+  return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(day<10?'0':'')+day;
+}
+function fmtTime(sec){
+  sec = Math.max(0, Math.floor(sec));
+  var m = Math.floor(sec/60), s = sec%60;
+  return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+}
+function shuffle(a){
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1));
+    var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+function bumpDaily(){
+  var d = todayKey();
+  STATS.log[d] = (STATS.log[d]||0)+1;
+  save(LSKEY.stats, STATS);
+}
+
+
+var CODE_HINT = /(^\s*#)|([;{}]\s*$)|(\b(for|while|if|else|switch|case|struct|typedef|return|void|int|char|float|double|printf|scanf|main)\b)/;
+function looksCode(line){
+  if(!line.trim()) return false;
+  if(/[\u4e00-\u9fa5]/.test(line) && !/[;{}]/.test(line) && !/^\s*#/.test(line)) return false;
+  return CODE_HINT.test(line);
+}
+function isCodeHeavy(text){
+  var lines = String(text).split('\n').filter(function(l){ return l.trim(); });
+  if(!lines.length) return false;
+  var c = 0;
+  lines.forEach(function(l){ if(looksCode(l)) c++; });
+  return c / lines.length >= 0.4;
+}
+function renderStem(text){
+  text=String(text==null?'':text);
+  var box=el('div','stem'),m=/^\s*(\d+)\s*[.．、]\s*/.exec(text);
+  if(m){box.appendChild(el('span','num',m[1]+'. '));text=text.slice(m[0].length);}
+  var lines=normalizeQuotes(text).split('\n'),groups=[],current=null;
+  lines.forEach(function(line,i){
+    var code=looksCode(line);
+    
+    if(current&&current.code&&(!line.trim()||(/^\s+\S/.test(line)&&!/[\u4e00-\u9fff]/.test(line))))code=true;
+    if(!current||current.code!==code){current={code:code,text:''};groups.push(current);}
+    current.text+=line+(i<lines.length-1?'\n':'');
+  });
+  groups.forEach(function(group){
+    var part=el(group.code?'pre':'span',group.code?'stem-code':'stem-prose',group.text);
+    if(group.code){part.tabIndex=0;part.setAttribute('role','region');part.setAttribute('aria-label','题干代码，可横向滚动');}
+    box.appendChild(part);
+  });
+  return box;
+}
+function normalizeQuotes(text){
+  return String(text).split('\n').map(function(ln){
+    if(!looksCode(ln)) return ln;
+    return ln.replace(/[“”]/g, '"');
+  }).join('\n');
+}
+function renderFigures(q, cur){
+  var box = el('div','figs');
+  if(q.group){
+    var shared=el('section','shared-material');shared.setAttribute('aria-label','第'+q.group.num+'题共用题干');
+    shared.appendChild(el('div','shared-material-title','共用题干 · 第'+q.group.num+'题（共'+q.group.count+'小问）'));
+    shared.appendChild(renderStem(q.group.stem));shared.appendChild(renderFigures({num:q.group.num,imgs:q.group.imgs},cur));
+    shared.appendChild(el('p','note','本小问独立作答、计分和复习。'));box.appendChild(shared);
+  }
+  var files = (q.imgs && q.imgs.data) || [];
+  if(files.length){
+    files.forEach(function(src, i){
+      var wrap = el('div','fig');
+      var im = el('img');
+      im.src = src;
+      im.alt = '第 ' + q.num + ' 题插图';
+      im.title = '点击放大';
+      im.onclick = function(){ showImage(src, q.num); };
+      wrap.appendChild(im);
+      if(files.length > 1) wrap.appendChild(el('div','cap','图 ' + (i+1)));
+      box.appendChild(wrap);
+    });
+    return box;
+  }
+  if(!q.img) return box;
+
+  var w = el('div','warn');
+  w.appendChild(el('span', null, '⚠ 本题依赖原卷插图（链表 / 指针图），题库未能自动提取。'));
+  var btn = el('button', null, '复制试卷信息');
+  var full = '请向题包提供者索取缺失插图，试卷：' + cur.pid;
+  btn.onclick = function(){
+    var ok = false;
+    try{
+      var ta = document.createElement('textarea');
+      ta.value = full; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      ok = document.execCommand('copy');
+      ta.remove();
+    }catch(e){ ok = false; }
+    btn.textContent = ok ? '已复制 ✓' : '请手动选择下面的路径';
+    setTimeout(function(){ btn.textContent = '复制试卷信息'; }, 1800);
+  };
+  w.appendChild(btn);
+  w.appendChild(el('div', null, '请打开这份原卷，第 ' + q.num + ' 题：'));
+  w.appendChild(el('div','path', full));
+  box.appendChild(w);
+  return box;
+}
+function showImage(src, num){
+  cancelAutoNext();
+  flushTime(true);
+  var m = el('div','modal');
+  var im = el('img');
+  im.src = src; im.alt = '第 ' + num + ' 题插图';
+  m.appendChild(im);
+  m.onclick = function(){ m.remove(); updateTick(); };
+  document.body.appendChild(m);
+}
+function optText(s){ return String(s).replace(/^[A-Da-d]\s*[.．、)）]\s*/,''); }
+
+
+function newSession(title, order, kind){
+  cancelAutoNext();
+  stopTick();
+  BLANKS=null;save(LSKEY.blanks,null);
+  return { pid:title, kind:kind||'paper', order:order, all:order.slice(),
+           idx:0, picks:{}, reveal:{}, startAt:Date.now(), elapsed:0, qtime:{}, done:false };
+}
+function go2practice(){ save(LSKEY.session, SESSION); go('practice'); }
+
+function startPaper(pid){
+  var p = PMAP[pid]; if(!p) return;
+  var order = p.questions.map(function(q){ return {pid:pid, num:q.num}; });
+  SESSION = newSession(pid, order, 'paper');
+  go2practice();
+}
+
+function topicOf(pid, num){
+  var q = findQ(pid, num);
+  if(q && q.topic) return q.topic;
+  var p = PMAP[pid];
+  return p && p.year ? (p.year + ' 年') : '未分类';
+}
+function topicStats(){
+  var m = {};
+  homeChoicePapers().forEach(function(p){
+    p.questions.forEach(function(q){
+      var t = q.topic || (p.year ? (p.year + ' 年') : '未分类');
+      m[t] = (m[t]||0)+1;
+    });
+  });
+  return m;
+}
+function startTopic(topic, n){
+  var all = [];
+  homeChoicePapers().forEach(function(p){
+    p.questions.forEach(function(q){
+      var t = q.topic || (p.year ? (p.year + ' 年') : '未分类');
+      if(t === topic) all.push({pid:p.id, num:q.num});
+    });
+  });
+  if(!all.length){ alert('这个知识点下没有题目。'); return; }
+  shuffle(all);
+  if(n > 0) all = all.slice(0, n);
+  SESSION = newSession('知识点：' + topic, all, 'topic');
+  go2practice();
+}
+function startRandom(n, per){
+  var all = [];
+  homeChoicePapers().forEach(function(p){
+    p.questions.forEach(function(q){ all.push({pid:p.id, num:q.num}); });
+  });
+  shuffle(all);
+  if(n > 0) all = all.slice(0, n);
+  if(!all.length){ alert('题库是空的。'); return; }
+  SESSION = newSession('随机组卷 ' + all.length + ' 题', all, 'random');
+  go2practice();
+}
+
+
+function toOrder(o){
+  var s = splitKey(o.pid + '#' + o.num);
+  var blank = !!(o.blank || s.blank), fix = !!(o.fix || s.fix), program=!!(o.program||s.program);
+  if(program)return {pid:s.pid,num:'p'+s.num,program:true};
+  return { pid:s.pid, num:blank ? 'b' + s.num : fix ? 'x' + s.num : s.num,
+           blank:blank, fix:fix };
+}
+function existsO(o){
+  var s = toOrder(o);
+  return !!findAny(s.pid, s.num);
+}
+function startQuestion(o, title, kind){
+  var it = toOrder(o);
+  SESSION = newSession(title || '单题', [it], kind || 'single');
+  if(it.blank){
+    SESSION.bans = {};
+    BLANKS = { key:qid(it.pid, it.num), ans:{}, done:false, res:[], fb:'' };
+    save(LSKEY.blanks, BLANKS);
+  }
+  go2practice();
+}
+
+function startFixPaper(pid){
+  var list = FXBY[pid] || [];
+  if(!list.length){ alert('这套卷没有改错题。'); return; }
+  SESSION = newSession(pid + ' · 改错', list.map(function(q){
+    return { pid:pid, num:'x' + q.num, fix:true };
+  }), 'fixpaper');
+  go2practice();
+}
+function startFixRandom(n){
+  var all = [];
+  FPAPERS.filter(function(pid){return PMAP[pid]&&(PMAP[pid].libraryId||'builtin')===ACTIVE_LIBRARY;}).forEach(function(pid){
+    (FXBY[pid] || []).forEach(function(q){ all.push({ pid:pid, num:'x' + q.num, fix:true }); });
+  });
+  if(!all.length){ alert('题库里没有改错题。'); return; }
+  shuffle(all);
+  if(n > 0) all = all.slice(0, n);
+  SESSION = newSession('改错随机 ' + all.length + ' 题', all, 'fixrandom');
+  go2practice();
+}
+
+function jumpRandom(){
+  cancelAutoNext();
+  if(!SESSION || SESSION.order.length < 2) return;
+  var i = SESSION.idx;
+  while(i === SESSION.idx) i = Math.floor(Math.random()*SESSION.order.length);
+  SESSION.idx = i;
+  SESSION.jt = (SESSION.jt || 0) + 1;
+  save(LSKEY.session, SESSION);
+  renderPractice();
+}
+function startWrong(){
+  var keys = poolActive().filter(existsKey);
+  if(!keys.length){ alert('待复习池是空的。'); return; }
+  var order = shuffle(keys.map(function(k){ return toOrder(splitKey(k)); }));
+  SESSION = newSession('错题重做', order, 'wrong');
+  go2practice();
+}
+
+function startReview(mode, limit){
+  var keys;
+  if(mode === 'all') keys = poolActive();
+  else if(mode === 'mastered') keys = poolMastered();
+  else keys = poolDue();
+  keys = keys.filter(existsKey);
+  if(!keys.length){ alert('没有符合条件的题目。'); return; }
+  var total = keys.length;
+  var order = shuffle(keys.slice());
+  if(limit > 0 && order.length > limit) order = order.slice(0, limit);
+  var title = (mode === 'all' ? '全部待复习' : mode === 'mastered' ? '已掌握的题'
+                              : '今日复习') + ' ' + order.length + '/' + total + ' 题';
+  SESSION = newSession(title, order.map(function(k){ return toOrder(splitKey(k)); }), 'review');
+  go2practice();
+}
+function resumeInfo(){
+  if(!SESSION || SESSION.done) return null;
+  var answered = sessionDone();
+  return { paper: papLabel(SESSION.pid), answered: answered,
+           total: SESSION.order.length, left: SESSION.order.length - answered };
+}
+function sessionStat(source){
+  var report=source || SESSION;
+  var ok = 0, bad = 0, un = 0, score = 0, full = 0;
+  report.order.forEach(function(o){
+    var k = qid(o.pid, o.num);
+    
+    var per = o.program?programPoints(findP(o.pid,o.num)):o.blank ? blankTotal(o.pid, o.num)
+            : o.fix   ? fixScoreOf(findF(o.pid, o.num))
+            : perOf(o.pid, o.num);
+    full += per;
+    if(o.program){var pr=programVerdict(report,o);if(!pr)un++;else if(pr.good){ok++;score+=pr.score||0;}else bad++;return;}
+    if(o.blank){
+      
+      var q = findB(o.pid, parseInt(String(o.num).slice(1),10));
+      if(!q) return;
+      
+      var bgot = (report.bsnap && report.bsnap[k] !== undefined) ? report.bsnap[k]
+               : (!source && BLANKS && BLANKS.key === k && BLANKS.done ? BLANKS.res.filter(Boolean).length
+                                                           : null);
+      if(bgot === null){ un++; return; }
+      if(bgot < 0){ bad++; return; }                 
+      score += q.per * bgot;
+      if(bgot >= q.blankNums.length) ok++; else bad++;
+      return;
+    }
+    if(o.fix){
+      
+      var fr = report.fix && report.fix[fxid(o.pid, o.num)];
+      if(!fr){ un++; return; }
+      score += fr.score || 0;
+      if((fr.score || 0) >= per) ok++; else bad++;
+      return;
+    }
+    var pick = report.picks[k];
+    if(!pick){if(report.reveal&&report.reveal[k])bad++;else un++;return;}
+    if(okOf(o.pid,o.num,pick)){ ok++; score += per; } else bad++;
+  });
+  return {ok:ok, bad:bad, unanswered:un, total:report.order.length,
+          score:score, full:full};
+}
+function endSession(){
+  cancelAutoNext();
+  stopTick();
+  SESSION.done = true;
+  save(LSKEY.session, SESSION);
+}
+
+function sessionDone(){
+  if(!SESSION) return 0;
+  if(isExam() && !SESSION.done) return SESSION.order.filter(function(o){return examAnswerState(o)==='answered';}).length;
+  var n = 0;
+  SESSION.order.forEach(function(o){
+    var k = qid(o.pid, o.num);
+    if(o.program){if(programVerdict(SESSION,o))n++;}
+    else if(o.blank){
+      if(BLANKS && BLANKS.key === k && BLANKS.done) n++;
+      else if(SESSION.bsnap && SESSION.bsnap[k] !== undefined) n++;
+    }else if(o.fix){
+      if(SESSION.fix && SESSION.fix[fxid(o.pid, o.num)]) n++;
+    }else if(SESSION.picks[k]||(SESSION.reveal&&SESSION.reveal[k])) n++;
+  });
+  return n;
+}
+
+
+var VIEW = 'home', PRACTICE_ENTER = false;
+function go(v){
+  if(isExam()&&!SESSION.done&&v!=='practice')v='practice';
+  cancelAutoNext();
+  clearPickContentEntry();
+  if(v==='programming'){startProgramLibrary();return;}
+  if(typeof ProgrammingPage!=='undefined')ProgrammingPage.leave();
+  var previousView=VIEW;
+  if(previousView==='programming'&&v!=='programming')ProgrammingPage.leave();
+  if(isExam() && !SESSION.done){v='practice';if(!EXAM_TIMER) armExam();}
+  if(v==='practice'&&SESSION&&!SESSION.done&&SESSION.order.some(function(o){return !packQuestionEnabled(qid(o.pid,o.num));})){alert('此练习包含已停用题库，请先在题库管理中启用。');v='home';}
+  if(v !== 'result') RESULT_EXAM_ID=null;
+  VIEW = v;
+  if(v === 'practice' && (!SESSION || !SESSION.order.length)){ VIEW = 'home'; }
+  PRACTICE_ENTER = VIEW === 'practice' && previousView !== 'practice';
+  document.documentElement.setAttribute('data-view', VIEW);
+  if(VIEW !== 'practice') stopTick();
+  if(VIEW === 'practice') renderPractice();
+  else if(VIEW === 'result') renderResult();
+  else if(VIEW === 'review') renderReview();
+  else if(VIEW === 'stats') renderStats();
+  else if(VIEW === 'programming'){renderNav();ProgrammingPage.mount(viewEl());}
+  else if(VIEW === 'blanks'){ PICK.view = 'split'; PICK.split = 'blank'; VIEW = 'home'; renderHome(); }
+  else { VIEW = 'home'; renderHome(); }
+  window.scrollTo(0,0);
+}
+function renderNav(){
+  var nav = $('#nav'); nav.innerHTML = '';
+  var activeExam=isExam()&&!SESSION.done;document.documentElement.setAttribute('data-exam-active',String(activeExam));$('#btnSet').disabled=activeExam;$('#btnHelp').disabled=activeExam;
+  function add(label, fn, primary){
+    var b = el('button', primary ? 'primary' : null, label);
+    b.onclick = fn; nav.appendChild(b); return b;
+  }
+  if(isExam() && !SESSION.done){
+    nav.appendChild(el('strong','exam-header-status',isTimedExam()?'模拟考试进行中':'整卷练习进行中 · 交卷后批改'));
+    nav.appendChild(el('span','note','交卷后查看答案'));
+    return;
+  }
+  add('选卷 / 组卷', function(){ go('home'); }, VIEW === 'home');
+  var live = SESSION && !SESSION.done;
+  
+  var bC = el('button','cont' + (VIEW === 'practice' ? ' on' : '') +
+    (live && VIEW !== 'practice' ? ' dot' : ''), '继续练习');
+  bC.title = live
+    ? ('继续：' + papLabel(SESSION.pid) + '（已完成 ' + sessionDone() +
+       ' / ' + SESSION.order.length + ' 题）')
+    : '当前没有未做完的练习';
+  bC.onclick = function(){ go('practice'); };
+  bC.disabled = !live;
+  nav.appendChild(bC);
+
+  var dn = dueCount();
+  var bR = add('复习', function(){ go('review'); }, VIEW === 'review');
+  if(dn){
+    var bd = el('span','nbadge', String(dn));
+    bR.appendChild(bd);
+  }
+  add('统计', function(){ go('stats'); }, VIEW === 'stats' || (VIEW === 'result' && isExam(resultSession())));
+}
+
+
+
+var PICK = { view:'full', split:'choice', feedback:'deferred', topic:'', topicN:0, randN:10 };
+var EXAM_MINUTES = 60;
+
+
+function fullOrder(pid){
+  var out = [], p = PMAP[pid];
+  if(p&&p.questionOrder)return p.questionOrder.map(function(o){return Object.assign({pid:pid},o);});
+  if(p) p.questions.forEach(function(q){ out.push({pid:pid, num:q.num}); });
+  var bp = BPMAP[pid];
+  if(bp) bp.questions.forEach(function(q){ out.push({pid:pid, num:'b' + q.num, blank:true}); });
+  var fx = FXBY[pid];
+  if(fx) fx.forEach(function(q){ out.push({pid:pid, num:'x' + q.num, fix:true}); });
+  return out;
+}
+
+function fixTotal(pid){
+  var fx = FXBY[pid];
+  if(!fx) return 0;
+  return fx.reduce(function(a,q){ return a + fixScoreOf(q); }, 0);
+}
+
+function fixPer(fq){
+  if(!fq) return 0;
+  if(fq.fixPer) return fq.fixPer;
+  return fq.faults ? fq.faults.length * 10 : 0;   
+}
+function fixScoreOf(fq){
+  if(!fq) return 0;
+  if(fq.fixScore) return fq.fixScore;
+  return fq.faults ? fq.faults.length * fixPer(fq) : 0;
+}
+function paperTotal(pid){
+  var p = PMAP[pid], bp = BPMAP[pid];
+  return (p ? p.total : 0) + (bp ? bp.total : 0) + fixTotal(pid);
+}
+function paperParts(pid){
+  var s = [];
+  var p = PMAP[pid], bp = BPMAP[pid], fx = FXBY[pid];
+  if(p){
+    var multi=p.questions.filter(isMultipleQuestion).length,single=p.count-multi;
+    if(single)s.push(single+' 单选');if(multi)s.push(multi+' 多选');
+  }
+  if(bp) s.push(bp.count + ' 填空');
+  if(fx && fx.length) s.push(fx.length + ' 改错');
+  return s.join(' + ');
+}
+function startFullPaper(pid){
+  if(PICK.feedback!=='immediate'){startDeferredPaper(pid);return;}
+  var order = practiceOrder(pid);
+  if(!order.length){ alert('这套卷没有题目。'); return; }
+  SESSION = newSession(pid + ' · 整卷', order, 'fullpaper');
+  go2practice();
+}
+
+var EXAM_TIMER = null, EXAM_GRADING = null;
+function isExam(s){ return !!((s || SESSION) && (s || SESSION).kind === 'exam'); }
+function isTimedExam(s){s=s||SESSION;return isExam(s)&&!!s.exam&&s.exam.untimed!==true;}
+function startDeferredPaper(pid){
+  if(isExam()&&!SESSION.done){alert('请先交卷或放弃当前试卷。');return;}
+  if(SESSION&&!SESSION.done&&!confirm('开始整卷练习会替换当前未完成的练习，已产生的记录仍保留。继续吗？'))return;
+  var order=practiceOrder(pid);if(!order.length)return;
+  SESSION=newSession(pid+' · 整卷',order,'exam');BLANKS=null;SESSION.bans={};
+  SESSION.exam={paper:pid,untimed:true,minutes:0,deadline:null,codes:{},flags:{}};go2practice();
+}
+function validExam(s){
+  function map(v){return !!v && typeof v==='object' && !Array.isArray(v);}
+  if(!s || !s.exam || !Number.isFinite(s.startAt) ||
+    (s.exam.untimed===true ? s.exam.minutes!==0||s.exam.deadline!==null : !Number.isInteger(s.exam.minutes)||s.exam.minutes<1||s.exam.minutes>180||s.exam.deadline!==s.startAt+s.exam.minutes*60000) ||
+    !map(s.picks) || !map(s.bans) || !map(s.exam.codes) || !map(s.exam.flags) || !Array.isArray(s.order) ||
+    !Number.isInteger(s.idx) || s.idx<0 || s.idx>=s.order.length || typeof s.done!=='boolean') return false;
+  var expected=s.exam.untimed===true?practiceOrder(s.exam.paper):fullOrder(s.exam.paper);
+  return expected.length>0 && expected.length===s.order.length && expected.every(function(o,i){
+    var item=s.order[i];return item && item.pid===o.pid && item.num===o.num && !!item.blank===!!o.blank && !!item.fix===!!o.fix && !!item.program===!!o.program && (o.blank||o.fix||o.program||validChoicePick(findQ(o.pid,o.num),s.picks[qid(o.pid,o.num)]));
+  }) && Object.keys(s.exam.codes).every(function(k){return typeof s.exam.codes[k]==='string';}) &&
+    Object.keys(s.bans).every(function(k){return map(s.bans[k]) && Object.keys(s.bans[k]).every(function(n){return typeof s.bans[k][n]==='string';});});
+}
+function examRemaining(){ return isTimedExam() ? Math.max(0,SESSION.exam.deadline-Date.now()) : Infinity; }
+function startExam(pid, minutes){
+  minutes=Number(minutes);
+  if(!Number.isInteger(minutes) || minutes<1 || minutes>180){alert('请输入1–180之间的整数分钟。');return;}
+  if(isExam() && !SESSION.done){alert('本场考试尚未交卷，请先完成本场考试。');return;}
+  if(SESSION && !SESSION.done && !confirm('开始考试会替换当前未完成的练习，已记的复习记录仍保留。继续吗？')) return;
+  var order=fullOrder(pid); if(!order.length) return;
+  SESSION=newSession(pid+' · 模拟考试',order,'exam'); BLANKS=null;
+  SESSION.bans={};
+  SESSION.exam={paper:pid,minutes:minutes,deadline:SESSION.startAt+minutes*60000,codes:{},flags:{}};
+  armExam(); go2practice();
+}
+function abandonExam(){
+  if(!isExam()||SESSION.done||EXAM_GRADING===SESSION)return;
+  if(!confirm('放弃本场试卷？本场答案将删除，不生成成绩，也不计入复习和统计。'))return;
+  try{var writes={};writes[LSKEY.session]='null';writes[LSKEY.blanks]='null';commitPackStorage(writes);}catch(e){alert('未能放弃考试，原答卷保留：'+e.message);return;}
+  cancelAutoNext();stopTick();if(EXAM_TIMER)clearInterval(EXAM_TIMER);EXAM_TIMER=null;
+  if(window.FixEngine&&FixEngine.resetUserData)FixEngine.resetUserData();SESSION=null;BLANKS=null;go('home');
+}
+function armExam(){
+  if(EXAM_TIMER) clearInterval(EXAM_TIMER);
+  EXAM_TIMER=null;if(!isTimedExam())return;
+  EXAM_TIMER=setInterval(paintExamClock,250);
+}
+function paintExamClock(){
+  if(!isTimedExam() || SESSION.done){if(EXAM_TIMER) clearInterval(EXAM_TIMER);EXAM_TIMER=null;return;}
+  if(examRemaining()<=0){finishExam('timeout');return;}
+  var node=document.getElementById('exam-countdown');
+  if(node){setPracticeTimer(node,'剩余时间',fmtTime(Math.ceil(examRemaining()/1000)));
+    node.classList.toggle('urgent',examRemaining()<=300000);}
+}
+function examCanEdit(){
+  if(!isExam() || SESSION.done || EXAM_GRADING===SESSION) return false;
+  if(examRemaining()<=0){finishExam('timeout');return false;}
+  return true;
+}
+function examCode(o){
+  var key=fxid(o.pid,o.num), q=findF(o.pid,o.num), codes=SESSION.exam.codes;
+  return Object.prototype.hasOwnProperty.call(codes,key) ? codes[key] : q.code;
+}
+function examBlank(o){return findB(o.pid,parseInt(String(o.num).replace(/^b/,''),10));}
+function saveExamCode(o, code){
+  if(!examCanEdit()) return false;
+  SESSION.exam.codes[fxid(o.pid,o.num)]=code;
+  save(LSKEY.session,SESSION); refreshProgress(); return true;
+}
+function examAnswerState(o){
+  var key=qid(o.pid,o.num);
+  if(o.program)return typeof SESSION.exam.codes[key]==='string'&&SESSION.exam.codes[key]!==findP(o.pid,o.num).starter?'answered':'empty';
+  if(o.blank){
+    var q=examBlank(o), ans=(SESSION.bans || {})[key] || {};
+    var n=q.blankNums.filter(function(no){return String(ans[no] || '').trim();}).length;
+    return n===q.blankNums.length ? 'answered' : n ? 'partial' : 'empty';
+  }
+  if(o.fix) return examCode(o)!==findF(o.pid,o.num).code ? 'answered' : 'empty';
+  return SESSION.picks[key] ? 'answered' : 'empty';
+}
+function renderExamSheet(sheet){
+  sheet.classList.add('exam-sheet');
+  SESSION.order.forEach(function(o,i){
+    var state=examAnswerState(o), key=qid(o.pid,o.num), flagged=SESSION.exam.flags[key];
+    var c=el('button','cell'+(state==='answered' ? ' answered' : state==='partial' ? ' part' : '')+
+      (i===SESSION.idx ? ' cur' : ''),sheetNumber(o,i));
+    decorateSubquestionCell(c,o,sheet);
+    c.title=qLabel(o)+' · '+(state==='answered' ? '已作答' : state==='partial' ? '部分填写' : '未答')+(flagged ? ' · 待检查' : '');
+    c.setAttribute('aria-label',c.title);
+    if(flagged) c.appendChild(el('span','star','★'));
+    c.onclick=function(){if(!examCanEdit()) return;SESSION.idx=i;save(LSKEY.session,SESSION);renderPractice();};
+    sheet.appendChild(c);
+  });
+  return sheet;
+}
+function renderExamLegend(){
+  var legend=el('div','exam-sheet-legend');legend.setAttribute('role','list');legend.setAttribute('aria-label','答题卡状态说明');
+  [['answered','已作答'],['partial','部分填写'],['empty','未答'],['current','当前题']].forEach(function(item){
+    var entry=el('span','exam-legend-item'),swatch=el('span','exam-legend-swatch exam-legend-'+item[0]);swatch.setAttribute('aria-hidden','true');entry.setAttribute('role','listitem');entry.appendChild(swatch);entry.appendChild(el('span',null,item[1]));legend.appendChild(entry);
+  });
+  var flag=el('span','exam-legend-item','★ 待检查');flag.setAttribute('role','listitem');legend.appendChild(flag);return legend;
+}
+function gradeExam(st){
+  var blanks={}, fixes={};
+  st.order.forEach(function(o){
+    var key=qid(o.pid,o.num);
+    if(o.blank){
+      var q=examBlank(o), ans=(st.bans || {})[key] || {};
+      if(!q.blankNums.some(function(n){return String(ans[n] || '').trim();})) return;
+      blanks[key]=gradeBlank(q,ans).filter(Boolean).length;
+    }else if(o.fix){
+      var fq=findF(o.pid,o.num), code=st.exam.codes[fxid(o.pid,o.num)];
+      if(code===undefined || code===fq.code) return;
+      var result=window.JudgeEngine.precheck(fq,code);
+      var fixed=result.L4.filter(function(f){return f.ok;}).length;
+      fixes[fxid(o.pid,o.num)]={fixed:fixed,total:fq.errorCount,score:fixed*fixPer(fq),
+        examResult:result,at:Date.now()};
+    }
+  });
+  return {blanks:blanks,fixes:fixes};
+}
+async function finishExam(reason){
+  if(!isExam() || SESSION.done || EXAM_GRADING===SESSION) return false;
+  var st=SESSION, timedOut=isTimedExam(st)&&Date.now()>=st.exam.deadline;
+  stopTick();
+  if(st.order.some(function(o){return o.program;})){
+    EXAM_GRADING=st;var view=viewEl(),notice=el('div','warn exam-grading-status','正在统一批改编程题，请稍候…');notice.setAttribute('role','status');view.parentNode.insertBefore(notice,view);view.inert=true;
+    try{var programs=await gradeDeferredPrograms(st);if(SESSION!==st)return false;st.programs=programs;}
+    catch(e){alert('编程题批改暂未完成，答卷已保留，请稍后重新交卷：'+e.message);return false;}
+    finally{EXAM_GRADING=null;view.inert=false;notice.remove();if(SESSION===st&&!st.done)startTick(document.querySelector('.practice-timer'),null);}
+  }
+  var grades=gradeExam(st);
+  st.bsnap=grades.blanks; st.fix=grades.fixes;
+  st.exam.reason=timedOut ? 'timeout' : reason;
+  st.exam.finishedAt=isTimedExam(st)?Math.min(Date.now(),st.exam.deadline):Date.now();
+  if(isTimedExam(st))st.elapsed=Math.max(0,st.exam.finishedAt-st.startAt)/1000;
+  st.done=true;
+  Array.prototype.forEach.call(document.querySelectorAll('.modal'),function(m){m.remove();});
+  if(EXAM_TIMER) clearInterval(EXAM_TIMER); EXAM_TIMER=null;
+  
+  st.order.forEach(function(o){
+    var key=qid(o.pid,o.num), answered=examAnswerState(o)!=='empty', good=false;
+    if(o.program){var pr=programVerdict(st,o);good=!!pr&&pr.good;}
+    else if(o.blank){var bq=examBlank(o);good=grades.blanks[key]===bq.blankNums.length;}
+    else if(o.fix){var fr=grades.fixes[fxid(o.pid,o.num)];good=!!fr && fr.fixed>=fr.total;}
+    else good=okOf(o.pid,o.num,st.picks[key]);
+    scheduleAfter(o.pid,o.num,good); if(answered) bumpDaily();
+  });
+  BLANKS=null;
+  archiveExam(st); RESULT_EXAM_ID=null;
+  save(LSKEY.session,st); go('result'); return true;
+}
+function reviewQuestion(i){
+  if(!isExam()) SESSION.done=false;
+  SESSION.idx=i; save(LSKEY.session,SESSION); go('practice');
+}
+function renderExamPractice(){
+  var o=SESSION.order[SESSION.idx], key=qid(o.pid,o.num), locked=SESSION.done;
+  var left=el('div'), side=null, extra=el('span'), sub='';
+  if(o.program){
+    var pq=findP(o.pid,o.num);left=renderDeferredProgram(o,pq);sub='本题 '+fmtScore(programPoints(pq))+' 分 · 交卷后核对用例';
+  }else if(o.fix){
+    var fq=findF(o.pid,o.num), parts=FixEngine.renderExam(o,fq);
+    left=parts.main; side=parts.side; sub='满分 '+fmtScore(fixScoreOf(fq))+' 分';
+  }else if(o.blank){
+    var bq=examBlank(o), ans=(SESSION.bans || {})[key] || {};
+    sub='满分 '+fmtScore(bq.total)+' 分（每空 '+fmtScore(bq.per)+' 分）';
+    left.appendChild(renderFigures(bq,o)); if(bq.stem) left.appendChild(renderStem(bq.stem));
+    var box=el('div',bq.normal?'codebox objective-blanks':'codebox');
+    if(!bq.normal){box.tabIndex=0;box.setAttribute('role','region');box.setAttribute('aria-label','程序填空代码，可横向滚动');}
+    String(bq.code).split('\n').forEach(function(line){
+      var row=el('span','ln'), re=/___(\d+)___/g, last=0, m;
+      while((m=re.exec(line))!==null){
+        row.appendChild(document.createTextNode(line.slice(last,m.index)));
+        (function(no){
+          var input=el('input','blk'); input.type='text';input.value=ans[no] || '';input.disabled=locked;
+          input.placeholder=String(no);input.setAttribute('aria-label','第'+no+'空');
+          input.oninput=function(){
+            if(!examCanEdit()) return;
+            SESSION.bans[key]=SESSION.bans[key] || {};SESSION.bans[key][no]=input.value;
+            save(LSKEY.session,SESSION);refreshProgress();
+          };
+          row.appendChild(input);
+        })(Number(m[1]));last=m.index+m[0].length;
+      }
+      row.appendChild(document.createTextNode(line.slice(last) || (last ? '' : ' ')));box.appendChild(row);
+    });
+    left.appendChild(box);
+    if(bq.normal)blankTips(left,bq);
+    if(locked){
+      var got=SESSION.bsnap[key];left.appendChild(el('h3',null,got===undefined ? '未作答 · 0 分' : '答对 '+got+'/'+bq.blankNums.length+' 空'));
+      bq.blankNums.forEach(function(n,j){left.appendChild(el('div','note','('+n+') 参考答案：'+(bq.answers[j] || []).join(' / ')));});
+      left.appendChild(renderBlankAnalysis(bq));
+    }
+  }else if(isMultipleQuestion(findQ(o.pid,o.num))){
+    var mq=findQ(o.pid,o.num);sub='本题 '+fmtScore(perOf(o.pid,o.num))+' 分 · 多选全对得分';
+    left=renderMultipleQuestion(o,mq,true);
+    if(!locked){var clearMulti=btn('清除本题作答',function(){if(!examCanEdit())return;delete SESSION.picks[key];save(LSKEY.session,SESSION);renderPractice();});clearMulti.disabled=!SESSION.picks[key];extra.appendChild(clearMulti);}
+  }else{
+    var q=findQ(o.pid,o.num);sub='本题 '+fmtScore(perOf(o.pid,o.num))+' 分';
+    left.appendChild(renderFigures(q,o));left.appendChild(renderStem(q.stem));
+    var opts=el('div','opts');
+    QuestionPackSchema.optionKeys(q).forEach(function(letter){
+      var picked=SESSION.picks[key]===letter;
+      var button=el('button','opt'+(picked ? ' exam-picked' : ''));
+      button.setAttribute('aria-pressed',String(picked));button.disabled=locked;
+      button.appendChild(el('span','lt',letter+'.'));button.appendChild(el('span','tx',optText(q.options[letter])));
+      button.onclick=function(){choose(letter);};opts.appendChild(button);
+    });left.appendChild(opts);
+    if(locked){
+      left.appendChild(el('div','info','你的答案：'+(SESSION.picks[key] || '未答')+'　参考答案：'+q.answer));
+      left.appendChild(renderChoiceAnalysis(q));
+    }
+    else{
+      var clear=el('button',null,'清除本题作答');clear.disabled=!SESSION.picks[key];
+      clear.onclick=function(){if(!examCanEdit())return;delete SESSION.picks[key];save(LSKEY.session,SESSION);renderPractice();};
+      extra.appendChild(clear);
+    }
+  }
+  if(!locked){
+    var flag=el('button',null,SESSION.exam.flags[key] ? '★ 已标记待检查' : '☆ 标记待检查');
+    flag.onclick=function(){if(!examCanEdit())return;SESSION.exam.flags[key]=!SESSION.exam.flags[key];save(LSKEY.session,SESSION);renderPractice();};
+    extra.appendChild(flag);
+  }else left.appendChild(el('div','note','已交卷，本场答案与成绩已锁定。'));
+  return renderPracticeShell(left,side,{sub:sub,footExtra:extra});
+}
+
+function paperPool(pid){
+  var c = 0, b = 0, f = 0, m = 0;
+  var p = PMAP[pid];
+  if(p) p.questions.forEach(function(q){ var r = REC[qid(pid,q.num)]; if(r && !r.master){if(isMultipleQuestion(q))m++;else c++;} });
+  var bp = BPMAP[pid];
+  if(bp) bp.questions.forEach(function(q){ var r = REC[bqid(pid,q.num)]; if(r && !r.master) b++; });
+  var fx = FXBY[pid];
+  if(fx) fx.forEach(function(q){ var r = REC[fxid(pid,q.num)]; if(r && !r.master) f++; });
+  var pc=programQuestions(pid).filter(function(q){var r=REC[qid(pid,'p'+q.num)];return r&&!r.master;}).length;
+  var result={c:c,b:b,f:f,n:c+b+f+m+pc};if(pc)result.p=pc;if(m)result.m=m;return result;
+}
+
+
+function refreshProgress(){
+  var p = progressPct();
+  var bar = document.querySelector('#view .bar i');
+  if(bar) bar.style.width = p + '%';
+  var nodes = document.querySelectorAll('#view .progress-label');
+  for(var i = 0; i < nodes.length; i++){
+    if(/^进度 /.test(nodes[i].textContent)) nodes[i].textContent = '进度 ' + p + '%';
+  }
+  var count=document.querySelector('#view .progress-count');
+  if(count && SESSION)count.textContent='已作答 '+sessionDone()+' / '+SESSION.order.length+' 题';
+  var progressBar=document.querySelector('#view .practice-progress .bar');
+  if(progressBar)progressBar.setAttribute('aria-valuenow',String(p));
+  if(VIEW === 'practice' && SESSION){
+    var sheet = document.querySelector('#view .sheet');
+    if(sheet) renderSheet(emptyNode(sheet));
+    renderNav();
+  }
+  return p;
+}
+
+====CQ-VISUAL-CODE====
+
+function renderHome(){
+  if(!PAPERS.length||!libraryList().length){
+    renderNav();var emptyHost=renderLibraryShell(emptyNode(viewEl())),welcome=el('section','card framework-welcome');
+    welcome.appendChild(el('span','welcome-kicker','本机离线 · 无需注册'));welcome.appendChild(el('h2',null,PACKS.length?'题库均已停用':'尚未添加题库'));
+    welcome.appendChild(el('p',null,PACKS.length?'在题库管理中启用一个题库，即可继续练习。记录仍保存在本机。':'导入一份 JSON 题包，就可以开始练习。题库、答案和学习记录都保存在当前浏览器。'));
+    var welcomeActions=el('div','toolbar');welcomeActions.appendChild(btn('导入 / 管理题包',openQuestionPacks,true));welcomeActions.appendChild(btn('查看使用说明',function(){openHelp('start');}));welcome.appendChild(welcomeActions);
+    if(!PACKS.length){var steps=el('ol','welcome-steps');[['导入题包','选择 JSON 文件，检查后确认导入。'],['选择练习','整卷、题型专练或限时模拟考试。'],['定期备份','题库、学习记录和代码草稿分别导出。']].forEach(function(pair){var step=el('li');step.appendChild(el('strong',null,pair[0]));step.appendChild(el('span',null,pair[1]));steps.appendChild(step);});welcome.appendChild(steps);}
+    emptyHost.appendChild(welcome);return;
+  }
+  if(homePapers().length&&homePapers().every(function(p){return !practiceOrder(p.id).length;})){renderNav();renderLibraryShell(emptyNode(viewEl()));return;}
+  normalizeLibraryPick();
+  renderNav();
+  if(PREF.uiStyle === 'nasa') return renderNasaHome();
+  var v = renderLibraryShell(emptyNode(viewEl()));
+  var grid = el('div','grid');
+  var left = el('div','card'), right = el('div','card');
+
+  left.appendChild(el('h2', null, '开始练习'));
+  var meta = el('div','meta');
+  meta.appendChild(el('span', null, libraryTitle()+' · '+librarySummary()));
+  meta.appendChild(el('span', null, '复习池 ' + poolActive().length + ' 题 · 今日到期 ' + dueCount()));
+  left.appendChild(meta);
+
+  if(!LS_OK){
+    var w = el('div','warn');
+    w.appendChild(el('span', null, '⚠ 浏览器禁用了本地存储（localStorage），进度与复习记录无法保存。' +
+      '请改用 Chrome / Edge 打开，或换一个目录重试。'));
+    left.appendChild(w);
+  }
+
+  var rp = resumeInfo();
+  if(rp){
+    var cp = el('div','warn');
+    cp.appendChild(el('span', null, '上次没做完：' + rp.paper + '（已完成 ' + rp.answered +
+      ' / ' + rp.total + '，剩 ' + rp.left + ' 题）'));
+    var cb = el('button','primary','继续'); cb.onclick = function(){ go('practice'); };
+    cp.appendChild(cb);
+    var rb = el('button', null, '放弃这组');
+    rb.onclick = function(){
+      if(confirm('放弃这一组的进度？已产生的记录仍保留在复习池里。')){
+        SESSION = null; save(LSKEY.session, null); go('home');
+      }
+    };
+    cp.appendChild(rb);
+    left.appendChild(cp);
+  }
+
+  
+  var modeButtons=[],typeButtons=[];
+  var seg0 = el('div','toolbar pick-modes');
+  [['full','整卷（各题型一起做）'], ['split','分题型专练'], ['exam','模拟考试']].forEach(function(x){
+    var b = el('button','seg' + (PICK.view === x[0] ? ' on' : ''), x[1]);
+    b.setAttribute('aria-pressed',String(PICK.view===x[0]));
+    b.onclick = function(){ if(PICK.view===x[0])return;PICK.view=x[0];refreshOptions(true); };
+    modeButtons.push({value:x[0],node:b});
+    seg0.appendChild(b);
+  });
+  left.appendChild(seg0);
+
+  
+  var seg1 = el('div','toolbar pick-types');
+  var subs = [['choice','只做单选'], ['multiple','只做多选'], ['blank','只做填空'], ['fix','只做改错'], ['program','只做编程'], ['random','单选随机抽题']].filter(function(x){return librarySupports(x[0]);});
+  if(!libraryHasBlank()) subs = subs.filter(function(x){ return x[0] !== 'blank'; });
+  if(!libraryHasFix())   subs = subs.filter(function(x){ return x[0] !== 'fix'; });
+  subs.forEach(function(x){
+    var b = el('button','seg' + (PICK.split === x[0] ? ' on' : ''), x[1]);
+    b.setAttribute('aria-pressed',String(PICK.split===x[0]));
+    b.onclick = function(){ if(PICK.split===x[0])return;PICK.split=x[0];refreshOptions(true); };
+    typeButtons.push({value:x[0],node:b});
+    seg1.appendChild(b);
+  });
+  left.appendChild(seg1);
+
+  var options=el('div','pick-content');left.appendChild(options);
+  function refreshOptions(animate){
+    clearPickContentEntry();
+    modeButtons.forEach(function(b){var active=PICK.view===b.value;b.node.className='seg'+(active?' on':'');b.node.setAttribute('aria-pressed',String(active));});
+    seg1.style.display=PICK.view==='split'?'':'none';
+    typeButtons.forEach(function(b){var active=PICK.split===b.value;b.node.className='seg'+(active?' on':'');b.node.setAttribute('aria-pressed',String(active));});
+    var left=emptyNode(options);
+    if(PICK.view==='full')left.appendChild(fullPaperFeedbackControl());
+    if(PICK.view === 'full' || PICK.view === 'exam'){
+      var examPick = PICK.view === 'exam';
+      if(examPick){
+        var setup=el('div','exam-setup'), label=el('label',null,'考试时长');
+        var duration=el('input'); duration.type='number'; duration.min='1'; duration.max='180';
+        duration.step='1'; duration.value=String(EXAM_MINUTES); duration.setAttribute('aria-label','考试时长（分钟）');
+        duration.oninput=function(){EXAM_MINUTES=Number(duration.value);};
+        label.appendChild(duration); label.appendChild(el('span',null,'分钟（1–180）'));
+        setup.appendChild(label); left.appendChild(setup);
+        left.appendChild(el('div','info','按当前试卷所含题型与标注分值计分，不含编程题。交卷后统一判分；倒计时在后台或关闭页面后继续，到时收卷。'));
+      }
+      left.appendChild(el('div','tip',
+        examPick ? '改错按现有逐处核对规则计分；可自行编译运行，考试中不显示对错或参考改法。'
+        : '按考试顺序做完一整套：先选择题，再填空、改错和编程；按题目标注分值计分，交卷后看总分。'));
+      var tb = el('table');
+      var thead = el('thead'), htr = el('tr');
+      ['试卷','构成','满分','复习池','操作'].forEach(function(h){ htr.appendChild(el('th',null,h)); });
+      thead.appendChild(htr); tb.appendChild(thead);
+      var tbody = el('tbody');
+      homePapers().filter(function(p){return !examPick||fullOrder(p.id).length;}).forEach(function(pap){
+        var pool = paperPool(pap.id);
+        var tr = el('tr','clickable');
+        tr.dataset.classicPaper=pap.id;
+        tr.appendChild(el('td', null, papLabel(pap.id)));
+        tr.appendChild(el('td', null, examPick?paperParts(pap.id):practiceParts(pap.id)));
+        tr.appendChild(el('td', null, (examPick?paperTotal(pap.id):practiceTotal(pap.id)).toFixed(1) + ' 分'));
+        var pc = el('td');
+        if(pool.n){
+          pc.textContent = [pool.c?pool.c+' 单选':'',pool.m?pool.m+' 多选':'',pool.b?pool.b+' 填空':'',pool.f?pool.f+' 改错':'',pool.p?pool.p+' 编程':''].filter(Boolean).join(' · ');
+        }else pc.textContent = '—';
+        tr.appendChild(pc);
+        var td = el('td');
+        var b = el('button','primary',examPick ? '开始考试' : '开始整卷');
+        function begin(){ if(examPick) startExam(pap.id,EXAM_MINUTES); else startFullPaper(pap.id); }
+        b.onclick = function(ev){ ev.stopPropagation(); begin(); };
+        td.appendChild(b);
+        tr.appendChild(td);
+        tr.onclick = begin;
+        tbody.appendChild(tr);
+      });
+      tb.appendChild(tbody);
+      left.appendChild(scrollTable(tb));
+    }else{
+      if(PICK.split === 'choice'||PICK.split === 'multiple'){
+        if(PICK.split==='choice')left.appendChild(renderTopicPicker());
+        left.appendChild(el('div','tip',PICK.split==='multiple'?'多选题：勾选后提交，全选且无错选得分。':'只做单选题：点击选项即提交，分值以当前试卷为准。'));
+        var tb2 = el('table');
+        var th2 = el('thead'), hr2 = el('tr');
+        ['试卷','题量','每题','满分','复习池','操作'].forEach(function(h){ hr2.appendChild(el('th',null,h)); });
+        th2.appendChild(hr2); tb2.appendChild(th2);
+        var tbody2 = el('tbody');
+        homeChoicePapers(PICK.split).forEach(function(pap){
+          var wn = pap.questions.filter(function(q){
+            var r = REC[qid(pap.id,q.num)]; return r && !r.master;
+          }).length;
+          var tr = el('tr','clickable');
+          tr.dataset.classicPaper=pap.id;
+        tr.appendChild(el('td', null, papLabel(pap.id)));
+          tr.appendChild(el('td', null, pap.count + ' 题'));
+          tr.appendChild(el('td', null, (pap.questions.some(function(q){return q.points!==undefined&&q.points!==pap.per;})?'按题计分':pap.per + ' 分')));
+          tr.appendChild(el('td', null, pap.total + ' 分'));
+          tr.appendChild(el('td', null, wn ? wn + ' 题' : '—'));
+          var td = el('td');
+          var b = el('button','primary','开始');
+          b.onclick = function(ev){ ev.stopPropagation(); startChoiceType(pap.id,PICK.split); };
+          td.appendChild(b);
+          tr.appendChild(td);
+          tr.onclick = function(){ startChoiceType(pap.id,PICK.split); };
+          tbody2.appendChild(tr);
+        });
+        tb2.appendChild(tbody2);
+        left.appendChild(scrollTable(tb2));
+      }
+      else if(PICK.split==='program'){renderProgramPicker(left,animate);}
+      else if(PICK.split === 'fix' && libraryHasFix()){
+        left.appendChild(el('div','tip','先编译运行，再提交。修改要求见帮助。'));
+        var tbF = el('table');
+        var thF = el('thead'), hrF = el('tr');
+        ['试卷','题量','错处','满分','复习池','操作'].forEach(function(h){ hrF.appendChild(el('th',null,h)); });
+        thF.appendChild(hrF); tbF.appendChild(thF);
+        var tbodyF = el('tbody');
+        FPAPERS.filter(function(pid){return PMAP[pid]&&(PMAP[pid].libraryId||'builtin')===ACTIVE_LIBRARY;}).forEach(function(pid){
+          var list = FXBY[pid] || [];
+          if(!list.length) return;
+          var faults = list.reduce(function(a,q){ return a + q.faults.length; }, 0);
+          var wn = list.filter(function(q){
+            var r = REC[fxid(pid,q.num)]; return r && !r.master;
+          }).length;
+          var tr = el('tr','clickable');
+          tr.dataset.classicPaper=pid;
+          tr.appendChild(el('td', null, papLabel(pid)));
+          tr.appendChild(el('td', null, list.length + ' 题'));
+          tr.appendChild(el('td', null, faults + ' 处'));
+          tr.appendChild(el('td', null, fmtScore(fixTotal(pid)) + ' 分'));
+          tr.appendChild(el('td', null, wn ? wn + ' 题' : '—'));
+          var td = el('td');
+          var b = el('button','primary','开始');
+          b.onclick = function(ev){ ev.stopPropagation(); startFixPaper(pid); };
+          td.appendChild(b);
+          tr.appendChild(td);
+          tr.onclick = function(){ startFixPaper(pid); };
+          tbodyF.appendChild(tr);
+        });
+        tbF.appendChild(tbodyF);
+        left.appendChild(scrollTable(tbF));
+        var bfF = el('div','footbar');
+        var bf1 = el('button', null, '随机 3 题');
+        bf1.onclick = function(){ startFixRandom(3); };
+        bfF.appendChild(bf1);
+        var bf2 = el('button', null, '全部 ' + homeFixCount() + ' 题');
+        bf2.onclick = function(){ startFixRandom(0); };
+        bfF.appendChild(bf2);
+        left.appendChild(bfF);
+      }
+      else if(PICK.split === 'blank' && libraryHasBlank()){
+        left.appendChild(el('div','tip',
+          '填空题按对应规则填写：程序填空题保留C语言词元和字面量要求，普通填空按文本或数值比较。'));
+        var tb3 = el('table');
+        var th3 = el('thead'), hr3 = el('tr');
+        ['试卷','题量','空位','满分','复习池','操作'].forEach(function(h){ hr3.appendChild(el('th',null,h)); });
+        th3.appendChild(hr3); tb3.appendChild(th3);
+        var tbody3 = el('tbody');
+        homeBlankPapers().forEach(function(pap){
+          var wn = pap.questions.filter(function(q){
+            var r = REC[bqid(pap.id, q.num)]; return r && !r.master;
+          }).length;
+          var tr = el('tr','clickable');
+          tr.dataset.classicPaper=pap.id;
+        tr.appendChild(el('td', null, papLabel(pap.id)));
+          tr.appendChild(el('td', null, pap.count + ' 题'));
+          tr.appendChild(el('td', null, (pap.blanks||0) + ' 空'));
+          tr.appendChild(el('td', null, (pap.total||0).toFixed(1) + ' 分'));
+          tr.appendChild(el('td', null, wn ? wn + ' 题' : '—'));
+          var td = el('td');
+          var b = el('button','primary','开始');
+          b.onclick = function(ev){ ev.stopPropagation(); startBlankPaper(pap.id); };
+          td.appendChild(b);
+          tr.appendChild(td);
+          tr.onclick = function(){ startBlankPaper(pap.id); };
+          tbody3.appendChild(tr);
+        });
+        tb3.appendChild(tbody3);
+        left.appendChild(scrollTable(tb3));
+        var bfb = el('div','footbar');
+        var bb1 = el('button', null, '随机 10 题');
+        bb1.onclick = function(){ startBlanksRandom(10); };
+        bfb.appendChild(bb1);
+        var bb2 = el('button', null, '全部 ' + homeBlankCount() + ' 题');
+        bb2.onclick = function(){ startBlanksRandom(0); };
+        bfb.appendChild(bb2);
+        left.appendChild(bfb);
+      }
+      else{
+        left.appendChild(el('div','tip','当前题库共 '+homeQuestionCount()+' 道单选题；超出总数时按总数抽取。'));
+        var fr = el('div','footbar');
+        fr.appendChild(el('span', null, '题量：'));
+        var inp2 = document.createElement('input');
+        inp2.type = 'number'; inp2.min = '1'; inp2.max = String(homeQuestionCount());
+        inp2.value = String(Math.max(1,Math.min(homeQuestionCount(),PICK.randN)));
+        inp2.onchange = function(){ PICK.randN = Math.max(1, Math.min(homeQuestionCount(), parseInt(inp2.value,10) || 10)); inp2.value=String(PICK.randN); };
+        fr.appendChild(inp2);
+        var b10 = el('button', null, '10 题'); b10.onclick = function(){ PICK.randN = 10; startRandom(10); };
+        fr.appendChild(b10);
+        var b25 = el('button', null, '25 题'); b25.onclick = function(){ PICK.randN = 25; startRandom(25); };
+        fr.appendChild(b25);
+        var bgo = el('button','primary','开始');
+        bgo.onclick = function(){
+          PICK.randN = Math.max(1, Math.min(homeQuestionCount(), parseInt(inp2.value,10) || 10));
+          startRandom(PICK.randN);
+        };
+        fr.appendChild(bgo);
+        left.appendChild(fr);
+      }
+    }
+
+    refreshClassicHomePick(options);
+    if(animate)revealPickContent(options,0);
+  }
+  refreshOptions();
+
+  
+  right.appendChild(el('h2', null, '复习池'));
+  var dn = dueCount();
+  var info = el('div', dn ? 'info' : 'tip');
+  info.appendChild(el('span', null, dn
+    ? ('今天到期 ' + dn + ' 题（复习池共 ' + poolActive().length + ' 题）')
+    : ('今天没有到期的题（复习池 ' + poolActive().length + ' 题）')));
+  right.appendChild(info);
+  var stack = el('div','stack');
+  var br = el('button','primary','开始今日复习' + (dn ? (' (' + dn + ')') : ''));
+  br.disabled = !dn;
+  
+  if(!dn){ br.className = 'primary idle'; }
+  br.onclick = function(){ startReview('today', SET.dailyMax); };
+  stack.appendChild(br);
+  var br2 = el('button', null, '复习全部未掌握 (' + poolActive().length + ')');
+  br2.onclick = function(){ startReview('all', 0); };
+  stack.appendChild(br2);
+  var br3 = el('button', null, '重做全部错题');
+  br3.onclick = function(){ startWrong(); };
+  stack.appendChild(br3);
+  right.appendChild(stack);
+  if(!dn) right.appendChild(el('div','note','今天没有到期的题 —— 先做题，错题会按排程回到这里。'));
+
+  right.appendChild(el('hr','sep'));
+  right.appendChild(el('div','note','用法与快捷键见顶栏「?」'));
+
+  grid.appendChild(left); grid.appendChild(right);
+  v.appendChild(grid);
+  setupClassicHome(v,grid,left,right,seg0,seg1,options,rp?cp:null);
+  $('#foot').textContent = footText(libraryTitle()+' · '+librarySummary()+' · 数据仅保存在本机，不联网');
+}
+
+
+function fmtScore(n){
+  var v = Math.round((Number(n) || 0) * 100) / 100;
+  return (Math.abs(v - Math.round(v)) < 1e-9) ? String(Math.round(v)) : String(v);
+}
+
+function fullPaperTotal(pid){
+  var c = PMAP[pid] ? (PMAP[pid].total || 0) : 0;
+  var b = BPMAP[pid] ? (BPMAP[pid].total || 0) : 0;
+  return c + b + fixTotal(pid);
+}
+
+function renderPracticeShell(main, side, opt){
+  opt = opt || {};
+  renderNav();
+  var v = emptyNode(viewEl());
+  var head = el('div','card'), grid = el('div','grid');
+  var left = el('div','card'), right = el('div','card');
+  var st = SESSION;
+  var at = st ? (st.order[st.idx] || {}) : {};
+  head.classList.add('practice-head'); grid.classList.add('practice-grid');
+  
+  if(PRACTICE_ENTER){head.classList.add('practice-enter');PRACTICE_ENTER=false;}
+  left.classList.add('practice-main'); right.classList.add('practice-side');
+
+  var lead=el('div','practice-lead'),identity=el('div','practice-identity'),title=el('h2');
+  title.appendChild(el('span','practice-paper-name',papLabel(at.pid)));
+  title.appendChild(el('span','practice-question-name',qLabel(at)));
+  identity.appendChild(el('span','practice-mode-tag',isExam()?(isTimedExam()?'模拟考试 · 交卷后统一判分':'整卷练习 · 交卷后统一判分'):(st.kind==='fullpaper'?'整卷练习 · 即时批改':'普通练习 · 即时批改')));identity.appendChild(title);lead.appendChild(identity);
+  var progress=el('div','practice-progress');
+  if(!isExam() || !st.done){
+    progress.appendChild(el('span','progress-count','已作答 '+sessionDone()+' / '+st.order.length+' 题'));
+    progress.appendChild(el('span','progress-label','进度 '+progressPct()+'%'));
+    var bar=el('div','bar'),bi=el('i');bi.style.width=progressPct()+'%';bar.appendChild(bi);
+    bar.setAttribute('role','progressbar');bar.setAttribute('aria-label','作答进度');bar.setAttribute('aria-valuemin','0');bar.setAttribute('aria-valuemax','100');bar.setAttribute('aria-valuenow',String(progressPct()));
+    var track=el('div','progress-track'),ruler=createProgressRuler(st.order.length);track.appendChild(bar);track.appendChild(ruler);track.appendChild(el('span','progress-scale-caption','每格 '+ruler.dataset.step+' 题'));progress.appendChild(track);lead.appendChild(progress);
+  }
+  head.appendChild(lead);
+  var meta=el('div','meta practice-details');
+  meta.appendChild(el('span','practice-position','本组第 '+(st.idx+1)+' / '+st.order.length+' 题'));
+  if(opt.sub)meta.appendChild(el('span','practice-score',opt.sub));
+  var tEl=el('span','time-cell practice-timer'),totalEl=el('span','time-cell practice-timer');
+  meta.appendChild(tEl);
+  if(isExam()){
+    setPracticeTimer(tEl,'本题',questionTimeLabel(at));
+    if(!st.done)startTick(tEl,null);
+    if(isTimedExam()){
+      totalEl.classList.add('exam-clock');totalEl.id='exam-countdown';setPracticeTimer(totalEl,st.done?'已交卷':'剩余时间',st.done?'':fmtTime(Math.ceil(examRemaining()/1000)));meta.appendChild(totalEl);
+    }else{meta.appendChild(totalEl);setPracticeTimer(totalEl,'本组',fmtTime(st.elapsed||0));if(!st.done)startTick(tEl,totalEl);}
+  }else{meta.appendChild(totalEl);startTick(tEl,totalEl);}
+  var r0=st && REC[qid(at.pid,at.num)];
+  if(r0 && !isExam())meta.appendChild(el('span','practice-review-state',
+    (r0.master?'已掌握':'复习池')+' · 错 '+r0.wrong+' 次 · '+dueLabel(r0)));
+  head.appendChild(meta);
+
+  var foot = el('div','footbar');
+  var bPrev = el('button', null, '‹ 上一题');
+  foot.classList.add('practice-foot');
+  var navigation=el('div','practice-navigation'),actions=el('div','practice-question-controls'),finish=el('div','practice-finish-group');
+  [[navigation,'题目导航'],[actions,'本题操作'],[finish,'整组操作']].forEach(function(group){group[0].setAttribute('role','group');group[0].setAttribute('aria-label',group[1]);});
+  foot.appendChild(navigation);foot.appendChild(actions);foot.appendChild(finish);
+  var bNext = el('button', 'classic-next', '下一题 ›');
+  bPrev.disabled = !at || st.idx <= 0;
+  bNext.disabled = !at || st.idx >= st.order.length - 1;
+  bPrev.onclick = function(){ move(-1); };
+  bNext.onclick = function(){ move(1); };
+  navigation.appendChild(bPrev); navigation.appendChild(bNext);
+  if(st && st.order.length > 1 && !isExam()){
+    var bjump = el('button', null, '随机跳题 (N)');
+    bjump.onclick = function(){ jumpRandom(); };
+    navigation.appendChild(bjump);
+  }
+  if(opt.footExtra){opt.footExtra.classList.add('question-actions');actions.appendChild(opt.footExtra);}
+  if(opt.tools){opt.tools.classList.add('practice-mark');actions.appendChild(opt.tools);}
+  if(!opt.footExtra&&!opt.tools)actions.hidden=true;
+  var bf = el('button','primary',isExam() ? (st.done ? '返回成绩' : '交卷') : '交卷 / 看成绩');
+  bf.onclick = function(){
+    if(isExam()){
+      if(st.done){ go('result'); return; }
+      var leftN=st.order.length-sessionDone();
+      if(!confirm('确定交卷？'+(leftN ? '还有 '+leftN+' 题未完整作答。' : '')+'交卷后不能修改本场答案。')) return;
+      finishExam('manual'); return;
+    }
+    var dn = sessionDone();
+    if(dn < st.order.length && !confirm('还有 ' + (st.order.length - dn) + ' 题没做完，确定交卷？')) return;
+    endSession(); go('result');
+  };
+  if(!isExam())bf.classList.add('classic-secondary-finish');
+  bf.classList.add('practice-finish');
+  if(isExam())finish.classList.add('exam-finish-group');
+  finish.appendChild(bf);
+  if(isExam()&&!st.done){var abandon=btn(isTimedExam()?'放弃考试':'放弃试卷',abandonExam);abandon.classList.add('exam-abandon');finish.insertBefore(abandon,bf);}
+
+  right.appendChild(el('h2', null, '答题卡'));
+  right.appendChild(renderSheet(el('div','sheet')));
+  var sheetNote=isExam()&&!st.done?renderExamLegend():el('div','note classic-sheet-note','答题卡符号含义见顶栏「?」');
+  right.appendChild(sheetNote);
+  if(!isExam()||st.done)right.appendChild(classicSheetLegend());
+  if(side) right.appendChild(side);
+
+  left.appendChild(main);
+  grid.appendChild(left); grid.appendChild(right);
+  v.appendChild(head); v.appendChild(grid); v.appendChild(foot);
+  $('#foot').textContent = footText('进度自动保存 · 所有数据只存在本机浏览器，不联网');
+  return null;
+}
+
+
+var BLANKS = null;
+
+function blankState(k){
+  if(!BLANKS || BLANKS.key !== k){
+    
+    var saved = (SESSION && SESSION.bans && SESSION.bans[k]) || null;
+    BLANKS = { key:k, ans: saved ? JSON.parse(JSON.stringify(saved)) : {},
+               done:false, res:[], fb:'' };
+  }
+  
+  var got=SESSION&&SESSION.bsnap&&SESSION.bsnap[k],o=splitKey(k),q=findB(o.pid,o.num);
+  if(q&&Number.isInteger(got)&&got>=-1&&got<=q.blankNums.length){
+    BLANKS.done=true;BLANKS.res=got===-1?q.blankNums.map(function(){return false;}):gradeBlank(q,BLANKS.ans);
+  }
+  return BLANKS;
+}
+function setBlankAns(k, n, val){
+  var st = blankState(k);
+  if(st.done) return;
+  st.ans[n] = val;
+  if(SESSION){ SESSION.bans = SESSION.bans || {}; SESSION.bans[k] = st.ans; }
+  save(LSKEY.session, SESSION);
+  save(LSKEY.blanks, BLANKS);
+}
+
+function blankAnsOf(k, source){
+  if(!source && BLANKS && BLANKS.key === k) return BLANKS.ans;
+  var s=source || SESSION;
+  return (s && s.bans && s.bans[k]) || {};
+}
+function resetBlank(k){
+  BLANKS = { key:k, ans:{}, done:false, res:[], fb:'' };
+  if(SESSION && SESSION.bans) delete SESSION.bans[k];
+  save(LSKEY.blanks, BLANKS);
+}
+
+function blankTips(card,q){
+  if(q&&q.normal){card.appendChild(el('p','tip','按题目顺序填写各空，答完点「提交」。文本保留大小写与内部空格；数值不带单位，不填写计算式。各空均分，具体规则见题目。'));return;}
+  card.appendChild(el('div','note',
+    '在代码里每个空位直接输入，答完点「提交」。' +
+    '注意：**必须用半角英文符号**（考试与编译器都要求），打成全角会判错。'));
+}
+
+function renderBlankPractice(cur, q, at){
+  at = at || cur;
+  var k = qid(cur.pid, cur.num);
+  var st = blankState(k);
+  var left = el('div');
+
+  var r0 = REC[k];
+  var tsub = '满分 ' + fmtScore(q.total) + ' 分（每空 ' + q.per + ' 分）';
+
+
+  left.appendChild(renderFigures(q, cur));
+  if(q.stem) left.appendChild(renderStem(q.stem));
+
+  
+  var codebox = el('div',q.normal?'codebox objective-blanks':'codebox');
+  if(!q.normal){codebox.tabIndex=0;codebox.setAttribute('role','region');codebox.setAttribute('aria-label','程序填空代码，可横向滚动');}
+  var lines = String(q.code).split('\n');
+  var inputs = [];
+  lines.forEach(function(ln){
+    var row = el('span','ln');
+    var re = /___(\d+)___/g, last = 0, mm;
+    while((mm = re.exec(ln)) !== null){
+      if(mm.index > last) row.appendChild(document.createTextNode(ln.slice(last, mm.index)));
+      var no = parseInt(mm[1], 10);
+      var inp = document.createElement('input');
+      inp.type = 'text';
+      inp.className = 'blk';
+      inp.value = st.ans[no] || '';
+      inp.disabled = st.done;
+      inp.placeholder = String(no);
+      inp.title = '第 ' + no + ' 空';
+      inp.setAttribute('data-no', String(no));
+      inp.setAttribute('aria-label','第'+no+'空');inp.autocomplete='off';
+      if(st.done){
+        var j = q.blankNums.indexOf(no);
+        inp.classList.add(st.res[j] ? 'ok' : 'bad');
+        if(!q.normal&&hasFullwidth(st.ans[no])) inp.title = fullwidthHint(st.ans[no]);
+      }else if(!q.normal&&hasFullwidth(st.ans[no])){
+        inp.classList.add('half');
+        inp.title = fullwidthHint(st.ans[no]);
+      }
+      inp.oninput = function(){
+        setBlankAns(k, no, inp.value);
+        
+        if(!q.normal && !st.done && hasFullwidth(inp.value)){
+          inp.classList.add('half');
+          inp.title = fullwidthHint(inp.value);
+        }else if(!st.done){
+          inp.classList.remove('half');
+          inp.title = '第 ' + no + ' 空';
+        }
+      };
+      inputs.push({ no:no, el:inp });
+      row.appendChild(inp);
+      last = mm.index + mm[0].length;
+    }
+    if(last < ln.length) row.appendChild(document.createTextNode(ln.slice(last)));
+    if(!ln.length) row.appendChild(document.createTextNode(' '));
+    codebox.appendChild(row);
+  });
+  left.appendChild(codebox);
+  blankTips(left,q);
+
+  
+  if(st.done){
+    
+    var fw = [];
+    q.blankNums.forEach(function(n){
+      var h = q.normal?'':fullwidthHint(st.ans[n]);
+      if(h) fw.push('(' + n + ') ' + h);
+    });
+    if(fw.length){
+      var wl = el('div','warnline');
+      wl.textContent = '⚠ 有全角字符，已判错：' + fw.join('；');
+      left.appendChild(wl);
+    }
+
+    var got=st.res.filter(Boolean).length,sc=q.per*got;
+    left.appendChild(answerBrief(got===q.blankNums.length?'correct':got?'partial':'wrong',sc,q.total,'答对 '+got+' / '+q.blankNums.length+' 空；各空分别计分。'));
+    var kb = el('div','keybox');
+    var tb = el('table'),thead=el('thead'),headers=el('tr'),tbody=el('tbody');
+    ['空位','你的填写','匹配答案','其他候选','结果'].forEach(function(label){headers.appendChild(el('th',null,label));});thead.appendChild(headers);tb.appendChild(thead);
+    q.blankNums.forEach(function(n, j){
+      var tr = el('tr');
+      tr.appendChild(el('td','blkno', '(' + n + ')'));
+      var bad = !q.normal&&hasFullwidth(st.ans[n]);
+      var mine = el('td','mine' + (bad ? ' half' : ''));
+      mine.textContent = (st.ans[n] || '').trim() || '（未填）';
+      if(bad) mine.title = fullwidthHint(st.ans[n]);
+      tr.appendChild(mine);
+      var good = st.res[j];
+      var key = el('td', good ? 'k' : 'k bad');
+      var candidates=(q.answers[j]||[]),typed=(st.ans[n]||'').trim();
+      var matched=good&&q.normal&&q.rules[j].mode==='text'&&candidates.indexOf(typed)>=0?typed:candidates[0];
+      key.textContent = matched || '—';
+      tr.appendChild(key);
+      var alt = el('td','alt');
+      var others=candidates.filter(function(a){return a!==matched;});
+      alt.textContent=others.length?'也接受：'+others.join(' / '):'';
+      tr.appendChild(alt);
+      tr.className=good?'blank-answer-correct':'blank-answer-wrong';
+      tr.appendChild(el('td','blank-answer-status',good?'✔ 正确':'✘ 错误'));
+      tbody.appendChild(tr);
+    });
+    tb.appendChild(tbody);kb.appendChild(scrollTable(tb));
+    left.appendChild(kb);
+
+    var sum = el('div','meta answer-review-note');
+    var rr = REC[k];
+    if(rr) sum.appendChild(el('span', null, rr.master
+      ? ('已连续答对 ' + rr.stage + ' 次 → 移出复习池')
+      : ('连续全对 ' + rr.stage + ' / ' + SET.needCorrect + ' 次即移出复习池' +
+         (rr.due ? ('　下次复习：' + new Date(rr.due).toLocaleDateString('zh-CN')) : ''))));
+    left.appendChild(sum);
+    left.appendChild(renderBlankAnalysis(q));
+  }
+
+  
+  var extra = el('span');
+  if(!st.done){
+    var bg = el('button','primary','提交');
+    bg.onclick = function(){
+      SESSION.snap = SESSION.snap || {};
+      SESSION.snap[k] = snapOf(k);
+      st.res = gradeBlank(q, st.ans);
+      st.done = true;
+      var got = st.res.filter(Boolean).length;
+      var allOk = (got === q.blankNums.length);
+      SESSION.bsnap = SESSION.bsnap || {};
+      SESSION.bsnap[k] = got;                 
+      scheduleAfter(cur.pid, cur.num, allOk);
+      bumpDaily();
+      save(LSKEY.session, SESSION);
+      renderPractice();
+      queueAutoNext(cur,allOk);
+    };
+    extra.appendChild(bg);
+    var brr = el('button', null, '看答案（算错）');
+    brr.onclick = function(){
+      if(!confirm('看答案会把这题计为做错并加入复习池，确认？')) return;
+      SESSION.snap = SESSION.snap || {};
+      SESSION.snap[k] = snapOf(k);
+      st.res = q.blankNums.map(function(){ return false; });
+      st.done = true;
+      SESSION.bsnap = SESSION.bsnap || {};
+      SESSION.bsnap[k] = -1;                   
+      scheduleAfter(cur.pid, cur.num, false);
+      bumpDaily();
+      save(LSKEY.session, SESSION);
+      renderPractice();
+    };
+    extra.appendChild(brr);
+  }else{
+    var bu = el('button', null, '撤销重做');
+    bu.onclick = function(){
+      
+      if(!SESSION.seenUndo){
+        if(!confirm('撤销后本题不计成绩，复习记录也回滚到判分前，可以重答一次。\n' +
+                    '（这个提示本次练习只会出现一次）')) return;
+        SESSION.seenUndo = true;
+        save(LSKEY.session, SESSION);
+      }
+      var snap = SESSION.snap && SESSION.snap[k];
+      if(snap){ restoreSnap(k, snap); delete SESSION.snap[k]; }
+      if(SESSION.bsnap) delete SESSION.bsnap[k];
+      resetBlank(k);
+      save(LSKEY.session, SESSION);
+      renderPractice();
+    };
+    extra.appendChild(bu);
+  }
+
+  var bm = el('button', null, MARKS[k] ? '★ 已标记' : '☆ 标记待复习');
+  bm.onclick = function(){
+    if(MARKS[k]) delete MARKS[k]; else MARKS[k] = true;
+    save(LSKEY.marks, MARKS); renderPractice();
+  };
+
+  
+  return renderPracticeShell(left, null, {
+    sub: '满分 ' + fmtScore(blankTotal(cur.pid, cur.num)) + ' 分（每空 ' +
+      fmtScore(perOf(cur.pid, cur.num)) + ' 分）',
+    tools: bm,
+    footExtra: extra,
+  });
+}
+
+function renderPractice(){
+  var x=window.scrollX||0,y=window.scrollY||0;
+  var result=renderPracticeContent();
+  if(VIEW==='practice')window.scrollTo(x,y);
+  return result;
+}
+function renderPracticeContent(){
+  if(isExam()){
+    if(!SESSION.done && examRemaining() <= 0){finishExam('timeout');return;}
+    return renderExamPractice();
+  }
+  var cur = SESSION.order[SESSION.idx];
+  if(!cur){ SESSION.idx = 0; }
+  cur = SESSION.order[SESSION.idx];
+  if(cur.program)return renderProgramPractice(cur,findP(cur.pid,cur.num));
+  ProgrammingPage.leave();
+  if(cur.blank){
+    var bq = findB(cur.pid, parseInt(String(cur.num).slice(1),10));
+    if(!bq){ SESSION.idx = Math.min(SESSION.idx+1, SESSION.order.length-1); return renderPractice(); }
+    return renderBlankPractice(cur, bq, cur);
+  }
+  if(cur.fix){
+    var fq = findF(cur.pid, parseInt(String(cur.num).slice(1),10));
+    if(!fq){ SESSION.idx = Math.min(SESSION.idx+1, SESSION.order.length-1); return renderPractice(); }
+    
+    var at = SESSION.order[SESSION.idx] || {};
+    var kk0 = fxid(cur.pid, String(cur.num).replace(/^x/, ''));
+    var mk = el('button', null, MARKS[kk0] ? '★ 已标记' : '☆ 标记待复习');
+    mk.onclick = function(){
+      if(MARKS[kk0]) delete MARKS[kk0]; else MARKS[kk0] = true;
+      save(LSKEY.marks, MARKS); renderPractice();
+    };
+    var parts = FixEngine.render(cur, fq);
+    
+    return renderPracticeShell(parts.main, parts.side, {
+      qtag: qLabel(at),
+      sub: '每处 ' + fixPer(fq) + ' 分 · 本题满分 ' + fixScoreOf(fq).toFixed(1) + ' 分',
+      tools: mk
+    });
+  }
+  return renderChoicePractice();
+}
+
+
+function renderSheet(sheet){
+  if(isExam() && !SESSION.done) return renderExamSheet(sheet);
+  SESSION.order.forEach(function(o, i){
+    var kk = qid(o.pid, o.num);
+    var c = el('div','cell', sheetNumber(o,i));
+    decorateSubquestionCell(c,o,sheet);
+    var cls = null;
+    if(o.program){cls=programSheetCls(SESSION,o);}
+    else if(o.blank){
+      var bq = findB(o.pid, parseInt(String(o.num).slice(1),10));
+      var n = bq ? bq.blankNums.length : 0;
+      var got = sessionBlankGot(o, kk);
+      if(got === null){
+        
+        if(n && Object.keys(blankAnsOf(kk)).some(function(x){
+          return (blankAnsOf(kk)[x]||'').trim(); })) cls = 'bad';
+      }else{
+        if(got < 0) cls = 'bad';                 
+        else if(got >= n) cls = 'ok';
+        else if(got > 0) cls = 'part';
+        else cls = 'bad';
+      }
+    }else if(o.fix){
+      cls = fixSheetCls(o, fxid(o.pid, o.num));
+    }else{
+      var pick = SESSION.picks[kk], rv = !!SESSION.reveal[kk];
+      if(pick) cls = okOf(o.pid, o.num, pick) ? 'ok' : 'bad';
+      else if(rv) cls = 'bad';
+    }
+    if(cls) c.classList.add(cls);
+    if(i === SESSION.idx) c.classList.add('cur');
+    var rr = REC[kk];
+    if(rr && rr.master) c.classList.add('mastered');
+    if(MARKS[kk]) c.appendChild(el('span','star','★'));
+    c.onclick = function(){
+      SESSION.idx = i;
+      SESSION.jt = (SESSION.jt || 0) + 1;
+      save(LSKEY.session, SESSION);
+      renderPractice();
+    };
+    sheet.appendChild(c);
+  });
+  return sheet;
+}
+
+function progressPct(){
+  if(!SESSION || !SESSION.order.length) return 0;
+  return Math.round(100 * sessionDone() / SESSION.order.length);
+}
+
+var TICK = null, TICK_EL = null, TICK_TOTAL_EL = null;
+var CLOCK = null;
+function questionSeconds(o, source){
+  var s=source || SESSION;
+  if(!s || !s.qtime) return null;
+  var n = s.qtime[qid(o.pid,o.num)];
+  return typeof n === 'number' && isFinite(n) && n >= 0 ? n : null;
+}
+function questionTimeLabel(o, source){
+  var seconds = questionSeconds(o, source);
+  return seconds === null ? '—' : fmtTime(seconds);
+}
+function flushTime(pause){
+  if(!CLOCK) return;
+  var now = Date.now(), st = CLOCK.session;
+  if(isTimedExam(st)) now=Math.min(now,st.exam.deadline);
+  if(CLOCK.since !== null){
+    var delta = Math.max(0, now - CLOCK.since) / 1000;
+    st.qtime = st.qtime || {};
+    st.qtime[CLOCK.key] = (Number(st.qtime[CLOCK.key]) || 0) + delta;
+    st.elapsed = (Number(st.elapsed) || 0) + delta;
+  }
+  CLOCK.since = pause ? null : now;
+  if(st === SESSION) save(LSKEY.session, st);
+}
+function canTime(){
+  return VIEW === 'practice' && SESSION && !SESSION.done && !document.hidden && !document.querySelector('.modal');
+}
+function updateTick(){
+  if(!CLOCK || CLOCK.session !== SESSION) return;
+  if(!canTime()){
+    if(CLOCK.since !== null) flushTime(true);
+  }else if(CLOCK.since === null){
+    CLOCK.since = Date.now();
+  }else{
+    var now = Date.now();if(isTimedExam()) now=Math.min(now,SESSION.exam.deadline);
+    var delta = Math.max(0, now - CLOCK.since) / 1000;
+    SESSION.qtime[CLOCK.key] += delta;
+    SESSION.elapsed = (Number(SESSION.elapsed) || 0) + delta;
+    CLOCK.since = now;
+    if(now - CLOCK.savedAt >= 5000){ save(LSKEY.session, SESSION); CLOCK.savedAt = now; }
+  }
+  if(TICK_EL) setPracticeTimer(TICK_EL,'本题',fmtTime(SESSION.qtime[CLOCK.key] || 0));
+  if(TICK_TOTAL_EL) setPracticeTimer(TICK_TOTAL_EL,'本组',fmtTime(SESSION.elapsed || 0));
+}
+function startTick(node, totalNode){
+  stopTick();
+  if(!SESSION || !SESSION.order[SESSION.idx]) return;
+  var o = SESSION.order[SESSION.idx], key = qid(o.pid,o.num);
+  SESSION.qtime = SESSION.qtime || {};
+  SESSION.qtime[key] = questionSeconds(o) || 0;
+  CLOCK = {session:SESSION, key:key, since:canTime() ? Date.now() : null, savedAt:Date.now()};
+  TICK_EL = node; TICK_TOTAL_EL = totalNode;
+  updateTick();
+  TICK = setInterval(function(){
+    if(VIEW !== 'practice' || !SESSION){ stopTick(); return; }
+    updateTick();
+  }, 1000);
+}
+function stopTick(){
+  flushTime(true);
+  if(TICK){ clearInterval(TICK); TICK = null; }
+  CLOCK = null; TICK_EL = TICK_TOTAL_EL = null;
+}
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden)cancelAutoNext();
+  if(document.hidden) flushTime(true);
+  if(isExam() && !SESSION.done) paintExamClock();
+  updateTick();
+});
+if(window.addEventListener){
+  window.addEventListener('pagehide', function(){ cancelAutoNext();flushTime(true); });
+  window.addEventListener('pageshow', function(){ updateTick(); });
+}
+
+
+function sessionBlankGot(o, kk, source){
+  var s=source || SESSION;
+  if(s.bsnap && s.bsnap[kk] !== undefined) return s.bsnap[kk];
+  if(!source && BLANKS && BLANKS.key === kk && BLANKS.done){
+    return BLANKS.res.filter(Boolean).length;
+  }
+  return null;
+}
+
+
+function fixSheetCls(o, kk){
+  var rec = SESSION.fix && SESSION.fix[kk];
+  if(!rec) return null;
+  var full = fixScoreOf(findF(o.pid, numOf(o.num)));
+  var got = rec.score || 0;
+  if(full > 0 && got >= full) return 'ok';
+  if(got > 0) return 'part';
+  return 'bad';
+}
+
+
+var FLASH = { key:null, until:0 };
+function renderChoicePractice(){
+  var cur = SESSION.order[SESSION.idx];
+  if(!cur){ SESSION.idx = 0; }
+  cur = SESSION.order[SESSION.idx];
+  var q = findQ(cur.pid, cur.num);
+  if(!q){ SESSION.idx = Math.min(SESSION.idx+1, SESSION.order.length-1); return renderPractice(); }
+  if(isMultipleQuestion(q))return renderMultiplePractice(cur,q);
+  var left = el('div');
+
+  var k = qid(cur.pid, cur.num);
+  var pick = SESSION.picks[k];
+  var revealed = !!SESSION.reveal[k];
+  var settled = !!pick || revealed;
+  var st = sessionStat();
+  var isMulti = SESSION.order.some(function(o){ return o.pid !== SESSION.order[0].pid; });
+  var r0 = REC[k];
+
+  var tsub = '本组满分 ' + st.full.toFixed(1) + ' 分';
+  if(q.group)tsub='本小问 '+fmtScore(perOf(cur.pid,cur.num))+' 分　·　'+tsub;
+
+
+  left.appendChild(renderFigures(q, cur));
+  left.appendChild(renderStem(q.stem));
+
+  var opts = el('div','opts');
+  var flashing = (FLASH.key === k && Date.now() < FLASH.until);
+  QuestionPackSchema.optionKeys(q).forEach(function(L, i){
+    var o = el('div','opt');
+    o.appendChild(el('span','lt', L + '.'));
+    var tx = el('span','tx'); tx.textContent = optText(q.options[L]);
+    o.appendChild(tx);
+    o.appendChild(el('span','kb', String(i+1)));
+    var mk = el('span','mk','');
+    o.appendChild(mk);
+
+    if(settled){
+      o.classList.add('locked');
+      if(L === q.answer){
+        o.classList.add('right'); mk.textContent = '✔';
+        if(flashing) o.classList.add('flash');
+      }
+      if(pick === L && L !== q.answer){ o.classList.add('wrong'); mk.textContent = '✘'; }
+      if(pick === L) o.classList.add('chosen');
+    }else{
+      o.onclick = function(){ choose(L); };
+    }
+    opts.appendChild(o);
+  });
+  left.appendChild(opts);
+
+  if(settled){
+    var correct=pick===q.answer,points=perOf(cur.pid,cur.num);
+    left.appendChild(answerBrief(correct?'correct':'wrong',correct?points:0,points,pick?(correct?'本题作答正确。':'本题作答与参考答案不符。'):'已查看答案，本题按错误计入复习池。'));
+    left.appendChild(answerComparison(pick,q.answer));
+    var res=el('div','meta answer-review-note');
+    var nr = REC[k];
+    if(nr) res.appendChild(el('span', null, nr.master
+      ? ('已连续答对 ' + nr.stage + ' 次 → 移出复习池' +
+         (nr.due ? ('，' + Math.round((nr.due-Date.now())/86400000) + ' 天后仍会提醒一次') : ''))
+      : ('连续答对 ' + nr.stage + ' / ' + SET.needCorrect + ' 次即移出复习池' +
+         (nr.due ? ('　下次复习：' + new Date(nr.due).toLocaleDateString('zh-CN')) : ''))));
+    left.appendChild(res);
+    left.appendChild(renderChoiceAnalysis(q));
+  }
+
+  
+  var extra = el('span');
+  if(settled){
+    var bu = el('button', null, '撤销本题作答重做');
+    bu.onclick = function(){
+      
+      if(!SESSION.seenUndo){
+        if(!confirm('撤销后本题不计成绩，复习记录也回滚到作答前，可以重答一次。\n' +
+                    '（这个提示本次练习只会出现一次）')) return;
+        SESSION.seenUndo = true;
+        save(LSKEY.session, SESSION);
+      }
+      delete SESSION.picks[k];
+      delete SESSION.reveal[k];
+      var snap = SESSION.snap && SESSION.snap[k];
+      if(snap){ restoreSnap(k, snap); delete SESSION.snap[k]; }
+      save(LSKEY.session, SESSION); renderPractice();
+    };
+    extra.appendChild(bu);
+  }
+  if(!settled){
+    var br = el('button', null, '查看答案 (R)');
+    br.onclick = function(){
+      if(!confirm('查看答案会把这题计为做错并加入复习池，确认？')) return;
+      SESSION.reveal[k] = true;
+      SESSION.snap = SESSION.snap || {};
+      SESSION.snap[k] = snapOf(k);
+      scheduleAfter(cur.pid, cur.num, false);
+      bumpDaily();
+      save(LSKEY.session, SESSION);
+      renderPractice();
+    };
+    extra.appendChild(br);
+  }
+
+  var bm = el('button', null, MARKS[k] ? '★ 已标记' : '☆ 标记待复习');
+  bm.onclick = function(){
+    if(MARKS[k]) delete MARKS[k]; else MARKS[k] = true;
+    save(LSKEY.marks, MARKS); renderPractice();
+  };
+
+  return renderPracticeShell(left, null, {
+    qtag: (isMulti ? papLabel(cur.pid) + ' ' : '') + qLabel(cur),
+    sub: tsub,
+    tools: bm,
+    footExtra: extra,
+  });
+}
+
+function choose(L){
+  var current=SESSION&&SESSION.order[SESSION.idx];
+  if(!current||current.blank||current.fix||QuestionPackSchema.optionKeys(findQ(current.pid,current.num)).indexOf(L)<0)return;
+  if(current&&!current.blank&&!current.fix&&isMultipleQuestion(findQ(current.pid,current.num))){toggleMultiple(L);return;}
+  if(isExam()){
+    if(!examCanEdit()) return;
+    var o=SESSION.order[SESSION.idx];if(o.blank || o.fix) return;
+    SESSION.picks[qid(o.pid,o.num)]=L;save(LSKEY.session,SESSION);renderPractice();return;
+  }
+  var cur = SESSION.order[SESSION.idx];
+  var k = qid(cur.pid, cur.num);
+  if(SESSION.picks[k]) return;
+  SESSION.snap = SESSION.snap || {};
+  SESSION.snap[k] = snapOf(k);
+  SESSION.picks[k] = L;
+  var good = okOf(cur.pid, cur.num, L);
+  scheduleAfter(cur.pid, cur.num, good);
+  bumpDaily();
+  save(LSKEY.session, SESSION);
+  if(good) FLASH = {key:k, until:Date.now() + Math.max(0, SET.flashSec)*1000};
+  else FLASH = {key:null, until:0};
+  
+  SESSION.jt = (SESSION.jt || 0) + 1;
+  renderPractice();
+  queueAutoNext(cur,good);
+}
+function move(d){
+  cancelAutoNext();
+  if(!SESSION) return;
+  var n = SESSION.idx + d;
+  if(n < 0 || n >= SESSION.order.length) return;
+  SESSION.idx = n;
+  SESSION.jt = (SESSION.jt || 0) + 1;
+  save(LSKEY.session, SESSION);
+  renderPractice();
+}
+
+
+function startBlankPaper(pid){
+  var p = BPMAP[pid]; if(!p) return;
+  var order = p.questions.map(function(q){ return {pid:pid, num:'b' + q.num, blank:true}; });
+  SESSION = newSession(pid + (p.libraryId?' · 填空':' 程序填空'), order, 'bpaper');
+  go2practice();
+}
+function startBlanksRandom(n){
+  var all = [];
+  homeBlankPapers().forEach(function(p){
+    p.questions.forEach(function(q){ all.push({pid:p.id, num:'b' + q.num, blank:true}); });
+  });
+  if(!all.length){ alert('填空题库是空的。'); return; }
+  shuffle(all);
+  if(n > 0) all = all.slice(0, n);
+  SESSION = newSession('填空随机 ' + all.length + ' 题', all, 'brandom');
+  go2practice();
+}
+
+function renderResult(){
+  var report=resultSession();
+  if(!report || !report.order || !report.order.length){go('stats');return;}
+  renderNav();
+  var v = emptyNode(viewEl());
+  var grid = el('div','grid result-grid study-result study-page');
+  var left = el('div','card result-card'), right = el('details','card result-jump');
+  var st = sessionStat(report);
+  var head=studyHeading('成绩回顾','任务简报','MISSION DEBRIEF','本次成绩与需要继续巩固的题目。','printout');
+  head.className+=' study-result-heading';grid.appendChild(head);
+  var samePaper = report.order.every(function(o){return o.pid === report.order[0].pid;});
+
+  left.appendChild(el('h2', null, papLabel(report.pid) + (isExam(report) ? (isTimedExam(report)?' · 考试成绩':' · 整卷成绩') : ' · 练习成绩')));
+  if(isExam(report)) left.appendChild(el('div','info',
+    (report.exam.reason==='timeout' ? '考试时间到，已自动交卷。' : '已交卷。')+
+    '本场答案与成绩已锁定。改错按逐处核对计分，未作编译运行验证。'));
+  var box = el('div','stat');
+  [['得分', st.score.toFixed(1) + ' / ' + st.full.toFixed(1)],
+    [isExam(report) ? '得分率' : '正确率', (isExam(report) ? (st.full ? 100*st.score/st.full : 0).toFixed(1) :
+      (st.ok+st.bad ? (100*st.ok/(st.ok+st.bad)).toFixed(1) : '0.0')) + '%'],
+   ['用时', fmtTime(report.elapsed || 0)],
+   ['答对', st.ok + ' 题'], ['答错', st.bad + ' 题'], ['未答', st.unanswered + ' 题']
+  ].forEach(function(p){
+    var d = el('div');
+    d.appendChild(el('div','big', p[1]));
+    d.appendChild(el('span', null, p[0]));
+    box.appendChild(d);
+  });
+  left.appendChild(box);
+
+  var breakdown=el('details','result-breakdown');breakdown.appendChild(el('summary',null,'逐题回顾（'+report.order.length+' 题）'));
+  var tb = el('table','result-table');
+  var thead = el('thead'), htr = el('tr');
+  var resultHeaders = ['题号','结果','你的作答','参考答案 / 满分','复习池','用时','操作'];
+  resultHeaders.forEach(function(h){ htr.appendChild(el('th',null,h)); });
+  thead.appendChild(htr); tb.appendChild(thead);
+  var tbody = el('tbody');
+  report.order.forEach(function(o, i){
+    var kk = qid(o.pid, o.num);
+    if(o.blank){
+      
+      var bq = findB(o.pid, parseInt(String(o.num).slice(1),10));
+      if(!bq) return;
+      var ans = blankAnsOf(kk,report);
+      var got = sessionBlankGot(o, kk,report);
+      var trb = el('tr','clickable');
+      trb.appendChild(el('td', null, (samePaper ? '' : o.pid + ' ') + qLabel(o)));
+      trb.appendChild(el('td', null, got === null ? (isExam(report) ? '未答' : '未提交') : got < 0 ? '看了答案' :
+        got + ' / ' + bq.blankNums.length + ' 空'));
+      var mine = el('td');
+      mine.textContent = bq.blankNums.map(function(n){
+        return '(' + n + ')' + ((ans[n]||'').trim() || '—');
+      }).join('  ');
+      trb.appendChild(mine);
+      var keyc = el('td','k');
+      keyc.textContent = bq.blankNums.map(function(n, j){
+        return '(' + n + ')' + ((bq.answers[j]||[])[0] || '—');
+      }).join('  ');
+      trb.appendChild(keyc);
+      var rr2 = REC[kk];
+      var c6 = el('td');
+      if(rr2){
+        if(rr2.master) c6.appendChild(el('span','tag mastered','已掌握'));
+        else c6.textContent = dueLabel(rr2);
+      } else c6.textContent = '—';
+      trb.appendChild(c6);
+      trb.appendChild(el('td','time-cell',questionTimeLabel(o,report)));
+      var tdb = el('td');
+      var bb = el('button', null, '看原题');
+      bb.onclick = function(ev){
+        if(ev && ev.stopPropagation) ev.stopPropagation();
+        openReportQuestion(report,i);
+      };
+      tdb.appendChild(bb); trb.appendChild(tdb);
+      trb.onclick = function(){ bb.onclick(null); };
+      tbody.appendChild(trb);
+      return;
+    }
+    if(o.program){var programRow=programResultRow(report,o,i,samePaper);if(programRow)tbody.appendChild(programRow);return;}
+    if(o.fix){
+      var fq = findF(o.pid, o.num);
+      if(!fq) return;
+      var fr = report.fix && report.fix[fxid(o.pid, o.num)];
+      var trf = el('tr','clickable');
+      trf.appendChild(el('td', null, (samePaper ? '' : o.pid + ' ') + qLabel(o)));
+      trf.appendChild(el('td', null, fr ? fmtScore(fr.score || 0) + ' 分' : (isExam(report) ? '未答' : '未提交')));
+      trf.appendChild(el('td', null, fr ? '修正 ' + fr.fixed + ' / ' + fr.total + ' 处' : '—'));
+      trf.appendChild(el('td', null, '满分 ' + fmtScore(fixScoreOf(fq)) + ' 分'));
+      var rf = REC[kk];
+      var c5f = el('td');
+      if(rf && rf.master) c5f.appendChild(el('span','tag mastered','已掌握'));
+      else c5f.textContent = rf ? dueLabel(rf) : '—';
+      trf.appendChild(c5f);
+      trf.appendChild(el('td','time-cell',questionTimeLabel(o,report)));
+      var tdf = el('td'), bf = el('button', null, '看原题');
+      bf.onclick = function(ev){
+        if(ev && ev.stopPropagation) ev.stopPropagation();
+        openReportQuestion(report,i);
+      };
+      tdf.appendChild(bf); trf.appendChild(tdf);
+      trf.onclick = function(){ bf.onclick(null); };
+      tbody.appendChild(trf);
+      return;
+    }
+    var q = findQ(o.pid,o.num);
+    if(!q) return;
+    var pick = report.picks[kk], rv = !!report.reveal[kk];
+    var tr = el('tr','clickable');
+    tr.appendChild(el('td', null, (samePaper ? '' : o.pid + ' ') +
+      qLabel(o) + (q.img ? ' ⚠' : '')));
+    var c2 = el('td');
+    if(!pick && !rv) c2.textContent = '未答';
+    else if(pick && pick === q.answer) c2.textContent = '✔ 对';
+    else c2.textContent = '✘ 错';
+    tr.appendChild(c2);
+    tr.appendChild(el('td', null, pick || (rv ? '（看了答案）' : '—')));
+    tr.appendChild(el('td', null, q.answer));
+    var rr = REC[kk];
+    var c5 = el('td');
+    if(rr){
+      if(rr.master) c5.appendChild(el('span','tag mastered','已掌握'));
+      else c5.textContent = dueLabel(rr);
+    } else c5.textContent = '—';
+    tr.appendChild(c5);
+    tr.appendChild(el('td','time-cell',questionTimeLabel(o,report)));
+    var td = el('td');
+    var b = el('button', null, '看原题');
+    b.onclick = function(ev){
+      if(ev && ev.stopPropagation) ev.stopPropagation();
+      openReportQuestion(report,i);
+    };
+    td.appendChild(b); tr.appendChild(td);
+    tr.onclick = function(){ b.onclick(null); };
+    tbody.appendChild(tr);
+  });
+  Array.prototype.forEach.call(tbody.children,function(row){
+    Array.prototype.forEach.call(row.children,function(cell,index){
+      cell.setAttribute('data-label',resultHeaders[index]);
+    });
+  });
+  tb.appendChild(tbody);
+  breakdown.appendChild(scrollTable(tb));left.appendChild(breakdown);
+
+  var fb = el('div','footbar');
+  if(isExam(report) && report===SESSION){
+    var retry=el('button','primary','重新考试');
+    retry.textContent=isTimedExam(report)?'重新考试':'重做本卷';retry.onclick=function(){if(confirm('将开始一份新答卷，本次成绩已存入统计。继续吗？')){if(isTimedExam(report))startExam(report.exam.paper,report.exam.minutes);else startDeferredPaper(report.exam.paper);}};
+    fb.appendChild(retry);
+  }
+  if(report===SESSION && (report.kind === 'paper'||report.kind === 'multiplepaper')){
+    var b1 = el('button','primary','重做本卷');
+    b1.onclick = function(){if(report.choiceType)startChoiceType(report.pid,report.choiceType);else startPaper(report.pid);};
+    fb.appendChild(b1);
+  }
+  var wrongList = report.order.filter(function(o){
+    var kk = qid(o.pid,o.num);
+    if(o.program){var pr=programVerdict(report,o);return !pr||!pr.good;}
+    if(o.blank){
+      var bq = findAny(o.pid,o.num);
+      return !bq || sessionBlankGot(o,kk,report) === null || sessionBlankGot(o,kk,report) < bq.blankNums.length;
+    }
+    if(o.fix){
+      var fr = report.fix && report.fix[fxid(o.pid,o.num)];
+      return !fr || (fr.score || 0) < fixScoreOf(findF(o.pid,o.num));
+    }
+    var pick = report.picks[qid(o.pid,o.num)];
+    return !pick || pick !== answerOf(o.pid,o.num);
+  });
+  var b2 = el('button', null, '只重做这组的错题 (' + wrongList.length + ')');
+  b2.disabled = !wrongList.length;
+  b2.onclick = function(){
+    if(SESSION && !SESSION.done && !confirm('重做错题会替换当前未完成的练习，继续吗？'))return;
+    SESSION = newSession('错题重做', shuffle(wrongList.slice()), 'wrong');
+    go2practice();
+  };
+  fb.appendChild(b2);
+  var b3 = el('button', null, isExam(report)?'返回统计':'返回选卷');
+  b3.onclick = function(){ if(isExam(report)){go('stats');return;}SESSION=null;save(LSKEY.session,null);go('home'); };
+  fb.appendChild(b3);
+  left.appendChild(fb);
+
+  right.appendChild(el('summary', null, '按题号快速跳转'));
+  right.open=!!(window.matchMedia && window.matchMedia('(min-width:1000px)').matches);
+  var sheet=el('div','sheet');
+  if(report===SESSION)renderSheet(sheet);
+  else report.order.forEach(function(o,i){
+    var k=qid(o.pid,o.num), cls='';
+    if(o.blank){var bq=examBlank(o),n=report.bsnap[k];cls=n===undefined?'':n===bq.blankNums.length?'ok':n>0?'part':'bad';}
+    else if(o.fix){var fr=report.fix[fxid(o.pid,o.num)];cls=!fr?'':fr.score>=fixScoreOf(findF(o.pid,o.num))?'ok':fr.score>0?'part':'bad';}
+    else if(report.picks[k])cls=okOf(o.pid,o.num,report.picks[k])?'ok':'bad';
+    var b=el('button','cell '+cls,sheetNumber(o,i));decorateSubquestionCell(b,o,sheet);b.title=qLabel(o);b.setAttribute('aria-label',qLabel(o));sheet.appendChild(b);
+  });
+  Array.prototype.forEach.call(sheet.children, function(c, i){
+    c.onclick = function(){
+      openReportQuestion(report,i);
+    };
+  });
+  right.appendChild(sheet);
+  right.appendChild(el('div','tip', '点任意题号可回到那一题重看（不影响已记成绩）。'));
+
+  grid.appendChild(left); grid.appendChild(right);
+  v.appendChild(grid);
+  $('#foot').textContent = footText('复习池 ' + poolActive().length + ' 题 · 今日到期 ' + dueCount() + ' 题');
+}
+
+
+var RV = { mode:'due' };
+function renderReview(){ renderStudyReview(); }
+
+
+
+function week7Chart(host, last7){
+  host.className = 'week7';
+  host.setAttribute('role','group');
+  host.setAttribute('aria-label','最近7天作答次数');
+  var total = last7.reduce(function(n,x){return n + x[1];},0);
+  var active = last7.filter(function(x){return x[1] > 0;}).length;
+  var heading = el('div','week7-head');
+  heading.appendChild(el('strong',null,'共 ' + total + ' 次作答'));
+  heading.appendChild(el('span',null,active ? '练习了 ' + active + ' 天' : '开始练习，记录每天的进步'));
+  host.appendChild(heading);
+  var bars = el('div','week7-bars');
+  var max = Math.max.apply(null,last7.map(function(x){return x[1];}).concat([1]));
+  last7.forEach(function(x,i){
+    var day = el('div','week7-day' + (i === last7.length-1 ? ' is-today' : ''));
+    day.setAttribute('role','group');
+    day.setAttribute('aria-label',x[0] + '，' + x[1] + ' 次作答');
+    day.appendChild(el('span','week7-value',String(x[1])));
+    var track = el('div','week7-track'), fill = el('div','week7-fill');
+    track.setAttribute('aria-hidden','true');
+    fill.style.height = x[1] ? Math.max(4,Math.round(100*x[1]/max)) + '%' : '0%';
+    track.appendChild(fill); day.appendChild(track);
+    var label=el('span','week7-label');
+    label.appendChild(el('span','week7-long',i === last7.length-1 ? '今天' : x[0].slice(5)));
+    label.appendChild(el('span','week7-short',i === last7.length-1 ? '今天' : x[0].slice(8)));
+    day.appendChild(label);
+    bars.appendChild(day);
+  });
+  host.appendChild(bars);
+  return host;
+}
+
+function renderStats(){ renderStudyStats(); }
+
+
+
+function exportData(){
+  var mirror = {};
+  Object.keys(REC).forEach(function(k){
+    var r = REC[k];
+    if(!r.master) mirror[k] = {n:r.wrong, ts:r.last};
+  });
+  var data = {
+    version:2, exportedAt:new Date().toISOString(),
+    review:REC, wrong:mirror, marks:MARKS, stats:STATS, set:SET, session:SESSION, exams:EXAMS,
+    
+    summary:{
+      questions:Object.keys(REC).length,
+      pool:poolActive().length,
+      mastered:poolMastered().length,
+      dueNow:dueCount()
+    }
+  };
+  var text = JSON.stringify(data, null, 1);
+  try{
+    var blob = new Blob([text], {type:'application/json'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '代码航站-学习记录-' + todayKey() + '.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }catch(e){
+    alert('导出失败，请用 Chrome / Edge 打开本页面。');
+  }
+}
+function importData(){
+  if(isExam()&&!SESSION.done){alert('请先交卷，再导入学习记录。');return;}
+  var inp=el('input');inp.type='file';inp.accept='.json,application/json';inp.hidden=true;inp.oncancel=function(){inp.remove();};
+  inp.onchange=function(){var file=inp.files[0];inp.remove();if(!file)return;if(file.size>32*1024*1024){alert('学习记录不能超过32MiB。');return;}
+    var reader=new FileReader();reader.onload=function(){try{if(isExam()&&!SESSION.done)throw new Error('请先交卷，再导入。');var data=JSON.parse(reader.result.replace(/^\uFEFF/,'')),n=applyRecordBackup(data);alert('导入完成：复习档案 '+n+' 条。');go('home');}catch(e){alert('导入失败：'+e.message);}};reader.onerror=function(){alert('文件读取失败，原记录保留。');};reader.readAsText(file,'utf-8');};
+  document.body.appendChild(inp);inp.click();
+}
+
+function emptyNode(node){
+  if(node === VIEWEL && NASA_BADGE_DISPOSE) stopNasaBadge();
+  while(node.firstChild) node.removeChild(node.firstChild);
+  return node;
+}
+
+var VIEWEL = null;
+function viewEl(){
+  if(!VIEWEL) VIEWEL = $('#view');
+  return VIEWEL;
+}
+function modalBox(title, wide){
+  cancelAutoNext();
+  flushTime(true);
+  var m = el('div','modal');
+  m.style.cursor = 'default';
+  m.style.zIndex = '100';
+  var box = el('div','card');
+  var previousFocus = document.activeElement;
+  box.setAttribute('role', 'dialog');
+  box.setAttribute('aria-modal', 'true');
+  box.setAttribute('aria-label', title);
+  box.tabIndex = -1;
+  box.style.maxWidth = wide ? '560px' : '470px';
+  box.style.width = '94vw';
+  box.style.maxHeight = '88vh';
+  box.style.overflowY = 'auto';
+  box.style.cursor = 'default';
+  box.appendChild(el('h2', null, title));
+  m.appendChild(box);
+  var remove = m.remove.bind(m);
+  m.remove = function(){
+    document.removeEventListener('keydown', modalKey);
+    remove();
+    updateTick();
+    if(!document.querySelector('.modal') && previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus();
+  };
+  function modalKey(ev){
+    if(m.classList.contains('category-closing'))return;
+    if(ev.key === 'Escape'){ ev.preventDefault();if(m.requestClose)m.requestClose();else m.remove();return; }
+    if(ev.key !== 'Tab') return;
+    var nodes = box.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]');
+    nodes=Array.prototype.filter.call(nodes,function(n){return !n.getClientRects || n.getClientRects().length;});
+    if(!nodes.length){ ev.preventDefault(); if(box.focus) box.focus(); return; }
+    var first = nodes[0], last = nodes[nodes.length - 1];
+    if(ev.shiftKey && (document.activeElement === first || document.activeElement === box)){
+      ev.preventDefault(); last.focus();
+    }else if(!ev.shiftKey && document.activeElement === last){
+      ev.preventDefault(); first.focus();
+    }
+  }
+  m.onclick = function(ev){ if(ev.target === m){if(m.requestClose)m.requestClose();else m.remove();} };
+  document.addEventListener('keydown', modalKey);
+  document.body.appendChild(m);
+  if(box.focus) box.focus();
+  return { m:m, box:box };
+}
+function secOf(box, title){
+  var s = el('div','sec');
+  s.appendChild(el('h4', null, title));
+  box.appendChild(s);
+  return s;
+}
+function rowOf(sec, label, hint){
+  var r = el('div','row');
+  r.appendChild(el('span','lbl', label));
+  var ctl = el('div','ctl');
+  r.appendChild(ctl);
+  if(hint){
+    var h = el('div','hint', hint);
+    r.appendChild(h);
+    r._hint = h;
+  }
+  sec.appendChild(r);
+  return { row:r, ctl:ctl, hintEl:r._hint };
+}
+function btn(text, fn, primary){
+  var b = el('button', primary ? 'primary' : null, text);
+  b.onclick = fn;
+  return b;
+}
+function stepper(ctl, get, set, min, max, step){
+  var bm = btn('−', function(){ set(Math.max(min, get()-step)); });
+  var v = el('span','numval', String(get()));
+  var bp = btn('+', function(){ set(Math.min(max, get()+step)); });
+  ctl.appendChild(bm); ctl.appendChild(v); ctl.appendChild(bp);
+}
+function segCtl(ctl, opts, isOn, pick){
+  emptyNode(ctl);
+  opts.forEach(function(o){
+    var b = el('button','seg' + (isOn(o[0]) ? ' on' : ''), o[1]);
+    b.setAttribute('aria-pressed',String(isOn(o[0])));
+    b.onclick = function(){ pick(o[0]); segCtl(ctl, opts, isOn, pick); };
+    ctl.appendChild(b);
+  });
+}
+
+function dataSection(box){
+  var s = secOf(box, '数据管理');
+  var packs=rowOf(s,'题库管理','导入、启停、更新或删除题库，也可导出题库备份。');packs.ctl.appendChild(btn('管理题库',function(){Array.prototype.forEach.call(document.querySelectorAll('.modal'),function(m){m.remove();});openQuestionPacks();}));
+  var r1 = rowOf(s, '导出学习进度', '把进度、复习池、标记、统计、历次考试成绩及答题/复习参数存成JSON；题包和代码草稿请分别导出。');
+  r1.ctl.appendChild(btn('导出为文件', exportData));
+  var r2 = rowOf(s, '导入学习进度', '先导入备份对应的原题包，再选择学习记录JSON合并；旧版内置题库记录也支持。');
+  r2.ctl.appendChild(btn('选择文件导入', importData));
+  var danger=el('details','settings-danger');danger.appendChild(el('summary',null,'清空数据（谨慎操作）'));s.appendChild(danger);
+  var r3 = rowOf(danger, '清空所有学习进度', '包括导入题包、答题记录、历次考试成绩、代码草稿、自测输入、复习、统计和设置。新构建首次打开也会清空；同一版本内保留进度。');
+  r3.ctl.appendChild(btn('清空全部进度', clearAll));
+  if(r3.hintEl) r3.hintEl.className = 'hint dbig';
+}
+function clearAll(){
+  try{CQStorage.assertWritable();}catch(e){alert(e.message);return;}
+  if(!confirm('确定清空所有学习进度？\n\n会删除：导入题包、答题进度、历次考试成绩、复习池、标记、统计与设置。\n此操作不可撤销。')) return;
+  if(!confirm('再确认一次：真的要全部清空吗？')) return;
+  cancelAutoNext();
+  if(window.FixEngine && window.FixEngine.resetUserData) window.FixEngine.resetUserData();
+  if(EXAM_TIMER) clearInterval(EXAM_TIMER);EXAM_TIMER=null;
+  clearStoredUserData();
+  resetQuestionPacks();
+  SESSION = null; REC = {}; MARKS = {}; STATS = {log:{}}; WRONG = {}; BLANKS = null;
+  EXAMS=[]; STATS_EXAM_ID=RESULT_EXAM_ID=null; RV.paper=null;
+  SET = {}; Object.keys(DEF_SET).forEach(function(k){ SET[k] = DEF_SET[k]; });
+  NASA_PICK = {year:null, paper:null, initialized:false};
+  PREF = {theme:'light', fontSize:16, uiStyle:'classic', motion:true};
+  applyPref();
+  Array.prototype.forEach.call(document.querySelectorAll('.modal'), function(modal){ modal.remove(); });
+  go('home');
+}
+function resetSettings(){
+  Object.keys(DEF_SET).forEach(function(k){ SET[k] = DEF_SET[k]; });
+  saveSet();
+  PREF = {theme:'light', fontSize:16, uiStyle:'classic', motion:true};
+  save(LSKEY.pref, PREF); applyPref();
+  if(VIEW === 'home') renderHome();
+}
+
+$('#btnSet').onclick = openSettings;
+$('#btnHelp').onclick = openHelp;
+
+
+function applyPref(){
+  if(!PREF || typeof PREF !== 'object' || Array.isArray(PREF)) PREF = {};
+  PREF.theme = PREF.theme === 'dark' ? 'dark' : 'light';
+  PREF.fontSize = Math.max(13,Math.min(22,Number(PREF.fontSize) || 16));
+  PREF.uiStyle = PREF.uiStyle === 'nasa' ? 'nasa' : 'classic';
+  PREF.motion = PREF.motion !== false;
+  delete PREF.badgeMark;
+  document.documentElement.setAttribute('data-theme', PREF.theme);
+  document.documentElement.setAttribute('data-ui-style', PREF.uiStyle);
+  document.documentElement.setAttribute('data-motion', PREF.motion ? 'on' : 'off');
+  document.documentElement.setAttribute('data-classic-large',PREF.fontSize>=20?'true':'false');
+  if(!PREF.motion)clearPickContentEntry();
+  document.documentElement.style.setProperty('--font-size', PREF.fontSize + 'px');
+  if(NASA_BADGE_SYNC) NASA_BADGE_SYNC();
+}
+
+
+document.addEventListener('keydown', function(e){
+  if(VIEW !== 'practice' || !SESSION || !SESSION.order.length) return;
+  if(e.ctrlKey || e.altKey || e.metaKey || e.isComposing || e.defaultPrevented) return;
+  if(document.querySelector('.modal')) return;
+  var tag = (e.target && e.target.tagName) || '';
+  if(/^(INPUT|TEXTAREA|SELECT|BUTTON|A|SUMMARY)$/.test(tag) || (e.target && e.target.isContentEditable)) return;
+  var cur = SESSION.order[SESSION.idx];
+  if(!cur) return;
+  var choice = !cur.program && !cur.blank && !cur.fix && !/^[bxp]/.test(String(cur.num));
+  var k = qid(cur.pid, cur.num);
+  var key = e.key;
+  if(choice && /^[1-8]$/.test(key)){ var letter='ABCDEFGH'.charAt(parseInt(key,10)-1);if(QuestionPackSchema.optionKeys(findQ(cur.pid,cur.num)).indexOf(letter)>=0){choose(letter);e.preventDefault();} }
+  else if(choice && /^[a-hA-H]$/.test(key)){ if(QuestionPackSchema.optionKeys(findQ(cur.pid,cur.num)).indexOf(key.toUpperCase())>=0){choose(key.toUpperCase());e.preventDefault();} }
+  else if(key === 'ArrowRight' || key === 'Enter'){ move(1); e.preventDefault(); }
+  else if(key === 'ArrowLeft'){ move(-1); e.preventDefault(); }
+  else if(key === 'n' || key === 'N'){ jumpRandom(); e.preventDefault(); }
+  else if(key === 's' || key === 'S'){
+    if(isExam()){
+      if(!examCanEdit())return;
+      SESSION.exam.flags[k]=!SESSION.exam.flags[k];save(LSKEY.session,SESSION);renderPractice();e.preventDefault();return;
+    }
+    if(MARKS[k]) delete MARKS[k]; else MARKS[k] = true;
+    save(LSKEY.marks, MARKS); renderPractice(); e.preventDefault();
+  }
+  else if(choice && !isExam() && (key === 'r' || key === 'R')){
+    if(isMultipleQuestion(findQ(cur.pid,cur.num))){revealMultiple();e.preventDefault();return;}
+    if(SESSION.picks[k] || SESSION.reveal[k]) return;
+    if(!confirm('查看答案会把这题计为做错并加入复习池，确认？')) return;
+    SESSION.reveal[k] = true;
+    scheduleAfter(cur.pid, cur.num, false);
+    bumpDaily();
+    save(LSKEY.session, SESSION); renderPractice(); e.preventDefault();
+  }
+});
+
+document.addEventListener('toggle',function(e){
+  if(VIEW==='practice'&&e.target&&e.target.tagName==='DETAILS'&&e.target.open)cancelAutoNext();
+},true);
+document.addEventListener('input',function(){if(VIEW==='practice')cancelAutoNext();},true);
+
+
+
+window.__cq = {
+  queueAutoNext:queueAutoNext, exportData:exportData,
+  el:el, viewEl:viewEl, emptyNode:emptyNode, save:save, load:load,
+  renderNav:renderNav, scheduleAfter:scheduleAfter, bumpDaily:bumpDaily,
+  papLabel:papLabel, qLabel:qLabel, fxid:fxid, fixPer:fixPer, fixScoreOf:fixScoreOf,
+  numOf:numOf, shell:renderPracticeShell, refreshProgress:refreshProgress,
+  findF:findF, startFixPaper:startFixPaper, startFixRandom:startFixRandom,
+  isExam:isExam, examCode:examCode, saveExamCode:saveExamCode, examCanEdit:examCanEdit,
+  
+  renderPracticeShell:renderPracticeShell, refreshProgress:refreshProgress,
+  fmtScore:fmtScore, fixScoreOf:fixScoreOf, progressPct:progressPct,
+  fixTotal:fixTotal, paperTotal:paperTotal, blankTotal:blankTotal,
+  get SESSION(){ return SESSION; },
+  get MARKS(){ return MARKS; },
+  get LSKEY(){ return LSKEY; }
+};
+
+
+if(typeof window !== 'undefined' && window.__CQUIZ_TEST__){
+  window.__cquiz = {
+    IVS:IVS, DEF_SET:DEF_SET,
+    getREC:function(){ return REC; },
+    setREC:function(o){ REC = o; },
+    getSET:function(){ return SET; },
+    saveSet:saveSet,
+    dueCount:dueCount, poolDue:poolDue, poolActive:poolActive, poolMastered:poolMastered,
+    scheduleAfter:scheduleAfter, snapOf:snapOf, restoreSnap:restoreSnap,
+    resetOne:resetOne, resetAllMastered:resetAllMastered, dueLabel:dueLabel,
+    getSESSION:function(){ return SESSION; },
+    setSESSION:function(s){ SESSION = s; },
+    startReview:startReview, startPaper:startPaper, startRandom:startRandom,
+    startTopic:startTopic, topicStats:topicStats, topicOf:topicOf,
+    sessionStat:sessionStat, newSession:newSession, qid:qid, findQ:findQ,
+    getEXAMS:function(){return EXAMS;},archiveExam:archiveExam,checkedExamRecords:checkedExamRecords,
+    openExamReport:openExamReport,chosenExam:chosenExam,openReportQuestion:openReportQuestion,
+    
+    getPREF:function(){ return PREF; },
+    setPREF:function(o){ PREF = o; },
+    applyPref:applyPref,
+    openSettings:openSettings, openHelp:openHelp, showFirstVisitGuide:showFirstVisitGuide,
+    clearAll:clearAll, resetSettings:resetSettings,
+    exportData:exportData, importData:importData, applyRecordBackup:applyRecordBackup,
+    questionPacks:{schema:QuestionPackSchema,install:installQuestionPack,installBatch:installQuestionPacks,inspectBatch:inspectQuestionPackBatch,importReport:makePackImportReport,open:openQuestionPacks,select:selectLibrary,list:libraryList,homePapers:homePapers,active:function(){return ACTIVE_LIBRARY;},assertReferences:assertPackReferences,sample:sampleQuestionPack,installed:function(){return PACKS.slice();},enabled:packEnabled,setEnabled:setPackEnabled,usage:packUsage,remove:removeQuestionPack,inspectUpdate:inspectPackUpdate,update:updateQuestionPack,backup:makePackLibraryBackup,inspectBackup:inspectPackLibraryBackup,restore:restorePackLibraryBackup},
+    getMARKS:function(){ return MARKS; },
+    getLSKEY:function(){ return LSKEY; },
+    go:go, getVIEW:function(){ return VIEW; },
+    
+    HAS_BLANK:HAS_BLANK, TOTALB:TOTALB, TOTALB_BLANK:TOTALB_BLANK,
+    findB:findB, bqid:bqid, isBKey:isBKey, qLabel:qLabel,
+    normalizeAns:normalizeAns, blankOk:blankOk, gradeBlank:gradeBlank,
+    getBLANKS:function(){ return BLANKS; },
+    startBlankPaper:startBlankPaper, startBlanksRandom:startBlanksRandom,
+    startQuestion:startQuestion,
+    
+    startProgramPaper:startProgramPaper,practiceOrder:practiceOrder,findP:findP,programPoints:programPoints,
+    startFullPaper:startFullPaper, fullOrder:fullOrder,
+    startExam:startExam,abandonExam:abandonExam,finishExam:finishExam,examRemaining:examRemaining,examCanEdit:examCanEdit,
+    examAnswerState:examAnswerState,saveExamCode:saveExamCode,paintExamClock:paintExamClock,reviewQuestion:reviewQuestion,
+    paperParts:paperParts, paperTotal:paperTotal, paperPool:paperPool,
+    getPICK:function(){ return PICK; },
+    setPICK:function(o){ PICK = o; },
+    
+    fullwidthChars:fullwidthChars, fullwidthHint:fullwidthHint, hasFullwidth:hasFullwidth,
+    
+    progressPct:progressPct, papLabel:papLabel,
+    questionSeconds:questionSeconds, endSession:endSession,
+    sessionDone:sessionDone, sessionBlankGot:sessionBlankGot,
+    renderSheet:renderSheet, renderPractice:renderPractice,
+    
+    migrateOldId:migrateOldId, migrateKey:migrateKey,
+    
+    HAS_FIX:HAS_FIX, TOTALF:TOTALF, FPAPERS:FPAPERS, FXBY:FXBY, FIXQ:FIXQ,
+    findF:findF, fxid:fxid, fixPer:fixPer, fixTotal:fixTotal,
+    startFixPaper:startFixPaper, startFixRandom:startFixRandom,
+    existsKey:existsKey,
+    FixEngine:FixEngine
+  };
+}
+applyPref();
+
+try{ migrateOldData(); }catch(e){}
+BLANKS = load(LSKEY.blanks, null);
+if(isExam() && !validExam(SESSION)){SESSION=null;save(LSKEY.session,null);}
+if(isExam() && SESSION.done)archiveExam(SESSION);
+if(BLANKS && BLANKS.key){ var _bk = migrateKey(BLANKS.key); if(_bk !== BLANKS.key) BLANKS.key = _bk; }
+if(SESSION && !SESSION.done && SESSION.order && SESSION.order.length) go('practice');
+else go('home');
+if(isExam() && !SESSION.done){armExam();paintExamClock();}
+
+if(!window.__CQUIZ_TEST__)showFirstVisitGuide();
+});
+</script>
+
+
+====DSH-FIX-RES====
+</body>
+</html>

@@ -1,0 +1,48 @@
+html[data-motion=on] .category-closing{animation:category-shade-out .1s ease-in both}
+html[data-motion=on] .category-closing .category-dialog{animation:category-panel-out .1s ease-in both}
+html[data-motion=on] .category-section-enter{animation:category-section-in .12s ease-out both}
+@keyframes category-shade-out{from{background-color:rgba(0,0,0,.72)}to{background-color:rgba(0,0,0,0)}}
+@keyframes category-panel-out{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(4px)}}
+@keyframes category-section-in{from{opacity:.4;translate:5px 0}to{opacity:1;translate:0 0}}
+.library-archive{display:block;position:relative;width:18px;height:20px;border:1.6px solid currentColor;border-radius:2px}
+.library-archive:before{content:'';position:absolute;left:3px;right:3px;top:5px;height:1px;background:currentColor;box-shadow:0 4px 0 currentColor,0 8px 0 currentColor;opacity:.8}
+.library-archive:after{content:'';position:absolute;left:-5px;top:-4px;width:14px;height:17px;border-left:1px solid currentColor;border-top:1px solid currentColor;border-radius:2px;opacity:.6}
+.year-archive{display:flex;align-items:flex-start;gap:16px;flex:1 1 100%;min-width:0;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.year-archive-label{font-size:.82em;color:var(--dim);padding-top:12px;white-space:nowrap}.year-archive-options{display:flex;flex-wrap:wrap;gap:9px;max-height:148px;overflow:auto;min-width:0;padding:2px 3px 5px}
+.year-archive-options button{display:flex;align-items:baseline;gap:12px;min-width:100px;justify-content:space-between;padding:10px 13px;background:var(--bg);font-size:.9em}.year-archive-options small{font:11px/1.4 Consolas,monospace;opacity:.75;white-space:nowrap}
+.year-archive-options button[aria-pressed=true]{background:var(--brand);color:var(--panel);border-color:var(--brand);font-weight:700}.year-archive-options button[aria-pressed=true] small{color:inherit}
+html[data-ui-style=nasa] .year-archive-options button{border-radius:0;background:var(--ns-head);box-shadow:2px 3px 0 var(--ns-shadow)}html[data-ui-style=nasa] .year-archive-options button[aria-pressed=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.practice-timer{display:inline-flex;align-items:center;gap:7px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.5}
+.practice-timer:before{content:'';flex:none;width:12px;height:12px;border:1px solid currentColor;border-radius:50%;background:linear-gradient(currentColor,currentColor) center 2px/1px 4px no-repeat,linear-gradient(currentColor,currentColor) 6px 6px/3px 1px no-repeat;opacity:.65}
+.progress-track{grid-column:1/-1;position:relative;min-width:0;padding-bottom:18px}.progress-ruler{position:absolute;left:1px;right:1px;top:11px;height:6px;pointer-events:none}.progress-tick{position:absolute;top:0;width:1px;height:3px;background:var(--hair);opacity:.65;transform:translateX(-50%)}.progress-tick.major{height:6px;opacity:.85}.progress-scale-caption{display:block;text-align:right;font-size:10px;line-height:1.2;color:var(--dim);position:absolute;right:0;bottom:-5px}
+html[data-ui-style] .practice-progress .bar{height:8px;border-radius:2px;overflow:hidden}.practice-progress .bar i{transition:width .16s ease-out}.practice-progress .bar i:after{content:'';display:block;height:100%;background:repeating-linear-gradient(115deg,transparent 0 7px,#ffffff14 7px 9px)}
+@media(max-width:650px){.year-archive{display:block;padding:11px 0}.year-archive-label{display:block;padding:0;margin-bottom:8px}.year-archive-options{gap:8px}.year-archive-options button{min-width:90px;padding:8px 10px}.practice-timer{font-size:.94em}}
+html[data-motion=off] .practice-progress .bar i{transition:none}
+@media(prefers-reduced-motion:reduce){html[data-motion=on] .category-closing,html[data-motion=on] .category-closing .category-dialog,html[data-motion=on] .category-section-enter{animation:none}.practice-progress .bar i{transition:none}}
+
+.practice-mode-tag{display:block;font-size:.7em;color:var(--dim);margin-bottom:5px;letter-spacing:.04em}
+html[data-exam-active=true] .header-tools{display:none!important}
+.exam-header-status{font-size:.9em;color:var(--brand);padding:6px 0}.exam-abandon{color:var(--dim)}
+html[data-exam-active=true] .practice-mode-tag{color:var(--brand);font-weight:700}
+html[data-exam-active=true] .opt.exam-picked,html[data-exam-active=true] .opt.exam-picked:hover{border-color:var(--exam-done-line);color:var(--ink);background:var(--bg)}
+.timer-display{display:inline-flex;align-items:center;gap:2px;font-variant-numeric:tabular-nums;line-height:1.25}
+.tube-digit{display:inline-block;min-width:.64em;text-align:center}.tube-separator{display:inline-block;min-width:.4em;text-align:center}
+html[data-ui-style=nasa] .practice-timer{border:0;border-radius:0;box-shadow:none;padding:0;gap:8px;background:transparent;line-height:1.5;color:var(--ink)}
+html[data-ui-style=nasa] .practice-timer:before{display:none}
+html[data-ui-style=nasa] .timer-name{font-family:inherit;font-size:1em;color:var(--dim)}
+html[data-ui-style=nasa] .timer-display{gap:0;color:var(--ink);font:600 1.12em/1.25 Consolas,"Courier New",monospace;letter-spacing:.015em}
+html[data-ui-style=nasa] .tube-digit{min-width:.62em;padding:0;border:0;border-radius:0;background:none;box-shadow:none;text-shadow:none}
+html[data-ui-style=nasa] .tube-separator{min-width:.38em;color:var(--dim)}
+.practice-details .exam-clock{margin-left:auto;border:0;border-left:1px solid var(--line);padding:0 0 0 18px;border-radius:0;background:transparent;box-shadow:none}
+.practice-details .exam-clock .timer-display{padding:4px 9px;border:1px solid var(--line);border-radius:2px;background:var(--bg);font-size:1.2em;min-width:5.2em;justify-content:center}
+html[data-ui-style=nasa] .practice-details .exam-clock{border-left:1px solid var(--line);padding-left:18px;margin-left:auto}
+html[data-ui-style=nasa] .practice-details .exam-clock .timer-display{background:var(--ns-paper)}
+.practice-details .exam-clock.urgent .timer-display{color:var(--brand);border-color:var(--brand)}
+@media(max-width:540px){.practice-details .exam-clock,html[data-ui-style=nasa] .practice-details .exam-clock{margin-left:0;padding-left:0;border-left:0;flex-basis:100%;padding-top:6px}.practice-details .exam-clock .timer-display{min-width:5.2em}}
+.full-paper-feedback{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--line);margin:0 0 14px}
+.full-paper-feedback>span{font-size:.85em;color:var(--dim);margin-right:3px}.full-paper-feedback button{padding:8px 12px}.full-paper-feedback button[aria-pressed=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.full-paper-feedback>small{flex-basis:100%;color:var(--dim);line-height:1.6}
+.answer-feedback{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 18px;margin:14px 0 10px;color:var(--dim);font-size:.85em}.answer-feedback .note{font-size:1em}
+.deferred-program .pack-input-label{display:flex;flex-direction:column;gap:8px;margin:16px 0}.deferred-code{display:block;width:100%;min-height:300px;max-width:100%;resize:vertical;padding:12px;font:14px/1.6 Consolas,monospace;background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.deferred-program .program-stdin{display:block;width:100%;max-width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.deferred-program>small{display:block;margin-top:8px}

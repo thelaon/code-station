@@ -1,24 +1,237 @@
 {
-  "html_sha256": "4415e0277d44002dd8beb373b8914a9e7c5a3c28d8521a08a7deb708758d5d52",
-  "html_bytes": 3061684,
+  "product": "代码航站",
   "builtin_questions": 0,
   "storage_prefix": "cqframe.",
+  "build_id": "a878a972fe3d4b7fbe1521428d5f7206",
+  "stamp": "2026-10-29 19:19",
+  "html_bytes": 3121179,
+  "html_sha256": "0b17041c55f2fce7dd18a58635850397f03a00b49ced4c22ec77d9d3ab94dc97",
+  "inputs": {
+    "build-manifest.json": {
+      "bytes": 2128,
+      "sha256": "c90a3b2e7e2f4fb83ab4fdea9df03e1a26c2306ba4415ed5a170b33a196e43af"
+    },
+    "src/template.html": {
+      "bytes": 155031,
+      "sha256": "c1d454a006896196aa61da785481ca2fa493054d5119df5b825dfaf6e9e7a4aa"
+    },
+    "src/judge/faults.js": {
+      "bytes": 5267,
+      "sha256": "349a3668507b476591df10eac21e650000cc9e9ef8230ed26bd5f2271eb9c12b"
+    },
+    "src/judge/formcheck.js": {
+      "bytes": 2364,
+      "sha256": "caaebf7abf9f06cb9731763c33a7890594877aab00cc6625286c32961cc9b13d"
+    },
+    "src/judge/diagnostics.js": {
+      "bytes": 7643,
+      "sha256": "4e8989d3cd2b3806585eb7aa50cbf7d70c90f3c4fb4ea980ef6eb357efa9accf"
+    },
+    "src/judge/tests.js": {
+      "bytes": 1908,
+      "sha256": "934e97030dbf2eaec5be8f43ecc21c8c3df5f6452dd142264efce4e17817488f"
+    },
+    "src/judge/engine.js": {
+      "bytes": 9733,
+      "sha256": "5560ae6f7ff1cfeff923ba45367d86931f7c93286166a10bad9b149fd6aa0168"
+    },
+    "vendor/c-runtime/tcc.wasm": {
+      "bytes": 721173,
+      "sha256": "382dc48c79098e23149f4a7b90d7d5893d0fc831fb26826c6b9bc070eb5cbcf1"
+    },
+    "vendor/c-runtime/libc.wasm": {
+      "bytes": 135058,
+      "sha256": "f488f4d4071ea5c724b990057c09cdc9c4bc20b93748c815e122ade722765089"
+    },
+    "vendor/c-runtime/wabt.js": {
+      "bytes": 1248376,
+      "sha256": "021f7a1f3609d46af0254404bba6d8ea1061904df9a687c650dc1416e46f59c9"
+    },
+    "vendor/c-runtime/runtime.js": {
+      "bytes": 22871,
+      "sha256": "39d40f588e151ce2acd35eb82b92963a03eb65c61cbf2a8c44f23b1037964142"
+    },
+    "vendor/c-runtime/_ide-resources-patched.js": {
+      "bytes": 68597,
+      "sha256": "038ec200767a061b88c88f0daab31da9ce4134d246e17fb542a13b9fcc506484"
+    },
+    "src/judge/judge-worker.js": {
+      "bytes": 35461,
+      "sha256": "b7d245c26fd340472a2cbb43fccb5f9a9f3e577902b4c62968ce40a31a79bad2"
+    },
+    "src/judge/programming-worker.js": {
+      "bytes": 3432,
+      "sha256": "11881a5a6120ac0ab3aa215338952498bb04ebc33ced84b5e71791a6aa4ab25c"
+    },
+    "src/js/_storage_safety.js": {
+      "bytes": 5706,
+      "sha256": "37cdd29310a22c8c94971a5635047315d1de635c8985cc1ebcd24f20b21c5e99"
+    },
+    "src/js/_fix_code.js": {
+      "bytes": 51136,
+      "sha256": "38bfb8baf339eb1c56d1c99c0a30c564b75f231bac5b847a43a0e0764feff6e8"
+    },
+    "src/css/_visual_style.css": {
+      "bytes": 17063,
+      "sha256": "518be8c3edd551628e479443c70f340ada39765145f4f041f7a51fa22b8d8f23"
+    },
+    "src/css/_study_pages.css": {
+      "bytes": 25339,
+      "sha256": "1cd32831a2d4ed26ab3af8ce4effa4d45837bda2db9da4fb94d0acc1ad916ea8"
+    },
+    "src/css/_question_packs.css": {
+      "bytes": 10387,
+      "sha256": "99de86fd8b51ae2396c4d33c1ea434fd933db96f021011f895b6a5892a90c1db"
+    },
+    "src/css/_programming.css": {
+      "bytes": 4912,
+      "sha256": "1e9d954e8021abdbc0adee7d0157cb6f705ba575560af0069a7f052b1a55e8a6"
+    },
+    "src/css/_classic_style.css": {
+      "bytes": 36860,
+      "sha256": "d16f0f11e53aa49a4bbb8567e000c265e953aa4d2b3687aa170c3728a999c86f"
+    },
+    "src/css/_settings_help.css": {
+      "bytes": 8069,
+      "sha256": "07e22cf52a54cdff70dc414ceaecefade7ce324c3c48297137933cb3acf44cf9"
+    },
+    "src/css/_ui_details.css": {
+      "bytes": 7560,
+      "sha256": "08818e9ece692a7bcf31ed2329fc54c05f10576663a83e68b3e22bf6c25a0b60"
+    },
+    "src/css/_classic_polish.css": {
+      "bytes": 11723,
+      "sha256": "8eebebfc7f355c709de3b0c0e3abf2063892850e5a9607d6287810efd49572e4"
+    },
+    "src/js/_study_pack_schema.js": {
+      "bytes": 11803,
+      "sha256": "11650571e739ce574310ef8bcbc2853ad16c87df9a372f53ef29884d0a663799"
+    },
+    "src/js/_question_pack_schema.js": {
+      "bytes": 17409,
+      "sha256": "bb2123ceeb4543214b3f8dd89d14c593b9ac92fd5849d508d29043cba75a43c7"
+    },
+    "src/js/_objective_questions.js": {
+      "bytes": 6608,
+      "sha256": "0a22bf6a754ea963ee7ab4c681d4b34f1b4dcdb6d11cbf3a1d52cd69da674632"
+    },
+    "src/js/_pack_manager.js": {
+      "bytes": 23073,
+      "sha256": "e7d6d0b8e78242d1c4da8a651ff92a47dcb7173a6e17df8816218e23886af5a4"
+    },
+    "src/js/_question_packs.js": {
+      "bytes": 32093,
+      "sha256": "25d7175e013fcced53c60986f3bac5d8a6d21e6d097e66bfa9568ea2647e03c1"
+    },
+    "src/js/_visual_style.js": {
+      "bytes": 21371,
+      "sha256": "604c86fe82c21ef4ec44d0a87465c3c5525a5bb26c68b5eb523f082401c975d2"
+    },
+    "src/js/_study_pages.js": {
+      "bytes": 26220,
+      "sha256": "ec9cbfd3d002e4ad7abc88355263f5295485af7ed1ef9011d15fbf7ff4c81c05"
+    },
+    "src/js/_programming.js": {
+      "bytes": 26263,
+      "sha256": "9a09e04d75bcf59006cbb43f62b9ed716ef54ee29fa5af8bc5b7fa389c6bf716"
+    },
+    "src/js/_programming_runtime.js": {
+      "bytes": 5718,
+      "sha256": "830360c70738f03c70b7d8db74ddea21b2633052615d431818658408a375a6a5"
+    },
+    "src/js/_classic_ui.js": {
+      "bytes": 8649,
+      "sha256": "93f08c1ba29a60a00db46c369ff65565c772abc2ea11b4fb77aaafa31f9958a8"
+    },
+    "src/js/_program_practice.js": {
+      "bytes": 10435,
+      "sha256": "a8cefb7f817789527dfbf59158fc1e42636c8b5113e59041fd258046972c485c"
+    },
+    "src/js/_settings_help.js": {
+      "bytes": 20337,
+      "sha256": "f6896158c2248d1289b11b9d806308464eab076d1f7e4d6f977a1ed0ed88807d"
+    },
+    "src/js/_record_backup.js": {
+      "bytes": 6410,
+      "sha256": "404817ea30e18008adc68da70f48a9434faf4c2b3a99588437beb2e1e87fc563"
+    },
+    "src/js/_ui_details.js": {
+      "bytes": 3181,
+      "sha256": "737fd76d34f9d00e53ebc382d489921716071fc052b7b59df0bc345920c30235"
+    }
+  },
   "resources": {
     "res-tcc": "e8fe2e6e0159f2f5751175e6a0fb698916e2f4793da701dc1b3af9765041f929",
     "res-libc": "e3967d5a4228244e7c9978d8bce62e8cbf767ef8979be20b1e88920973b3ef61",
-    "res-wabt": "c346fe9e15593caec00444337526f3f2dbce831e3778256ef192e7e243bb9198",
-    "res-runtime": "d0e5eb44f73376dcb5206897b352c15f4c91d2d012996df0a780f8c167b64c5e",
-    "res-ide": "e37ccb7536fd5867aea46d869855a020cd40ef6e1ca22b72fd52943201752b07",
-    "res-engine": "c73ce8df142fc714e15ea3dc2c2dd8a67a88ae9dbe2d9a0c0e33002dca249078",
-    "res-worker": "63cc0246578999c4fb7eba46df028bdf4116c2cbbcf1b17eea3bb8c8de976b55",
-    "res-program-worker": "bf2e55e34b66993659e05f5ae0c8a1ad64e64e46d0ed3146785ebaf8c30982c1"
+    "res-wabt": "021f7a1f3609d46af0254404bba6d8ea1061904df9a687c650dc1416e46f59c9",
+    "res-runtime": "39d40f588e151ce2acd35eb82b92963a03eb65c61cbf2a8c44f23b1037964142",
+    "res-ide": "038ec200767a061b88c88f0daab31da9ce4134d246e17fb542a13b9fcc506484",
+    "res-engine": "655acb7493aa8c8b4b323ae2cdbb8cacafd1e0257b730c4db421e945437cae43",
+    "res-worker": "b7d245c26fd340472a2cbb43fccb5f9a9f3e577902b4c62968ce40a31a79bad2",
+    "res-program-worker": "11881a5a6120ac0ab3aa215338952498bb04ebc33ced84b5e71791a6aa4ab25c"
   },
   "files": {
-    "CHECKS.md": "fa808ce73535f0f896b8fd4f56aaf6c17e0b39b2274032753471e0b5c775667e",
-    "README.md": "6924df7f0abeda3ec708917f9f993430ad1b09599fcce95d8a6b19493d0f95f7",
-    "做题器.html": "4415e0277d44002dd8beb373b8914a9e7c5a3c28d8521a08a7deb708758d5d52",
-    "第三方组件说明.md": "3227f217d705bfa125cf6bf16b8931466f5b2beadddbdb8dcb34c52e7add7cfc",
+    "src/template.html": "c1d454a006896196aa61da785481ca2fa493054d5119df5b825dfaf6e9e7a4aa",
+    "src/css/_classic_polish.css": "8eebebfc7f355c709de3b0c0e3abf2063892850e5a9607d6287810efd49572e4",
+    "src/css/_classic_style.css": "d16f0f11e53aa49a4bbb8567e000c265e953aa4d2b3687aa170c3728a999c86f",
+    "src/css/_programming.css": "1e9d954e8021abdbc0adee7d0157cb6f705ba575560af0069a7f052b1a55e8a6",
+    "src/css/_question_packs.css": "99de86fd8b51ae2396c4d33c1ea434fd933db96f021011f895b6a5892a90c1db",
+    "src/css/_settings_help.css": "07e22cf52a54cdff70dc414ceaecefade7ce324c3c48297137933cb3acf44cf9",
+    "src/css/_study_pages.css": "1cd32831a2d4ed26ab3af8ce4effa4d45837bda2db9da4fb94d0acc1ad916ea8",
+    "src/css/_ui_details.css": "08818e9ece692a7bcf31ed2329fc54c05f10576663a83e68b3e22bf6c25a0b60",
+    "src/css/_visual_style.css": "518be8c3edd551628e479443c70f340ada39765145f4f041f7a51fa22b8d8f23",
+    "src/js/_classic_ui.js": "93f08c1ba29a60a00db46c369ff65565c772abc2ea11b4fb77aaafa31f9958a8",
+    "src/js/_fix_code.js": "38bfb8baf339eb1c56d1c99c0a30c564b75f231bac5b847a43a0e0764feff6e8",
+    "src/js/_objective_questions.js": "0a22bf6a754ea963ee7ab4c681d4b34f1b4dcdb6d11cbf3a1d52cd69da674632",
+    "src/js/_pack_manager.js": "e7d6d0b8e78242d1c4da8a651ff92a47dcb7173a6e17df8816218e23886af5a4",
+    "src/js/_programming.js": "9a09e04d75bcf59006cbb43f62b9ed716ef54ee29fa5af8bc5b7fa389c6bf716",
+    "src/js/_programming_runtime.js": "830360c70738f03c70b7d8db74ddea21b2633052615d431818658408a375a6a5",
+    "src/js/_program_practice.js": "a8cefb7f817789527dfbf59158fc1e42636c8b5113e59041fd258046972c485c",
+    "src/js/_question_packs.js": "25d7175e013fcced53c60986f3bac5d8a6d21e6d097e66bfa9568ea2647e03c1",
+    "src/js/_question_pack_schema.js": "bb2123ceeb4543214b3f8dd89d14c593b9ac92fd5849d508d29043cba75a43c7",
+    "src/js/_record_backup.js": "404817ea30e18008adc68da70f48a9434faf4c2b3a99588437beb2e1e87fc563",
+    "src/js/_settings_help.js": "f6896158c2248d1289b11b9d806308464eab076d1f7e4d6f977a1ed0ed88807d",
+    "src/js/_storage_safety.js": "37cdd29310a22c8c94971a5635047315d1de635c8985cc1ebcd24f20b21c5e99",
+    "src/js/_study_pack_schema.js": "11650571e739ce574310ef8bcbc2853ad16c87df9a372f53ef29884d0a663799",
+    "src/js/_study_pages.js": "ec9cbfd3d002e4ad7abc88355263f5295485af7ed1ef9011d15fbf7ff4c81c05",
+    "src/js/_ui_details.js": "737fd76d34f9d00e53ebc382d489921716071fc052b7b59df0bc345920c30235",
+    "src/js/_visual_style.js": "604c86fe82c21ef4ec44d0a87465c3c5525a5bb26c68b5eb523f082401c975d2",
+    "src/judge/diagnostics.js": "4e8989d3cd2b3806585eb7aa50cbf7d70c90f3c4fb4ea980ef6eb357efa9accf",
+    "src/judge/engine.js": "5560ae6f7ff1cfeff923ba45367d86931f7c93286166a10bad9b149fd6aa0168",
+    "src/judge/faults.js": "349a3668507b476591df10eac21e650000cc9e9ef8230ed26bd5f2271eb9c12b",
+    "src/judge/formcheck.js": "caaebf7abf9f06cb9731763c33a7890594877aab00cc6625286c32961cc9b13d",
+    "src/judge/judge-worker.js": "b7d245c26fd340472a2cbb43fccb5f9a9f3e577902b4c62968ce40a31a79bad2",
+    "src/judge/programming-worker.js": "11881a5a6120ac0ab3aa215338952498bb04ebc33ced84b5e71791a6aa4ab25c",
+    "src/judge/tests.js": "934e97030dbf2eaec5be8f43ecc21c8c3df5f6452dd142264efce4e17817488f",
+    "vendor/c-runtime/libc.wasm": "f488f4d4071ea5c724b990057c09cdc9c4bc20b93748c815e122ade722765089",
+    "vendor/c-runtime/pins.json": "2b3558ad0271dd03ec27bec7bb35ee8e12fbaab580ec3fe1a2cb71ec45fd6989",
+    "vendor/c-runtime/README.md": "bf16ee3337a7ae6500d38610ae5a0d8284bf0327a5637c91211a3f074a1fe0cc",
+    "vendor/c-runtime/runtime.js": "39d40f588e151ce2acd35eb82b92963a03eb65c61cbf2a8c44f23b1037964142",
+    "vendor/c-runtime/tcc.wasm": "382dc48c79098e23149f4a7b90d7d5893d0fc831fb26826c6b9bc070eb5cbcf1",
+    "vendor/c-runtime/wabt.js": "021f7a1f3609d46af0254404bba6d8ea1061904df9a687c650dc1416e46f59c9",
+    "vendor/c-runtime/_ide-resources-patched.js": "038ec200767a061b88c88f0daab31da9ce4134d246e17fb542a13b9fcc506484",
+    "scripts/check.py": "02033a8d2f29d20a9963829533df0f354bfe99ba8a6ed6a4821e5ccb4b63c319",
+    "scripts/regression.cjs": "a08fd8b37ed07f585e7cbaf551a9f206bbeb1fa528fd6d49a82c5df61077af70",
+    "scripts/test_build.py": "fb2ed50956e5bfd340715b8ffa747a5b37a8354a696b6de258db97dea074f1f3",
+    "scripts/test_full_feedback.cjs": "9e24f55681e118f598a7aac3b44839787f746acf1d3b6f787c344db29e1c7829",
+    "scripts/test_pack_preview.cjs": "37bc6420b567e07391343814f16f2fe08985b25f9c916edb73ab69c8867b4c66",
+    "scripts/test_ui.cjs": "7167507c844e5e3a6a3e78f2241d9726202a65f14b3690066f8017b94399886d",
+    "docs/DEVELOPMENT.md": "a24c6c4ccd194677faa789c7483216290da05e748c64e665c29087b3c2f350d2",
+    "docs/审查修复-2026-10-29.md": "1bbd4437552a0333816c3e2438457a56f9d002403e7286f59f694a97961c9736",
+    "docs/整卷批改与折叠预览-2026-10-29.md": "569e6c84848e3bd46dac38bb3b663677d0e9c220d0cabbdcbe49aae195fb3c2e",
+    "docs/界面细节与考试界面-2026-10-29.md": "dd7ba29707a8394079c9bf73b332f8d0fbf1d457a9f7d1b735184b892e8a67df",
+    "docs/计时状态栏视觉收敛-2026-10-29.md": "6bdf82bd421300678eda62c04fc8e0e2cb37f37a951d060a9b3a29ccb16bdb64",
+    "docs/默认界面与朋友试用-2026-10-29.md": "ce8a33ab8c4a4a0f5743718ef2668d60347128863870b70d975cf11840c77ef5",
     "licenses/TCC-COPYING.txt": "512d2d21b6b3384ba64781abb0208a1b87740bc31e2df48e2b206ddb7e4d5779",
-    "licenses/WABT-LICENSE.txt": "1d2c1da880eb3805f6033e90d80205a8e44e826c5747ecf23853f4a33e909850"
+    "licenses/WABT-LICENSE.txt": "1d2c1da880eb3805f6033e90d80205a8e44e826c5747ecf23853f4a33e909850",
+    ".gitignore": "a4d7c6c329b18a277fb2dbf0291797ae706f4d1adb6b1e377f4212d0dee7d5c0",
+    "AGENTS.md": "3a9f48206b31c4cfde2f88c48db7d4c5a99914ac524daafafcc819205ab36d40",
+    "README.md": "041fe6f9309eef5fc26ef01e3b588d197bcd8f1f42bebbb242122c8ddbf2feec",
+    "CHECKS.md": "7598cc7fbb0fc2f9473f09b5f9da46509532a46b2e8cf90634aab43c9dc1e2ec",
+    "build.py": "05bb4dc6b32785e2c7a782ed92bc2514048d4ff84774385bbb37d5de7c74cca7",
+    "build-manifest.json": "c90a3b2e7e2f4fb83ab4fdea9df03e1a26c2306ba4415ed5a170b33a196e43af",
+    "第三方组件说明.md": "3edd35b2bb254df67da4c0b564c118d6c4fc4e3c231053e9edebc1b1667845f6",
+    "做题器.html": "0b17041c55f2fce7dd18a58635850397f03a00b49ced4c22ec77d9d3ab94dc97",
+    "做题器.build.json": "6a486359646f36800cd716c8180041ecec5f61832ebd7aa7cfafa55f19fafb26"
   }
 }

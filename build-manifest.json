@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "template": "src/template.html",
+  "styles": [
+    "src/css/_visual_style.css",
+    "src/css/_study_pages.css",
+    "src/css/_question_packs.css",
+    "src/css/_programming.css",
+    "src/css/_classic_style.css",
+    "src/css/_settings_help.css",
+    "src/css/_ui_details.css",
+    "src/css/_classic_polish.css"
+  ],
+  "scripts": [
+    "src/js/_study_pack_schema.js",
+    "src/js/_question_pack_schema.js",
+    "src/js/_objective_questions.js",
+    "src/js/_pack_manager.js",
+    "src/js/_question_packs.js",
+    "src/js/_visual_style.js",
+    "src/js/_study_pages.js",
+    "src/js/_programming.js",
+    "src/js/_programming_runtime.js",
+    "src/js/_classic_ui.js",
+    "src/js/_program_practice.js",
+    "src/js/_settings_help.js",
+    "src/js/_record_backup.js",
+    "src/js/_ui_details.js"
+  ],
+  "frontend": "src/js/_fix_code.js",
+  "engine": [
+    "src/judge/faults.js",
+    "src/judge/formcheck.js",
+    "src/judge/diagnostics.js",
+    "src/judge/tests.js",
+    "src/judge/engine.js"
+  ],
+  "resources": [
+    [
+      "res-tcc",
+      [
+        "vendor/c-runtime/tcc.wasm"
+      ],
+      "base64"
+    ],
+    [
+      "res-libc",
+      [
+        "vendor/c-runtime/libc.wasm"
+      ],
+      "base64"
+    ],
+    [
+      "res-wabt",
+      [
+        "vendor/c-runtime/wabt.js"
+      ],
+      "text"
+    ],
+    [
+      "res-runtime",
+      [
+        "vendor/c-runtime/runtime.js"
+      ],
+      "text"
+    ],
+    [
+      "res-ide",
+      [
+        "vendor/c-runtime/_ide-resources-patched.js"
+      ],
+      "text"
+    ],
+    [
+      "res-engine",
+      [
+        "src/judge/faults.js",
+        "src/judge/formcheck.js",
+        "src/judge/diagnostics.js",
+        "src/judge/tests.js",
+        "src/judge/engine.js"
+      ],
+      "text"
+    ],
+    [
+      "res-worker",
+      [
+        "src/judge/judge-worker.js"
+      ],
+      "text"
+    ],
+    [
+      "res-program-worker",
+      [
+        "src/judge/programming-worker.js"
+      ],
+      "text"
+    ]
+  ],
+  "bootstrap": "src/js/_storage_safety.js"
+}

@@ -1,0 +1,121 @@
+/* Default interface: shared spacing, readable secondary text and quiet surfaces. */
+html[data-ui-style=classic]{--classic-soft:#f7f9fc;--classic-shadow:0 3px 14px #22304706}
+html[data-ui-style=classic][data-theme=dark]{--classic-soft:#202d3e;--classic-shadow:none}
+html[data-ui-style=classic] .wrap,html[data-ui-style=classic][data-view=home] .wrap{max-width:1360px}
+html[data-ui-style=classic] :is(.note,.tip,.hint){font-size:max(.83em,13px);line-height:1.75}
+html[data-ui-style=classic] .card{box-shadow:var(--classic-shadow)}
+html[data-ui-style=classic] header.top{gap:22px;margin-bottom:24px;border-color:var(--line)}
+html[data-ui-style=classic] #nav button{font-size:max(.87em,13px);min-height:42px}
+html[data-ui-style=classic] header.top .header-tools button{min-height:40px;font-size:max(.82em,13px)}
+html[data-ui-style=classic] .classic-brand-copy{font-size:1em}
+html[data-ui-style=classic] .classic-brand-copy small{font-size:max(.7em,11px);letter-spacing:.01em}
+html[data-ui-style=classic] .classic-home-heading h2{font-size:1.65em;letter-spacing:0}
+html[data-ui-style=classic] .classic-home-heading p{font-size:max(.87em,13px);line-height:1.7}
+html[data-ui-style=classic] .classic-home-counts{font-size:max(.82em,13px)}
+html[data-ui-style=classic] .library-sidebar h2{font-size:max(.85em,13px)}
+html[data-ui-style=classic] .library-item-copy strong{font-size:max(.88em,13px)}
+html[data-ui-style=classic] .library-item-copy>span{font-size:max(.76em,12px)}
+html[data-ui-style=classic] .library-sidebar .library-import{font-size:max(.8em,13px);min-height:42px}
+html[data-ui-style=classic] .classic-home-modes{gap:26px}
+html[data-ui-style=classic] .classic-home-modes button{font-size:max(.9em,13px);min-height:48px}
+html[data-ui-style=classic] .classic-home-types button{font-size:max(.82em,13px);min-height:38px}
+html[data-ui-style=classic] .classic-feedback-slot[hidden],html[data-ui-style=classic] .classic-mode-description[hidden]{display:none}
+html[data-ui-style=classic] .classic-feedback-slot .full-paper-feedback{margin:0;padding:18px 0 16px;gap:9px}
+html[data-ui-style=classic] .full-paper-feedback>span{font-size:max(.85em,13px);flex-basis:100%;margin-bottom:3px}
+html[data-ui-style=classic] .full-paper-feedback button{font-size:max(.85em,13px);min-height:40px;border-color:var(--line);background:var(--classic-soft);color:var(--dim)}
+html[data-ui-style=classic] .full-paper-feedback button[aria-pressed=true]{background:var(--classic-blue-soft);color:var(--brand);border-color:var(--classic-blue-line);font-weight:650}
+html[data-ui-style=classic] .full-paper-feedback>small{font-size:max(.8em,12px);line-height:1.7}
+html[data-ui-style=classic] .classic-year-filter{padding:14px 0;align-items:center}
+html[data-ui-style=classic] .classic-filter-label{font-size:max(.82em,13px);margin-top:0}
+html[data-ui-style=classic] .classic-year-buttons button{font-size:max(.82em,13px);min-height:36px}
+html[data-ui-style=classic] .classic-list-summary{font-size:max(.82em,13px);padding-top:10px;padding-bottom:10px}
+html[data-ui-style=classic] .classic-paper-table th{font-size:max(.8em,13px);color:var(--dim);padding-top:12px;padding-bottom:12px}
+html[data-ui-style=classic] .classic-paper-table td{font-size:max(.88em,13px);padding-top:15px;padding-bottom:15px;line-height:1.7}
+html[data-ui-style=classic] .classic-paper-table td[data-classic-column=detail],html[data-ui-style=classic] .classic-paper-table td[data-classic-column=pool]{font-size:max(.82em,13px)}
+html[data-ui-style=classic] .classic-paper-table tr.clickable:hover{background:var(--classic-soft)}
+html[data-ui-style=classic] .classic-paper-table tr:focus-within{background:var(--classic-blue-soft)}
+html[data-ui-style=classic] .classic-row-start{min-height:40px;font-size:max(.88em,13px)}
+html[data-ui-style=classic] .classic-study-sidebar h3{font-size:1em;line-height:1.55}
+html[data-ui-style=classic] .classic-first-use p,html[data-ui-style=classic] .classic-review-description{font-size:max(.86em,13px)}
+html[data-ui-style=classic] .classic-first-use{background:var(--classic-blue-soft);border-color:var(--classic-blue-line)}
+html[data-ui-style=classic] .classic-review-links button{font-size:max(.84em,13px)}
+html[data-ui-style=classic] .classic-home-hint{font-size:max(.8em,12px)}
+html[data-ui-style=classic] .practice-head{padding:20px 22px;margin:0;border:1px solid var(--line);background:var(--panel);border-radius:12px}
+html[data-ui-style=classic] .practice-mode-tag{font-size:max(.76em,12px);letter-spacing:0}
+html[data-ui-style=classic] .practice-head h2{font-size:1.35em}
+html[data-ui-style=classic] .practice-head .practice-details{font-size:max(.83em,13px);gap:8px 18px}
+html[data-ui-style=classic] .practice-timer{background:transparent;border:0;padding:0}
+html[data-ui-style=classic] .timer-display{gap:0;font-weight:600;color:var(--ink)}
+html[data-ui-style=classic] .practice-progress{font-size:max(.83em,13px)}
+html[data-ui-style=classic] .practice-main{padding:26px;line-height:1.8}
+html[data-ui-style=classic] .practice-main .opt{font-size:1em;border-radius:8px;min-height:58px;padding:12px 15px}
+html[data-ui-style=classic] .practice-main .opt .tx{line-height:1.65}
+html[data-ui-style=classic] .practice-side h2{font-size:1em;margin-bottom:18px}
+html[data-ui-style=classic] :is(.classic-sheet-legend,.exam-sheet-legend){font-size:max(.78em,12px);line-height:1.6}
+html[data-ui-style=classic] .sheet .cell{min-height:40px;font-size:.9em}
+html[data-ui-style=classic] .practice-foot{padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel);grid-template-columns:minmax(0,1fr) auto;gap:14px}
+html[data-ui-style=classic] .practice-foot .practice-navigation{grid-column:1;grid-row:1}
+html[data-ui-style=classic] .practice-foot .practice-finish-group{grid-column:2;grid-row:1;border-left:1px solid var(--line);padding:0 0 0 16px}
+html[data-ui-style=classic] .practice-foot .practice-question-controls{grid-column:1/-1;grid-row:2;border-left:0;border-top:1px solid var(--line);padding:14px 0 0}
+html[data-ui-style=classic] .practice-foot button{font-size:max(.84em,13px);min-height:42px}
+html[data-ui-style=classic] .choice-analysis{background:var(--classic-soft);border-color:var(--line)}
+html[data-ui-style=classic] .study-heading{padding:5px 0 5px 17px;border-left:3px solid var(--brand);margin-bottom:22px}
+html[data-ui-style=classic] .study-heading h2{font-size:1.6em;margin-bottom:7px}
+html[data-ui-style=classic] .study-heading p{font-size:max(.88em,13px);line-height:1.7}
+html[data-ui-style=classic] .study-page .card{padding:22px}
+html[data-ui-style=classic] .study-metric-groups{gap:14px}
+html[data-ui-style=classic] .study-metric-group{background:var(--classic-soft);border:1px solid var(--line);padding:16px;border-radius:9px;gap:12px}
+html[data-ui-style=classic] .study-number strong{font-size:2em;letter-spacing:-.025em}
+html[data-ui-style=classic] .study-metric-label{font-size:max(.84em,13px);line-height:1.6}
+html[data-ui-style=classic] .study-review-summary{gap:16px;margin-bottom:20px;padding-bottom:20px}
+html[data-ui-style=classic] .study-review-deck{margin:24px 0;gap:16px}
+html[data-ui-style=classic] .study-paper.selected{border-color:var(--brand);background:var(--classic-blue-soft);box-shadow:0 3px 12px #2230470b}
+html[data-ui-style=classic] .study-paper.selected .study-paper-letter{background:var(--brand);color:var(--classic-primary-ink)}
+html[data-ui-style=classic] .study-paper-code{letter-spacing:.02em}
+html[data-ui-style=classic] .study-paper-bottom{font-size:max(.85em,13px);min-height:44px;padding-top:10px;padding-bottom:10px}
+html[data-ui-style=classic] .study-paper-count{font-size:max(.85em,13px)}
+html[data-ui-style=classic] .study-result .stat{gap:18px}
+html[data-ui-style=classic] .study-result .stat .big{font-size:1.65em}
+html[data-ui-style=classic] .study-result .stat>div:first-child .big{font-size:2.4em}
+html[data-ui-style=classic] .category-eyebrow{display:none}
+html[data-ui-style=classic] .category-head{background:var(--classic-soft)}
+html[data-ui-style=classic] .category-nav{background:var(--panel)}
+html[data-ui-style=classic] .category-nav>button[aria-selected=true]{background:var(--classic-blue-soft);border-color:var(--classic-blue-line);box-shadow:none}
+html[data-ui-style=classic] .settings-panel .hint{font-size:max(.84em,13px)}
+html[data-ui-style=classic] .pack-workspace-heading{border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:8px;background:var(--classic-soft)}
+html[data-ui-style=classic] .pack-manager .pack-catalog-card{border-left-width:1px;box-shadow:var(--classic-shadow)}
+.welcome-kicker{display:block;font-size:.8em;color:var(--dim);margin-bottom:12px}
+.welcome-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;list-style:none;counter-reset:welcome;padding:20px 0 0;margin:24px 0 0;border-top:1px solid var(--line)}
+.welcome-steps li{counter-increment:welcome;position:relative;padding-left:30px;min-width:0}
+.welcome-steps li:before{content:counter(welcome);position:absolute;left:0;top:2px;width:21px;height:21px;border:1px solid var(--line);border-radius:50%;font:600 12px/20px Consolas,monospace;text-align:center;color:var(--brand)}
+.welcome-steps strong{display:block;font-size:.9em;margin-bottom:7px}.welcome-steps span{font-size:.83em;line-height:1.7;color:var(--dim)}
+html[data-ui-style=classic] .framework-welcome{padding:30px}
+html[data-ui-style=classic] .framework-welcome h2{font-size:1.6em;margin:0}
+html[data-ui-style=classic] .framework-welcome>p{max-width:46em;font-size:.92em;color:var(--dim);line-height:1.85;margin:14px 0 22px}
+html[data-ui-style=classic] .framework-welcome .toolbar button{font-size:.9em;min-height:44px}
+html[data-ui-style=classic] .foot{font-size:max(.75em,11px)}
+@media(max-width:1000px){html[data-ui-style=classic] .classic-home-grid{display:flex;flex-direction:column}html[data-ui-style=classic] .classic-paper-panel{width:100%;order:1}html[data-ui-style=classic] .classic-study-sidebar{width:100%;order:2;grid-template-columns:repeat(2,minmax(0,1fr))}html[data-ui-style=classic] .classic-home-hint{display:none}}
+@media(max-width:700px){
+ html[data-ui-style=classic] header.top{padding:14px;gap:12px}
+ html[data-ui-style=classic] .classic-home-modes{gap:10px}
+ html[data-ui-style=classic] .classic-home-modes button{font-size:max(.85em,13px);line-height:1.6}
+ html[data-ui-style=classic] .classic-study-sidebar{grid-template-columns:1fr}
+ html[data-ui-style=classic] .classic-paper-table td{padding:0!important}
+ html[data-ui-style=classic] .classic-paper-table tr{gap:6px 12px}
+ html[data-ui-style=classic] .classic-row-start{min-height:44px}
+ html[data-ui-style=classic] .study-page .card{padding:18px}
+ html[data-ui-style=classic] .study-metric-groups{grid-template-columns:1fr;gap:10px}
+ html[data-ui-style=classic] .study-metric-group{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px}
+ html[data-ui-style=classic] .practice-head{padding:18px}
+ html[data-ui-style=classic] .practice-head h2{font-size:1.18em}
+ html[data-ui-style=classic] .practice-main{padding:18px}
+ html[data-ui-style=classic] .framework-welcome{padding:22px}
+ .welcome-steps{grid-template-columns:1fr;gap:20px}
+}
+@media(max-width:600px){
+ html[data-ui-style=classic] .practice-foot{padding:14px;grid-template-columns:minmax(0,1fr)}
+ html[data-ui-style=classic] .practice-foot .practice-navigation{grid-column:1;grid-row:1}
+ html[data-ui-style=classic] .practice-foot .practice-question-controls{grid-column:1;grid-row:2}
+ html[data-ui-style=classic] .practice-foot .practice-finish-group{grid-column:1;grid-row:3;border-left:0;border-top:1px solid var(--line);padding:14px 0 0}
+ html[data-ui-style=classic] .practice-foot button{min-height:44px}
+}

@@ -1,0 +1,103 @@
+.library-sidebar nav{display:flex;flex-direction:column;gap:10px;max-height:55vh;overflow-y:auto}
+.library-sidebar .library-item:not([aria-current="page"]){border-color:var(--line);box-shadow:none;background:var(--panel)}
+.library-sidebar .library-import{width:100%;white-space:normal;margin-top:16px;font-size:.85em}
+.library-item-copy strong{overflow-wrap:anywhere}
+.pack-manager{overflow-wrap:anywhere}.pack-manager .toolbar{gap:12px;flex-wrap:wrap}
+.pack-manager input[type="file"]{max-width:100%;min-width:0;font-size:.85em}
+.pack-status{padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:4px}
+.pack-errors{color:var(--bad);padding-left:24px}.pack-errors li{margin:8px 0}
+.pack-preview{margin:16px 0}.pack-preview select{max-width:100%}
+.pack-preview-disclosure{border:1px solid var(--line);background:var(--panel)}
+.pack-preview-disclosure>summary{padding:14px 16px;cursor:pointer;color:var(--ink)}
+.pack-preview-disclosure>summary .note{display:inline-block;margin:4px 0 0 14px;font-size:.85em;color:var(--dim)}
+.pack-preview-disclosure>summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.pack-preview-disclosure[open]>summary{border-bottom:1px solid var(--line)}
+.pack-preview-body{padding:0 16px 12px;min-width:0}
+.pack-question{border-top:1px solid var(--line);padding:12px 0}.pack-question h4{margin:8px 0}
+.pack-text{white-space:pre-wrap;overflow-wrap:anywhere;font-family:inherit;line-height:1.7;margin:8px 0}
+.pack-question img{max-width:100%;max-height:260px;object-fit:contain}
+.pack-installed{border-top:1px solid var(--line);margin-top:20px;padding-top:12px}
+.pack-installed-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:12px 0}
+@media(max-width:1200px){.library-sidebar nav{flex-direction:row;flex-wrap:wrap;max-height:200px}.library-sidebar nav .library-item{width:auto;flex:1 1 180px}.library-sidebar .library-import{width:auto;margin:0}}
+
+.library-content .nasa-hero h2,.nasa-paper-title,.nasa-paper-top,.nasa-paper-letter{overflow-wrap:anywhere}
+
+.multiple-question .opt{width:100%;text-align:left;cursor:pointer;font:inherit;min-height:60px;gap:12px;border-width:2px}
+.multiple-question .multi-check{display:inline-flex;align-items:center;justify-content:center;width:1em;height:1em;flex:0 0 1em;margin-left:auto;font-size:1.2em;line-height:1;color:inherit}
+.multiple-question .opt[aria-pressed="true"]{border:2px solid var(--brand);background:var(--panel)}
+.multiple-question .opt:disabled{opacity:1;cursor:default}
+.multiple-actions{display:inline-flex;flex-wrap:wrap;gap:12px;max-width:100%}
+.objective-blanks{font-family:inherit;white-space:normal;padding:16px}
+.objective-blanks .ln{display:flex;align-items:center;flex-wrap:wrap;gap:12px;min-height:60px;white-space:pre-wrap}
+.objective-blanks input.blk{width:min(100%,360px);max-width:100%;min-width:0;font-family:inherit}
+
+
+.practice-foot .question-actions{display:inline-flex;align-items:center;flex-wrap:wrap;gap:14px;max-width:100%;min-width:0}
+html[data-ui-style] .practice-foot .question-actions>button{margin:0}
+
+.pack-manager [hidden]{display:none!important}
+.pack-manager .pack-input-label{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.pack-manager .pack-paste-area textarea{display:block;width:100%;max-width:100%;resize:vertical;min-height:160px;background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:12px;font: .85em/1.6 Consolas,"Microsoft YaHei",monospace}
+.pack-input-switch button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.pack-batch{display:grid;gap:12px;margin:16px 0}
+.pack-batch-item{border:1px solid var(--line);border-left:4px solid var(--hair);padding:12px;background:var(--panel);min-width:0}
+.pack-state-ready{border-left-color:var(--ok)}
+.pack-state-invalid,.pack-state-conflict{border-left-color:var(--bad)}
+.pack-state-installed,.pack-state-duplicate{border-left-color:var(--brand)}
+.pack-batch-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.pack-batch-label{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 220px}
+.pack-batch-label strong{min-width:0;overflow-wrap:anywhere}
+.pack-batch-label input{width:18px;height:18px;flex:none;accent-color:var(--brand)}
+.pack-batch-head .toolbar{margin:0}
+.pack-row-message{font-size:.9em;margin:8px 0}
+.pack-batch-item .note{margin:8px 0}
+.pack-warnings{color:var(--mark);margin-top:12px}.pack-warnings .pack-errors{color:inherit}
+.pack-preview-tools{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0;align-items:end}
+.pack-preview-tools label{display:flex;flex-direction:column;gap:6px;min-width:0;max-width:100%}
+.pack-preview-tools select,.pack-preview-tools input,.pack-installed>input{max-width:100%;min-width:0;padding:8px;background:var(--panel);color:var(--ink);border:1px solid var(--line);font:inherit}
+.pack-preview-tools input[type="search"]{width:240px}.pack-preview-tools input[type="number"]{width:90px}
+.pack-selection-summary{font-size:.9em;border-top:1px solid var(--line);padding-top:12px}
+.pack-import-bottom{border-bottom:1px solid var(--line);padding-bottom:16px}
+.pack-question[data-preview-num]{scroll-margin:12px}
+.pack-manager-tools{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}.pack-manager-tools input{flex:1 1 240px;min-width:0}.pack-manager-tools select{max-width:100%}
+.pack-manager-tools input,.pack-manager-tools select{padding:10px;font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.pack-catalog{display:grid;gap:14px}.pack-manager .pack-catalog-card{margin:0;display:block;padding:16px;border:1px solid var(--line);border-left:4px solid var(--brand);background:var(--panel)}
+.pack-catalog-copy h3{margin:0 0 8px;font-size:1.1em}.pack-catalog-copy p{margin:8px 0}.pack-catalog-card .toolbar{margin:14px 0 0}
+.pack-confirm{display:flex;align-items:start;gap:12px;margin:18px 0}.pack-confirm input{flex:none;width:20px;height:20px;accent-color:var(--brand)}
+.pack-manager .pack-backup-actions{align-items:center;margin-top:20px}.pack-backup-actions label{max-width:100%;flex:1 1 240px}.pack-backup-actions input{width:100%}
+.pack-status button{display:block;margin:12px 0 0}
+@media(max-width:600px){.pack-preview-tools label{flex:1 1 140px}.pack-preview-tools input[type="search"]{width:100%}.pack-batch-head .toolbar{width:100%}.pack-manager .pack-installed-row{align-items:start}}
+
+
+.shared-material{width:100%;min-width:0;box-sizing:border-box;border:1px solid var(--line);border-left:4px solid var(--brand);background:var(--panel);padding:14px 16px;margin:0 0 18px;overflow-wrap:anywhere}
+.shared-material-title{font-weight:700;font-size:.9em;margin-bottom:10px}
+.shared-material .figs{margin-bottom:0}.shared-material .note{font-size:.8em;margin:8px 0 0}
+.shared-material img{max-width:100%;height:auto}
+.sheet.subquestion-sheet{grid-template-columns:repeat(auto-fill,minmax(62px,1fr))}
+.sheet .cell.subquestion{font-size:.8em;line-height:1.15;white-space:normal;overflow-wrap:anywhere;min-width:0}
+
+
+.pack-workspace-heading{margin:18px 0 22px;padding:20px 22px;background:var(--bg);border-left:4px solid var(--brand)}
+.pack-workspace-kicker{font:11px/1.5 Consolas,monospace;letter-spacing:.14em;color:var(--dim)}
+.pack-workspace-heading h3{font-size:1.4em;margin:6px 0}.pack-workspace-heading p{color:var(--dim);margin:8px 0 0;font-size:.85em}
+.pack-workspace-tabs{border-bottom:1px solid var(--line);padding-bottom:16px}
+.pack-workspace-tabs button[aria-pressed=true]{background:var(--brand);color:var(--panel);border-color:var(--brand)}
+.pack-workspace .pack-installed{border:0;margin-top:20px;padding:0}.pack-installed>summary{font-weight:700;cursor:pointer}
+.pack-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.pack-overview>div{background:var(--bg);border:1px solid var(--line);padding:14px;min-width:0}
+.pack-overview span{display:block;color:var(--dim);font-size:.8em}.pack-overview strong{display:inline-block;font-size:1.8em;margin:6px 8px 0 0}.pack-overview small{color:var(--dim)}
+.pack-match-count{font-size:.8em;color:var(--dim)}.pack-manager .pack-catalog-card{border-left-width:3px;border-radius:10px;padding:20px}
+.pack-card-heading{display:flex;align-items:start;justify-content:space-between;gap:12px}.pack-card-heading h3{min-width:0;overflow-wrap:anywhere}
+.pack-state-badge{flex:none;font-size:.72em;padding:4px 8px;border:1px solid var(--line);border-radius:4px}.pack-state-badge.is-on{color:var(--ok)}.pack-state-badge.is-off{color:var(--dim);background:var(--bg)}
+.pack-source{font-size:.8em;color:var(--dim);margin:12px 0}.pack-source summary{cursor:pointer}
+.pack-record-summary{border-top:1px dashed var(--line);padding-top:12px;line-height:1.8}
+.pack-manager .pack-card-actions{gap:12px;padding-top:12px;border-top:1px solid var(--line)}
+.pack-card-actions .pack-enter{font-weight:700;border-color:var(--brand);color:var(--brand)}.pack-card-actions .pack-danger{margin-left:auto;color:var(--bad)}
+.pack-empty{padding:30px 18px;text-align:center;background:var(--bg);border:1px dashed var(--line);color:var(--dim)}
+.pack-manager .pack-backup-actions{padding:18px;border:1px solid var(--line);background:var(--bg);margin-top:24px}
+.pack-import-panel{padding-top:4px}.pack-file-area{padding:8px 18px;border:1px dashed var(--line);background:var(--bg);margin:16px 0}
+html[data-ui-style=nasa] .pack-workspace-heading{background:var(--ink);color:var(--panel);border-left:4px solid var(--brand)}
+html[data-ui-style=nasa] .pack-workspace-heading p,html[data-ui-style=nasa] .pack-workspace-kicker{color:var(--panel)}
+html[data-ui-style=nasa] .pack-manager .pack-catalog-card{border-radius:0;box-shadow:3px 4px 0 var(--ns-shadow);background:var(--ns-paper)}
+html[data-ui-style=nasa] .pack-overview>div{border-radius:0;border-top:3px solid var(--ink)}
+@media(max-width:600px){.pack-manager .pack-catalog-card{padding:14px}.pack-overview{gap:8px}.pack-overview>div{padding:10px}.pack-overview strong{display:block;font-size:1.5em}.pack-manager-tools>*{flex:1 1 120px;min-width:0}.pack-card-actions button{flex:1 1 110px}.pack-card-actions .pack-danger{margin-left:0}.pack-workspace-heading{padding:16px}.pack-manager .pack-backup-actions{padding:12px}}
