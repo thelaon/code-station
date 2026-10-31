@@ -8,6 +8,7 @@
     "third_party/wabt-1.0.37/license-reference"
   ],
   "files": [
+    ".gitattributes",
     ".gitignore",
     "AGENTS.md",
     "README.md",

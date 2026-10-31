@@ -3,6 +3,10 @@
   "profile": "public",
   "scope": "application HTML has no embedded questions; includes optional independently authored external demo JSON; no Git history or private evidence",
   "files": {
+    ".gitattributes": {
+      "bytes": 299,
+      "sha256": "87ae577d2d542ef0c9720421234ac7a0235e31acaa1838a5fabfa399ec6d3b67"
+    },
     ".gitignore": {
       "bytes": 531,
       "sha256": "f89b145b51a5a89d84b46fa4a1a785d03aa0f15a63736ef6f0c45a00462957df"
@@ -104,8 +108,8 @@
       "sha256": "0f7570b44976cda6b3e1638505678f51ed7b3d6855c0678d3a0d66f4d416c6a0"
     },
     "release-files.json": {
-      "bytes": 1827,
-      "sha256": "00949e459ea9bb9c6acf48e6cbdd8fdc5ea0422af9387dd28a1f1611a18fcd25"
+      "bytes": 1788,
+      "sha256": "9e138b247dd4d545c4f21b3e717617cc84dc756fa6a30391385a2105e4289bee"
     },
     "scripts/audit_release.py": {
       "bytes": 6683,

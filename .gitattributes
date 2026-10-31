@@ -1,0 +1,16 @@
+# Keep text bytes reproducible across Windows, macOS and Linux.
+* text=auto eol=lf
+
+# Binary release resources must never undergo newline conversion.
+*.wasm -text
+*.zip -text
+*.png -text
+*.jpg -text
+*.jpeg -text
+*.gif -text
+*.ico -text
+*.pdf -text
+*.woff -text
+*.woff2 -text
+*.ttf -text
+*.otf -text
