@@ -19,6 +19,16 @@ window.CQStorage=(function(){
     var foot=document.getElementById('foot');if(foot)foot.textContent=foot.textContent.replace('进度自动保存',stale?'此页面已停止保存':'存在未保存更改');
   }
   function assertWritable(){if(stale)throw new Error('数据已在其他页面改变，请先导出当前记录，再刷新。');}
+  function checkSchema(){
+    var raw=read('cqframe.storage-schema.v1');
+    if(raw!==null&&raw!=='1')throw new Error('本机数据版本无法由当前应用安全读取，请使用匹配的新版或先导出故障备份。原数据未清除。');
+  }
+  function adoptSchema(build){
+    checkSchema();
+    // Legacy framework keys already use the supported v1 layout. Adopt without rewriting user data.
+    if(read('cqframe.storage-schema.v1')===null&&!write('cqframe.storage-schema.v1','1'))throw new Error('数据版本标记暂时无法保存，原数据已保留。');
+    if(build!=='dev'&&read('cqframe.build.v1')!==build&&!write('cqframe.build.v1',build))throw new Error('升级标记暂时无法保存，原数据已保留。');
+  }
   function read(k){var value=localStorage.getItem(k);if(!Object.prototype.hasOwnProperty.call(known,k))known[k]=value;return value;}
   function accept(writes){Object.keys(writes).forEach(function(k){known[k]=writes[k];delete pending[k];});}
   function write(k,value){
@@ -34,5 +44,5 @@ window.CQStorage=(function(){
     if(navigator.locks&&navigator.locks.request){navigator.locks.request('cqframe.application.writer',{ifAvailable:true},function(lock){if(!lock){recovery('等待其他页面关闭。',true);return;}run();return new Promise(function(){});}).catch(function(e){recovery(e,false);});}
     else run();
   }
-  return {start:start,read:read,setRaw:write,remove:function(k){return write(k,null);},accept:accept,assertWritable:assertWritable,recovery:recovery,flush:flush,reset:function(){known=Object.create(null);pending=Object.create(null);var n=document.getElementById('storage-notice');if(n)n.hidden=true;},hasPending:function(){return Object.keys(pending).length>0;}};
+  return {start:start,read:read,setRaw:write,remove:function(k){return write(k,null);},accept:accept,assertWritable:assertWritable,checkSchema:checkSchema,adoptSchema:adoptSchema,recovery:recovery,flush:flush,reset:function(){known=Object.create(null);pending=Object.create(null);var n=document.getElementById('storage-notice');if(n)n.hidden=true;},hasPending:function(){return Object.keys(pending).length>0;}};
 }());

@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "date": "2026-10-31",
+  "delivery_status": "prepared-conservative-notice-set",
+  "artifact_sha256": "021f7a1f3609d46af0254404bba6d8ea1061904df9a687c650dc1416e46f59c9",
+  "primary_license": "Apache-2.0",
+  "supplemental_file": "licenses/WABT-THIRD-PARTY-NOTICES.txt",
+  "supplemental_sha256": "dfe13f1fda11dc27147755372f48a161fe836a24e251e571dca7382d5510c62c",
+  "parts": [
+    {
+      "title": "Emscripten generated support code (MIT/NCSA; includes Node-derived path notice)",
+      "file": "third_party/wabt-1.0.37/license-reference/EMSCRIPTEN-LICENSE.txt",
+      "sha256": "1d678c6d3e6fca3245faaf72b66097b8df241172b38c8d9a16601e3a72b66386"
+    },
+    {
+      "title": "musl C library support notices",
+      "file": "third_party/wabt-1.0.37/license-reference/MUSL-COPYRIGHT.txt",
+      "sha256": "dd3d670b96794146071703a75b07421203e23e4ef11b4f8c484d90c465bcd6f5"
+    },
+    {
+      "title": "LLVM libc++ support; retain full license and exceptions",
+      "file": "third_party/wabt-1.0.37/license-reference/LIBCXX-LICENSE.txt",
+      "sha256": "3f3d1da78246d5c2ffc879f8239d6e856b19ba813b8349cbe48f85bd018ee3af"
+    },
+    {
+      "title": "LLVM libc++abi support; retain full license and exceptions",
+      "file": "third_party/wabt-1.0.37/license-reference/LIBCXXABI-LICENSE.txt",
+      "sha256": "b043b7c5fdaf8df24b2c3b50f7651e6acfc8bdd73cc152ec5d090b8a7e0ede33"
+    },
+    {
+      "title": "LLVM compiler-rt support; retain full license and exceptions",
+      "file": "third_party/wabt-1.0.37/license-reference/COMPILER-RT-LICENSE.txt",
+      "sha256": "b606c871f483c0023ee92cb62e271fce42467407da220b7bc9e22208eada9d25"
+    },
+    {
+      "title": "Allocator alternatives: dlmalloc / emmalloc attribution",
+      "file": "third_party/wabt-1.0.37/license-reference/ALLOCATOR-NOTICES.txt",
+      "sha256": "2b866cafba74e9cd1b16f7670924722ae2c94ea2c5091ddf5419125c4ceb31ee"
+    },
+    {
+      "title": "WABT SHA-256 provider alternative: PicoSHA2",
+      "file": "third_party/wabt-1.0.37/license-reference/PICOSHA2-LICENSE.txt",
+      "sha256": "53d9a97563f349da7aeb566c364c4a4eb55c88d83842a863b11b066553b0d34e"
+    },
+    {
+      "title": "Optional SHA-256 provider alternative: OpenSSL legacy terms",
+      "file": "third_party/wabt-1.0.37/license-reference/OPENSSL-LEGACY-LICENSE.txt",
+      "sha256": "5c2091e38fe2321a9335e8f7c473754bd3c037592a0181cfe192388d7e2bd709"
+    },
+    {
+      "title": "Optional SHA-256 provider alternative: OpenSSL 3 terms",
+      "file": "third_party/wabt-1.0.37/license-reference/OPENSSL-3-LICENSE.txt",
+      "sha256": "ff420781e0005270cd1894a265e526dec4eb332f99df62a481b06672db202290"
+    }
+  ],
+  "historical_emscripten_build_id": "not recovered; not asserted",
+  "scope": "Attribution delivery with conservative alternatives; not a reconstructed linker map or a whole-product legal certification."
+}

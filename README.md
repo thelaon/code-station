@@ -1,67 +1,62 @@
-# 代码航站
+# 代码航站 · Code Station
 
-可独立维护和构建的离线编程练习框架，支持题包导入、普通练习、模拟考试、复习、统计、题库管理和本机C程序运行。
+离线运行的编程练习工具。支持导入题包、练习、模拟考试、复习、统计和本机C程序运行，无需账号、服务器或模型API。
 
-不预装题目、答案解析、题图、示例题库或个人记录。双击根目录“做题器.html”使用，另外导入有权使用的JSON题包；无需账号、服务器或模型API。Word/PDF/ZIP不能直接识题。
+## 下载与使用
 
-## 独立构建
+当前版本：**0.2v**。
 
-只需要Python 3.9+，构建仅使用标准库，不需要Node、Babel、npm或原私人工程。
+1. 从[Releases](https://github.com/thelaon/code-station/releases/tag/0.2v)下载`code-station-0.2v.zip`并解压。
+2. 双击“做题器.html”。在“导入 / 管理题包”中选择JSON题包，预览后确认导入。
+3. 可先导入随附“示例题包/示例题库.json”体验；顶部“?”提供完整说明。
+
+页面不预装题目。随附示例由本项目独立编写，共5卷27题，含六种题型、两张插图和连续小问，不是考试真题；详见[示例说明](examples/demo-bank/README.md)。Word、PDF和ZIP不能直接作为题包导入。
+
+## 功能与数据
+
+- 单选、多选、普通填空、程序填空、改错和编程；题库支持启停、更新、删除及备份。
+- 整卷练习可选即时批改或交卷后批改，模拟考试交卷后统一判分；当前模拟考试不含编程题。
+- 复习计划、统计、历史答卷、代码草稿和本机C程序自测。
+- 默认/航天两套界面、字号和动效设置、可选答对自动跳题。
+
+数据保存在当前浏览器。题库、学习记录、代码草稿需要分别备份；恢复时先恢复题库。升级保留数据，移动HTML、换浏览器或清理浏览器数据前请先备份。复制HTML不会带走浏览器记录。
+
+已在Windows桌面Edge验证；窄屏检查使用桌面模拟。更多用法见[使用说明](docs/发行版使用说明.md)，功能边界见[版本说明](docs/RELEASE-NOTES-0.2v.md)。
+
+## 从源码构建
+
+Python 3.9+，只使用标准库：
 
 ```text
 python build.py
 ```
 
-输出dist/代码航站.html及同名.build.json输入/资源指纹清单。可从任意工作目录调用build.py，所有输入相对本工程解析；顺序统一在build-manifest.json维护。
-
-更新根目录兼容入口：
+输出`dist/代码航站.html`及同名构建清单。发行源码默认使用`public`配置，根目录“做题器.html”也是公众界面。需要完整诊断信息时，可显式指定`--profile development`；本地私人开发目录可使用不同默认配置，以build-manifest.json为准。
 
 ```text
-python build.py --output 做题器.html
+python build.py --profile public --output 做题器.html
+python scripts/prepare_release.py
 ```
 
-逐字复现（同源码、同参数）：
-
-```text
-python build.py --build-id verify-1 --stamp "2026-10-29 12:00"
-```
-
-默认每次构建生成新DATA_BUILD。按当前开发约定，新构建首次打开清空本应用cqframe.*记录、题包和草稿，guide.seen.v1首次提示标记除外；同版刷新保留。构建前备份需要的数据。固定标识仅供复现检查，实际修改应使用新标识。
+后者生成用户发行包、独立示例包及源码包，不推送仓库或改变仓库可见性。构建依赖顺序和版本号在build-manifest.json维护；修改src后重新构建，不要只改生成HTML。[开发说明](docs/DEVELOPMENT.md)介绍模块与维护入口。
 
 ## 检查
 
-构建不依赖Node；检查JS语法时需要本机Node：
+成品检查需要Node；浏览器检查另需可选Playwright和桌面浏览器，不属于应用运行依赖。
 
 ```text
-python scripts/check.py --node node
 python scripts/check.py --html 做题器.html --node node
-```
-
-检查空题库、独立存储、资源、字节戳、脚本/Worker语法及构建指纹；浏览器及真实运行范围见CHECKS.md。
-
-## 开发与使用
-
-[开发入口](docs/DEVELOPMENT.md)说明模块边界与修改流程。题库、学习记录、代码草稿分别备份；迁移时先恢复题库，再恢复记录与草稿。复制HTML不会带走浏览器记录。顶部“?”可查阅完整使用说明。
-
-当前保持私有归档状态，未自动公开网站或设置整个项目的统一开源许可。组件来源及许可见第三方组件说明、vendor和licenses目录。
-
-## 异常保护与回归
-
-新版浏览器支持Web Locks时同一数据空间只允许一个页面写入；第二页关闭旧页面后重新连接。不支持该API时使用快照冲突检测，请避免并行编辑。保存失败有待保存提示和重试/导出入口；恢复日志损坏时可从恢复页导出故障备份。
-
-旧备份中的改错报告HTML不会执行，只恢复可验证分数；详细报告重新提交生成。学习记录导入经过完整校验及成组提交，失败不修改原有记录。
-
-```text
 python scripts/test_build.py
-node scripts/regression.cjs
+node scripts/test_public_release.cjs 做题器.html
+node scripts/test_demo_bank.cjs 做题器.html
 ```
 
-浏览器回归需自行安装可选Playwright开发依赖；可用CQUIZ_PLAYWRIGHT指定模块路径，CQUIZ_BROWSER指定浏览器（默认msedge）。不会进入应用运行或Python构建依赖。测试仅合成最小数据，不分发实际题库。
+运行环境、回归范围和其他检查见[CHECKS.md](CHECKS.md)。浏览器检查使用隔离的合成数据，不修改使用者记录。
 
-构建中断产生的隐藏transaction.json与.cquiz-build目录应保留，再次构建会恢复。勿手工删除未恢复的日志。详细修复范围见docs/审查修复-2026-10-29.md。
+## 许可与版权反馈
 
-界面更新：年份可省略或填null，显示“无年份”；航天首页使用年份分组。模拟考试隐藏离场导航，交卷统一评分，放弃不生成成绩。题型专练仍即时反馈，整卷可选择即时或交卷后批改。新增UI检查：node scripts/test_ui.cjs。
+项目由[thelaon](https://github.com/thelaon)发起和维护，主要通过生成式AI辅助开发，不宣称全部代码为手写或整个项目全部原创。
 
-整卷批改选择与玻璃管计时、紧凑得分和折叠导入预览：见docs/整卷批改与折叠预览-2026-10-29.md。新增回归：node scripts/test_full_feedback.cjs；node scripts/test_pack_preview.cjs。测试采用隔离浏览器和合成数据。
+依法可授权的自有部分采用[MIT](LICENSE)，范围见[LICENSE-SCOPE.md](LICENSE-SCOPE.md)。第三方组件及派生修改保留各自许可，见[第三方组件说明](第三方组件说明.md)；对应源码可从Release下载，或从“设置 → 第三方许可”离线保存。其他导入题库不因使用本工具取得授权。
 
-默认界面排版与朋友试用验收：见docs/默认界面与朋友试用-2026-10-29.md。默认界面优化单独维护于src/css/_classic_polish.css。
+维护者知悉能定位具体内容的版权异议后，将立即启动相关内容的先行暂停分发或下架，再核查、移除或替换。这不构成免责或对MIT的附加限制。反馈方式和处理范围见[COPYRIGHT.md](COPYRIGHT.md)，其他问题可提交[Issue](https://github.com/thelaon/code-station/issues)。

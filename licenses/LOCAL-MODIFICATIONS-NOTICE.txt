@@ -1,0 +1,57 @@
+CodeStation / 代码航站 — Local modification notice
+Evidence snapshot audited on 2026-10-31
+
+This distribution uses a locally modified version of the TCC WebAssembly
+compiler and runtime from:
+  https://github.com/44670/tcc-wasm
+  Revision: 8bff9fbc019a3008395eec4cda6e90752fb88ed9
+
+The following statements describe local modifications. They do not assign
+copyright ownership or replace the applicable upstream license notices.
+Retain the upstream README, COPYING, file-specific notices and exceptions.
+
+Compiler source changes:
+  include/tccdefs.h: target definitions and variadic argument handling.
+  include/time.h: time-function declarations.
+  libtcc.c and tcc.h: WebAssembly target options and related state.
+  tccgen.c: code generation, type handling and diagnostics adjustments.
+  wasm32-gen.c: aggregate calling conventions, temporary values, imported
+    function addresses, function tables and relocations.
+
+Runtime library changes:
+  lib/wasm32-libc.c: numeric conversion and formatted I/O adjustments,
+    runtime helper functions, standard-library additions and time handling.
+  docs/runtime.js: compiler/runtime import validation, execution integration
+    and removal of host-side numeric conversion overrides.
+
+Embedded header container:
+  The distributed _ide-resources-patched.js is a generated, locally modified
+  header container. Changed resources include errno.h, inttypes.h, limits.h,
+  stdio.h, stdlib.h, tccdefs.h and time.h. The generator, base container and
+  target tccdefs.h are supplied with the corresponding-source materials.
+  The six qsort/bsearch implementation and helper function bodies in
+  stdlib.h are unchanged from the fixed upstream revision identified above.
+
+Stable binary mapping for this notice:
+  tcc.wasm
+    SHA-256 382dc48c79098e23149f4a7b90d7d5893d0fc831fb26826c6b9bc070eb5cbcf1
+  libc.wasm
+    SHA-256 f488f4d4071ea5c724b990057c09cdc9c4bc20b93748c815e122ade722765089
+  runtime.js
+    SHA-256 39d40f588e151ce2acd35eb82b92963a03eb65c61cbf2a8c44f23b1037964142
+  _ide-resources-patched.js
+    SHA-256 038ec200767a061b88c88f0daab31da9ce4134d246e17fb542a13b9fcc506484
+
+The separate integer-conversion candidate built on 2026-10-30 is not part
+of this stable snapshot. Experimental Picolibc/wasi-libc modules are not
+identified by this notice as components of these stable binaries.
+
+See the accompanying stable-runtime provenance report, source archive,
+patches and build instructions for the exact modifications and versions.
+
+Annotated source edition prepared on 2026-10-31:
+The corresponding-source archive now includes explicit per-file modification
+notices and dated preparation statements. Seven changed embedded headers
+also carry their own notices. ANNOTATIONS.json maps original and annotated
+file hashes. Historical batch dates are evidence, not invented dates of
+every individual edit. Original license notices and exceptions are retained.

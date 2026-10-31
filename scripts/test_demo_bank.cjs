@@ -1,0 +1,36 @@
+// Validate the actual distributable external demo, without touching the user's browser profile.
+const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{pathToFileURL}=require('url');
+const {chromium}=require(process.env.CQUIZ_PLAYWRIGHT||'playwright');
+const root=path.resolve(__dirname,'..'),raw=fs.readFileSync(path.join(root,'examples/demo-bank/示例题库.json'),'utf8'),pack=JSON.parse(raw);
+const schema=require(path.join(root,'src/js/_question_pack_schema.js'));const checked=schema.check(pack);assert.equal(checked.ok,true,JSON.stringify(checked.errors));assert.equal(checked.summary.questions,27);assert.equal(checked.summary.papers,5);assert.equal(checked.summary.images,2);assert.equal(checked.summary.total,52);
+const app=path.resolve(process.env.CQUIZ_APP||process.argv[2]||path.join(root,'dist/发行版/做题器.html'));
+const report={schema:checked.summary,answered:[],checks:[],errors:[],requests:[]};
+const code='#include <stdio.h>\nint main(void){int a,b;if(scanf("%d%d",&a,&b)!=2)return 0;printf("%d",a+b);return 0;}';
+(async()=>{const browser=await chromium.launch({channel:process.env.CQUIZ_BROWSER||'msedge',headless:true});try{
+ const c=await browser.newContext({acceptDownloads:true,viewport:{width:1440,height:1000}});await c.addInitScript(()=>window.__CQUIZ_TEST__=true);await c.route(/^https?:/,r=>{report.requests.push(r.request().url());return r.abort();});const p=await c.newPage();p.on('pageerror',e=>report.errors.push(e.message));p.on('dialog',d=>d.accept());await p.goto(pathToFileURL(app).href);await p.waitForFunction(()=>window.__cquiz);
+ await p.evaluate(()=>__cquiz.questionPacks.open());await p.getByRole('button',{name:'导入 / 更新题包',exact:true}).click();await p.getByRole('button',{name:'粘贴JSON',exact:true}).click();await p.getByRole('textbox',{name:'粘贴题包JSON',exact:true}).fill(raw);await p.getByRole('button',{name:'校验并预览',exact:true}).click();await p.getByRole('button',{name:'确认导入',exact:true}).click();await p.keyboard.press('Escape');assert.equal(await p.evaluate(()=>__cquiz.questionPacks.installed().length),1);assert.equal(await p.locator('.nasa-paper,.classic-paper-table tbody tr').count(),5);report.checks.push('one real import adds five undated papers and 27 questions');
+ async function submit(q){
+  if(q.type==='single')await p.locator('.opt').nth(Object.keys(q.options).indexOf(q.answer)).click();
+  else if(q.type==='multiple'){for(const answer of q.answer)await p.locator('.opt[data-letter="'+answer+'"]').click();await p.getByRole('button',{name:'提交',exact:true}).click();}
+  else if(q.type==='blank'||q.type==='code_blank'){for(let j=0;j<q.blanks.length;j++)await p.locator('input.blk').nth(j).fill(q.blanks[j].answers[0]);await p.getByRole('button',{name:'提交',exact:true}).click();}
+  else if(q.type==='fix'){
+   const lines=q.code.split('\n');for(const f of q.faults)lines[f.line-1]=f.fixed+' /* fixed */';await p.locator('.fix-ta').fill(lines.join('\n'));await p.getByRole('button',{name:'提交',exact:true}).click();await p.waitForFunction(()=>Object.keys(__cquiz.getSESSION().fix||{}).length>0,{},{timeout:60000});
+  }else{await p.locator('.program-code').fill(code);await p.getByRole('button',{name:'提交',exact:true}).click();await p.waitForFunction(()=>Object.keys(__cquiz.getSESSION().programs||{}).length>0,{},{timeout:60000});assert.match(await p.locator('.program-result').innerText(),/2 \/ 2 通过/);}
+ }
+ for(const paper of pack.papers){
+  const pid='pack:'+pack.id+':'+paper.id;await p.evaluate(pid=>{__cquiz.setPICK({...__cquiz.getPICK(),feedback:'immediate'});__cquiz.startFullPaper(pid);},pid);
+  assert.equal(await p.evaluate(()=>__cquiz.getSESSION().order.length),paper.questions.length);
+  if(paper.id==='groups'){const labels=await p.locator('.sheet .cell').allTextContents();assert.deepEqual(labels.map(x=>x.replace(/[★·●]/g,'').trim()),['1','2','3(1)','3(2)','4(1)','4(2)']);}
+  for(let i=0;i<paper.questions.length;i++){
+   await submit(paper.questions[i]);const s=await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()));assert.equal(s.score,(i+1)*2,paper.id+' #'+paper.questions[i].num+' '+JSON.stringify(s));report.answered.push(paper.id+':'+paper.questions[i].num);
+   if(paper.id==='encoding'){const r=await p.evaluate(()=>Object.values(__cquiz.getSESSION().fix)[0].report);assert.equal(r.L3.passed,2);assert.equal(r.L3.allPassed,true);}
+   const imgs=p.locator('#view img');for(let j=0;j<await imgs.count();j++)assert.equal(await imgs.nth(j).evaluate(e=>e.complete&&e.naturalWidth>0),true);
+   if(i<paper.questions.length-1)await p.getByRole('button',{name:'下一题 ›',exact:true}).click();
+  }
+  await p.getByRole('button',{name:'交卷 / 看成绩',exact:true}).click();assert.equal(await p.evaluate(()=>__cquiz.getSESSION().done),true);
+ }
+ assert.equal(report.answered.length,27);report.checks.push('all 27 supplied answers earn full points; both embedded diagrams decode; continuous display numbers match');report.checks.push('program sum compiles and passes two cases; GBK fix compiles and passes both Chinese-byte cases');
+ await p.evaluate(()=>{__cquiz.startFullPaper('pack:code-station-demo:basic');});await p.locator('.opt').first().click();assert.equal(await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()).score),0);await p.evaluate(()=>{__cquiz.startFullPaper('pack:code-station-demo:basic');__cquiz.getSESSION().idx=6;__cquiz.renderPractice();});await p.locator('input.blk').nth(0).fill('1010');await p.locator('input.blk').nth(1).fill('0');await p.getByRole('button',{name:'提交',exact:true}).click();assert.equal(await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()).score),1);report.checks.push('wrong answer scores zero; one of two blanks scores one point');
+ await p.evaluate(()=>__cquiz.startExam('pack:code-station-demo:programming',60));assert.equal(await p.evaluate(()=>__cquiz.getSESSION().order.length),2);assert.equal(await p.evaluate(()=>__cquiz.getSESSION().order.some(o=>o.program)),false);assert.equal(await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()).full),4);await p.locator('input.blk').fill('7');await p.getByRole('button',{name:'下一题 ›',exact:true}).click();const fix=pack.papers.find(x=>x.id==='programming').questions.find(x=>x.type==='fix');const lines=fix.code.split('\n');lines[fix.faults[0].line-1]=fix.faults[0].fixed+' /* fixed */';await p.locator('.fix-ta').fill(lines.join('\n'));assert.equal(await p.locator('.answer-feedback,.fix-rep').count(),0);await p.getByRole('button',{name:'交卷',exact:true}).click();await p.waitForFunction(()=>__cquiz.getSESSION().done);assert.equal(await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()).score),4);assert.equal(await p.evaluate(()=>__cquiz.getEXAMS().length),1);await p.reload();await p.waitForFunction(()=>window.__cquiz);assert.equal(await p.evaluate(()=>__cquiz.questionPacks.installed().length),1);assert.equal(await p.evaluate(()=>__cquiz.getEXAMS().length),1);report.checks.push('programming paper exam excludes program task, defers feedback, scores four and survives reload');
+ assert.deepEqual(report.errors,[]);assert.deepEqual(report.requests,[]);console.log(JSON.stringify(report));await c.close();
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

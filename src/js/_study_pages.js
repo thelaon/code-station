@@ -106,7 +106,7 @@ function renderLibraryShell(view){
 }
 function renderStudyStats(){
   renderNav();var v=emptyNode(viewEl()), page=el('div','study-page');
-  page.appendChild(studyHeading('统计','学习遥测','LEARNING TELEMETRY','记录学习进展，回看每一次考试。','satellite'));
+  page.appendChild(studyHeading('统计','学习遥测','LEARNING TELEMETRY','查看作答记录、复习进度和考试成绩。','satellite'));
   var days=Object.keys(STATS.log).sort(), act=poolActive(), mas=poolMastered();
   var total=days.reduce(function(n,d){return n+STATS.log[d];},0);
   var touched=PAPERS.filter(function(p){return paperPool(p.id).n>0;}).length;
@@ -114,7 +114,7 @@ function renderStudyStats(){
   var groups=el('div','study-metric-groups');
   [['练习记录',[['累计作答',total,'次'],['有记录天数',days.length,'天']]],
     ['复习进展',[['待复习',act.length,'题'],['已掌握',mas.length,'题']]],
-    ['今日与试卷',[['今日到期',dueCount(),'题'],['有错题的试卷',touched+' / '+PAPERS.length,'']]]].forEach(function(group){
+    ['今日与试卷',[['今日到期',dueCount(),'题'],['待复习试卷',touched+' / '+PAPERS.length,'']]]].forEach(function(group){
     var g=el('div','study-metric-group');g.appendChild(el('h4',null,group[0]));
     group[1].forEach(function(m){g.appendChild(studyMetric(m[0],m[1],m[2]));});groups.appendChild(g);
   });
@@ -143,13 +143,13 @@ function renderStudyStats(){
   }
   columns.appendChild(exams);page.appendChild(columns);
   var note=el('details','study-notes');note.appendChild(el('summary',null,'统计口径与记录管理'));
-  note.appendChild(el('p','tip','累计作答按每题首次提交计次；改选不重复计数。待复习指尚未连续答对 '+SET.needCorrect+' 次的题。考试成绩保存交卷时的答卷，查看不会重新计分或改变复习计划。'));
+  note.appendChild(el('p','tip','累计作答按提交计次；改选不重复计数，重做后再次提交会累计。待复习指尚未连续答对 '+SET.needCorrect+' 次的题。考试成绩保存交卷时的答卷，查看不会重新计分或改变复习计划。'));
   var fb=el('div','footbar');fb.appendChild(btn('导出学习记录',exportData));fb.appendChild(btn('导入学习记录',importData));note.appendChild(fb);page.appendChild(note);
   v.appendChild(page);$('#foot').textContent=footText('学习记录与考试成绩保存在本机，可导出备份。');
 }
 function renderStudyReview(){
   renderNav();var v=emptyNode(viewEl()), page=el('div','study-page');
-  page.appendChild(studyHeading('复习','任务队列','REVIEW OPERATIONS','选择到期题目，安排本次巩固任务。','board'));
+  page.appendChild(studyHeading('复习','任务队列','REVIEW OPERATIONS','选择试卷，复习到期题目或手动标记的题目。','board'));
   var card=el('section','card study-review'),summary=el('div','study-review-summary');card.appendChild(summary);
   var seg=el('div','toolbar'),filters=[],cards=[],keys=[],selectedKeys=[],limit=0;
   seg.setAttribute('role','group');seg.setAttribute('aria-label','复习范围');
@@ -231,7 +231,7 @@ function renderChoiceAnalysis(q){
   section.appendChild(el('div','choice-knowledge',q.topic+' · '+(q.tags||[]).join(' / ')));
   section.appendChild(el('p','choice-explanation',q.analysis||'暂无解析'));
   if(q.review_note){
-    var note=el('div','warn choice-review-note');note.appendChild(el('strong',null,'题面与标准口径提示'));
+    var note=el('div','warn choice-review-note');note.appendChild(el('strong',null,'答案说明'));
     note.appendChild(el('p',null,q.review_note));note.appendChild(el('p','tip','当前计分保留题库答案 '+q.answer+'，以上疑点不自动改动原答案。'));section.appendChild(note);
   }
   if(VIEW==='practice' && SESSION && !isExam()){
@@ -260,8 +260,8 @@ function renderBlankAnalysis(q){
   });section.appendChild(list);
   section.appendChild(el('p','tip blank-pitfall','易错点：'+q.pitfall));
   if(q.review_note){
-    var warning=el('div','warn choice-review-note');warning.appendChild(el('strong',null,'原题与候选答案提示'));
-    warning.appendChild(el('p',null,q.review_note));warning.appendChild(el('p','tip','本轮保留原题、候选答案和现有判分规则；解析中的修正建议不会自动改动本次成绩。'));section.appendChild(warning);
+    var warning=el('div','warn choice-review-note');warning.appendChild(el('strong',null,'答案说明'));
+    warning.appendChild(el('p',null,q.review_note));warning.appendChild(el('p','tip','本题按题包提供的候选答案计分，解析中的建议不影响判分。'));section.appendChild(warning);
   }
   if(q.legacy_note){var legacy=el('details','blank-legacy');legacy.appendChild(el('summary',null,'旧题写法说明'));legacy.appendChild(el('p','choice-explanation',q.legacy_note));section.appendChild(legacy);}
   return section;

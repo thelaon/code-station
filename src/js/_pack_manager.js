@@ -96,7 +96,7 @@ function inspectPackLibraryBackup(input){
   if(!input||input.format!=='cquiz-library-backup'||input.version!==1||!Array.isArray(input.packs)||input.packs.length>20||!input.states||typeof input.states!=='object'||Array.isArray(input.states))throw new Error('需要版本1的题库备份。');
   var seen=Object.create(null),packs=input.packs.map(function(p){var r=QuestionPackSchema.check(p);if(!r.ok)throw new Error(r.errors[0].message);if(seen[r.pack.id])throw new Error('备份含重复题包标识。');seen[r.pack.id]=true;return r.pack;}),states={};
   Object.keys(input.states).forEach(function(id){var s=input.states[id];if(!seen[id]||!s||typeof s.enabled!=='boolean')throw new Error('题库启用状态异常。');states[id]={enabled:s.enabled};});
-  var next=PACKS.slice();packs.forEach(function(p){var old=packById(p.id);if(old&&canonicalPack(old)!==canonicalPack(p))throw new Error('备份与已安装题库冲突：'+p.title+'。请单独查看更新，或在独立框架恢复。');if(!old)next.push(p);});
+  var next=PACKS.slice();packs.forEach(function(p){var old=packById(p.id);if(old&&canonicalPack(old)!==canonicalPack(p))throw new Error('备份与已安装题库冲突：'+p.title+'。请先查看更新，或在另一浏览器中恢复。');if(!old)next.push(p);});
   if(next.length>20||next.reduce(function(n,p){return n+p.papers.reduce(function(n,r){return n+r.questions.length;},0);},0)>10000)throw new Error('恢复后超过20包或10000题的限制。');
   return {packs:next,states:Object.assign({},PACK_STATES,states),incoming:packs};
 }

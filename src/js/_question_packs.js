@@ -42,7 +42,7 @@ function selectLibrary(id){
   NASA_PICK={year:null,paper:null,initialized:false};renderHome();
 }
 function packConflict(pack){
-  if(PACKS.some(function(p){return p.id===pack.id;}))return '此题包标识已存在。为保留历史答卷，当前版本不覆盖已有题包；新内容请使用新的题包标识。';
+  if(PACKS.some(function(p){return p.id===pack.id;}))return '题包标识已存在。请在题库管理中更新；不同题库应使用新的标识。';
   if(PACKS.length>=20||PACKS.reduce(function(n,p){return n+p.papers.reduce(function(m,r){return m+r.questions.length;},0);},0)+pack.papers.reduce(function(n,p){return n+p.questions.length;},0)>10000)return '本机最多导入20个题包、合计10000题，请拆分到其他独立使用环境。';
   return '';
 }
@@ -136,7 +136,7 @@ function openQuestionPacks(){
   box.classList.add('pack-manager','pack-workspace');box.style.maxWidth='1080px';
   var remove=M.m.remove;M.m.remove=function(){token++;if(reader&&reader.readyState===1)reader.abort();remove();};
   var shortcuts=el('div','toolbar pack-workspace-tabs');var manageTab=btn('管理已导入题库',function(){showPanel(true);}),importTab=btn('导入 / 更新题包',function(){showPanel(false);});shortcuts.appendChild(manageTab);shortcuts.appendChild(importTab);box.appendChild(shortcuts);
-  box.appendChild(el('p','note','离线导入客观题和程序题包。先检查，再预览，最后保存；不调用AI或联网服务。格式通过仍需核对答案、解析和题源。'));
+  box.appendChild(el('p','note','选择本地 JSON 题包，检查预览后确认导入。请确认题目、答案和来源无误。'));
   var modes=el('div','toolbar pack-input-switch'),fileMode=btn('文件导入',function(){switchMode(false);}),pasteMode=btn('粘贴JSON',function(){switchMode(true);});modes.appendChild(fileMode);modes.appendChild(pasteMode);box.appendChild(modes);
   var fileArea=el('div','pack-file-area'),fileLabel=el('label','pack-input-label','选择本地题包JSON（可多选，最多20个文件）'),file=el('input');file.type='file';file.multiple=true;file.accept='.json,application/json';file.setAttribute('aria-label','选择本地题包JSON');fileLabel.appendChild(file);fileArea.appendChild(fileLabel);box.appendChild(fileArea);
   var pasteArea=el('div','pack-paste-area'),pasteLabel=el('label','pack-input-label','粘贴完整的题包JSON'),paste=el('textarea');paste.rows=8;paste.spellcheck=false;paste.setAttribute('aria-label','粘贴题包JSON');paste.placeholder='粘贴以 { 开始的完整JSON题包；Word原文需要先整理成题包。';pasteLabel.appendChild(paste);pasteArea.appendChild(pasteLabel);pasteArea.appendChild(btn('校验并预览',function(){validateText();}));pasteArea.hidden=true;box.appendChild(pasteArea);
@@ -180,7 +180,7 @@ function openQuestionPacks(){
   }
   function renderPreview(expanded){
     emptyNode(preview);if(active<0||!rows[active]||!rows[active].pack)return;
-    var pack=rows[active].pack;preview.appendChild(el('h3',null,'待核对内容 · '+pack.title));
+    var pack=rows[active].pack;preview.appendChild(el('h3',null,'题包预览 · '+pack.title));
     var disclosure=el('details','pack-preview-disclosure'),heading=el('summary'),caption=el('strong',null,'展开题目预览'),count=pack.papers.reduce(function(n,p){return n+p.questions.length;},0),body=el('div','pack-preview-body'),initialized=false;
     heading.appendChild(caption);heading.appendChild(el('span','note',pack.papers.length+' 套试卷 · '+count+' 题 · 含参考答案'));disclosure.appendChild(heading);disclosure.appendChild(body);preview.appendChild(disclosure);
     function updateDisclosure(){caption.textContent=disclosure.open?'收起题目预览':'展开题目预览';if(disclosure.open&&!initialized){initialized=true;renderContents();}}
@@ -230,9 +230,9 @@ function openQuestionPacks(){
     }next(0);
   };
   var stored=renderPackManager(box,M,function(){epoch=PACK_EPOCH;file.value='';clearDraft('题库状态已更新，本次待导入预览已清除。请选择题包重新检查。');});
-  box.appendChild(el('p','note','题包只存于本浏览器。迁移时分别导出题库备份和学习记录，恢复时先恢复题库。新构建首次打开或清空全部进度仍会清除导入包。Word/PDF原文暂不能直接识题。'));
+  box.appendChild(el('p','note','题包保存在当前浏览器。迁移前分别备份题库、学习记录和代码草稿；恢复时先恢复题库。Word、PDF需先转换为题包JSON。'));
   var topClose=btn('关闭题库管理',function(){M.m.remove();});topClose.classList.add('pack-workspace-close');shortcuts.appendChild(topClose);
-  var intro=el('div','pack-workspace-heading');intro.appendChild(el('span','pack-workspace-kicker','LOCAL ARCHIVE'));intro.appendChild(el('h3',null,'你的题库工作台'));intro.appendChild(el('p',null,'整理本机题库，或检查并添加新的题包。'));box.insertBefore(intro,shortcuts);
+  var intro=el('div','pack-workspace-heading');intro.appendChild(el('span','pack-workspace-kicker','LOCAL ARCHIVE'));intro.appendChild(el('h3',null,'题库管理'));intro.appendChild(el('p',null,'导入、更新和备份本机题库。'));box.insertBefore(intro,shortcuts);
   var importPanel=el('section','pack-import-panel');importPanel.setAttribute('aria-label','导入与更新题包');
   Array.prototype.slice.call(box.children).forEach(function(n){if(n!==box.firstChild && n!==intro && n!==shortcuts && n!==stored)importPanel.appendChild(n);});
   box.appendChild(importPanel);

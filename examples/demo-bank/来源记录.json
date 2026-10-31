@@ -1,0 +1,62 @@
+{
+  "pack_id": "code-station-demo",
+  "revision": 1,
+  "sha256": "93d2cada83497b853b80d71416eb1de4f54bf001476ff2b495ec2161269ec11d",
+  "papers": 5,
+  "questions": 27,
+  "practice_points": 54,
+  "exam_points_excluding_programming": 52,
+  "question_types": {
+    "single": 10,
+    "multiple": 7,
+    "blank": 6,
+    "code_blank": 1,
+    "fix": 2,
+    "program": 1
+  },
+  "sources": [
+    {
+      "file": "01-示例题库-r1.json",
+      "sha256": "4335fba1a4a0bcbfa05be6fad24c97eb786fe1139b726a9946adf314bacb5c8d",
+      "questions": 10
+    },
+    {
+      "file": "02-动态选项.json",
+      "sha256": "f53ef62a79b348910e7d6b5118490bf71df86dab636a1cf4aaf199f66035e9eb",
+      "questions": 7
+    },
+    {
+      "file": "03-连续小问.json",
+      "sha256": "431e7bc1a510129a289019726fedc76e0b24182b65b63346f0786d20ca566e9a",
+      "questions": 6
+    },
+    {
+      "file": "04-程序三题型.json",
+      "sha256": "1e90eb792c64cc1bbca02185b973053b49a4b6258567916acb83b7c2edd073e5",
+      "questions": 3
+    },
+    {
+      "file": "05-GBK兼容.json",
+      "sha256": "368af75158e92674814dea32196fcb9f5d597d6e2136e5a024a874006d5026e1",
+      "questions": 1
+    }
+  ],
+  "changes": [
+    "Merge five independently authored demo packs into one external study-pack.",
+    "Use stable paper IDs, no year, and two points per question.",
+    "Keep the original embedded diagrams; renumber grouped display questions as 3 and 4 after two independent questions.",
+    "Remove acceptance-test wording and clarify explanations."
+  ],
+  "images": [
+    {
+      "sha256": "c2f75409c07d948d2958577e9607cd7ce619ac65852848f2d7dedf619917b4ee",
+      "bytes": 4981,
+      "origin": "independently drawn project demo"
+    },
+    {
+      "sha256": "7f27a41f13fc6cc6edf4cbf925fd596e877e1cb8c724df359573f44e5505b8ad",
+      "bytes": 3157,
+      "origin": "independently drawn project demo"
+    }
+  ]
+}

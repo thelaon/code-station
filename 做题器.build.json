@@ -1,19 +1,21 @@
 {
   "product": "代码航站",
+  "app_version": "0.2v",
+  "profile": "public",
   "builtin_questions": 0,
   "storage_prefix": "cqframe.",
-  "build_id": "a878a972fe3d4b7fbe1521428d5f7206",
-  "stamp": "2026-10-29 19:19",
-  "html_bytes": 3121179,
-  "html_sha256": "0b17041c55f2fce7dd18a58635850397f03a00b49ced4c22ec77d9d3ab94dc97",
+  "build_id": "0550cc95e8af426486b514c20e334b1d.public",
+  "stamp": "2026-10-31 22:39",
+  "html_bytes": 4646851,
+  "html_sha256": "1beeeca81d1a1a88146fc0f6dc0727c795ddd2c0923c89ad2517c1da1ca62034",
   "inputs": {
     "build-manifest.json": {
-      "bytes": 2128,
-      "sha256": "c90a3b2e7e2f4fb83ab4fdea9df03e1a26c2306ba4415ed5a170b33a196e43af"
+      "bytes": 2783,
+      "sha256": "7f5d4f24d136bcb2d661f4b211a285be6378055f8e58088721396b58bad42f76"
     },
     "src/template.html": {
-      "bytes": 155031,
-      "sha256": "c1d454a006896196aa61da785481ca2fa493054d5119df5b825dfaf6e9e7a4aa"
+      "bytes": 155356,
+      "sha256": "29883d308a15cbad208355722a2bc3d2c901666c9d073465eca6abb2e4ba8fbc"
     },
     "src/judge/faults.js": {
       "bytes": 5267,
@@ -63,17 +65,101 @@
       "bytes": 3432,
       "sha256": "11881a5a6120ac0ab3aa215338952498bb04ebc33ced84b5e71791a6aa4ab25c"
     },
+    "licenses/components.json": {
+      "bytes": 4918,
+      "sha256": "9cda5221c5b65671e4da228f905258ea6f567c8ebd07230aa7fe61961cb9d555"
+    },
+    "licenses/project.json": {
+      "bytes": 1038,
+      "sha256": "70feaca1059e8de227707b5f30ad7e9780725217cce629034e86edb37f0aed4d"
+    },
+    "licenses/public-components.json": {
+      "bytes": 1248,
+      "sha256": "0f7570b44976cda6b3e1638505678f51ed7b3d6855c0678d3a0d66f4d416c6a0"
+    },
+    "LICENSE": {
+      "bytes": 1064,
+      "sha256": "a1e4deebf257d61dcb7216465fdb7a7bd255ef234b4611958d3a3afbc4e18383"
+    },
+    "LICENSE-SCOPE.md": {
+      "bytes": 2550,
+      "sha256": "af3beb30a9299316d479177e154f2270377e44cd082d6fb9cfb31f519dbeefb1"
+    },
+    "COPYRIGHT.md": {
+      "bytes": 2402,
+      "sha256": "e8b4a73637d21f22180280ab38ed3d13035356a3136705a3a8ae97b3cc694b4f"
+    },
+    "licenses/TCC-COPYING.txt": {
+      "bytes": 26428,
+      "sha256": "512d2d21b6b3384ba64781abb0208a1b87740bc31e2df48e2b206ddb7e4d5779"
+    },
+    "licenses/WABT-LICENSE.txt": {
+      "bytes": 11371,
+      "sha256": "1d2c1da880eb3805f6033e90d80205a8e44e826c5747ecf23853f4a33e909850"
+    },
+    "licenses/LOCAL-MODIFICATIONS-NOTICE.txt": {
+      "bytes": 2962,
+      "sha256": "f2b6c815a7c8f83733b472842f00ee43d76e22acd0f191e6da5576e4f9f4f647"
+    },
+    "licenses/WABT-THIRD-PARTY-NOTICES.txt": {
+      "bytes": 83088,
+      "sha256": "dfe13f1fda11dc27147755372f48a161fe836a24e251e571dca7382d5510c62c"
+    },
+    "third_party/wabt-1.0.37/notice-delivery.json": {
+      "bytes": 2919,
+      "sha256": "aec38f87be1d39b2dbc919e3be77e687c8a71314a96b53325324219c7c618425"
+    },
+    "third_party/wabt-1.0.37/license-reference/EMSCRIPTEN-LICENSE.txt": {
+      "bytes": 5094,
+      "sha256": "1d678c6d3e6fca3245faaf72b66097b8df241172b38c8d9a16601e3a72b66386"
+    },
+    "third_party/wabt-1.0.37/license-reference/MUSL-COPYRIGHT.txt": {
+      "bytes": 6205,
+      "sha256": "dd3d670b96794146071703a75b07421203e23e4ef11b4f8c484d90c465bcd6f5"
+    },
+    "third_party/wabt-1.0.37/license-reference/LIBCXX-LICENSE.txt": {
+      "bytes": 16704,
+      "sha256": "3f3d1da78246d5c2ffc879f8239d6e856b19ba813b8349cbe48f85bd018ee3af"
+    },
+    "third_party/wabt-1.0.37/license-reference/LIBCXXABI-LICENSE.txt": {
+      "bytes": 16707,
+      "sha256": "b043b7c5fdaf8df24b2c3b50f7651e6acfc8bdd73cc152ec5d090b8a7e0ede33"
+    },
+    "third_party/wabt-1.0.37/license-reference/COMPILER-RT-LICENSE.txt": {
+      "bytes": 16709,
+      "sha256": "b606c871f483c0023ee92cb62e271fce42467407da220b7bc9e22208eada9d25"
+    },
+    "third_party/wabt-1.0.37/license-reference/ALLOCATOR-NOTICES.txt": {
+      "bytes": 979,
+      "sha256": "2b866cafba74e9cd1b16f7670924722ae2c94ea2c5091ddf5419125c4ceb31ee"
+    },
+    "third_party/wabt-1.0.37/license-reference/PICOSHA2-LICENSE.txt": {
+      "bytes": 1065,
+      "sha256": "53d9a97563f349da7aeb566c364c4a4eb55c88d83842a863b11b066553b0d34e"
+    },
+    "third_party/wabt-1.0.37/license-reference/OPENSSL-LEGACY-LICENSE.txt": {
+      "bytes": 6122,
+      "sha256": "5c2091e38fe2321a9335e8f7c473754bd3c037592a0181cfe192388d7e2bd709"
+    },
+    "third_party/wabt-1.0.37/license-reference/OPENSSL-3-LICENSE.txt": {
+      "bytes": 10176,
+      "sha256": "ff420781e0005270cd1894a265e526dec4eb332f99df62a481b06672db202290"
+    },
+    "third_party/runtime-stable/runtime-corresponding-source.zip": {
+      "bytes": 1035877,
+      "sha256": "07087e9b641f0589941343aa3369a41a828357c06291c18fb519497d64c6b64c"
+    },
     "src/js/_storage_safety.js": {
-      "bytes": 5706,
-      "sha256": "37cdd29310a22c8c94971a5635047315d1de635c8985cc1ebcd24f20b21c5e99"
+      "bytes": 6496,
+      "sha256": "0a43b27c931262845030d6c13c20b098e0bfb5de42015ff22d5ac9d0288e5b54"
     },
     "src/js/_fix_code.js": {
-      "bytes": 51136,
-      "sha256": "38bfb8baf339eb1c56d1c99c0a30c564b75f231bac5b847a43a0e0764feff6e8"
+      "bytes": 51535,
+      "sha256": "39e5d20d1046e23b15c0158f2d7665a3c8f9b88ec60a7e54fce4a608caf3bc29"
     },
     "src/css/_visual_style.css": {
-      "bytes": 17063,
-      "sha256": "518be8c3edd551628e479443c70f340ada39765145f4f041f7a51fa22b8d8f23"
+      "bytes": 17240,
+      "sha256": "7d8b4b13e2d912a9f7da99a8dba374e48d8b30ea1cd68bc4848077e65dc02da6"
     },
     "src/css/_study_pages.css": {
       "bytes": 25339,
@@ -92,8 +178,8 @@
       "sha256": "d16f0f11e53aa49a4bbb8567e000c265e953aa4d2b3687aa170c3728a999c86f"
     },
     "src/css/_settings_help.css": {
-      "bytes": 8069,
-      "sha256": "07e22cf52a54cdff70dc414ceaecefade7ce324c3c48297137933cb3acf44cf9"
+      "bytes": 9544,
+      "sha256": "637abdf2a2617cb6b2d6a3ef2ea1e26e942d561521af0b09a5a794a83a62c464"
     },
     "src/css/_ui_details.css": {
       "bytes": 7560,
@@ -116,24 +202,24 @@
       "sha256": "0a22bf6a754ea963ee7ab4c681d4b34f1b4dcdb6d11cbf3a1d52cd69da674632"
     },
     "src/js/_pack_manager.js": {
-      "bytes": 23073,
-      "sha256": "e7d6d0b8e78242d1c4da8a651ff92a47dcb7173a6e17df8816218e23886af5a4"
+      "bytes": 23076,
+      "sha256": "31fc407e8bd7d000636b75b51272a86d16d396dd3aa7cdc309bec31985e4313f"
     },
     "src/js/_question_packs.js": {
-      "bytes": 32093,
-      "sha256": "25d7175e013fcced53c60986f3bac5d8a6d21e6d097e66bfa9568ea2647e03c1"
+      "bytes": 31917,
+      "sha256": "d2a130bb281fc6ae35f11936473568514fba7f50a31270510ed5cfe2c27324f7"
     },
     "src/js/_visual_style.js": {
-      "bytes": 21371,
-      "sha256": "604c86fe82c21ef4ec44d0a87465c3c5525a5bb26c68b5eb523f082401c975d2"
+      "bytes": 21356,
+      "sha256": "3b34e195426bf77fd3a49ba423ac32f334ac99ec39a554a076dc9fc7c97b1517"
     },
     "src/js/_study_pages.js": {
-      "bytes": 26220,
-      "sha256": "ec9cbfd3d002e4ad7abc88355263f5295485af7ed1ef9011d15fbf7ff4c81c05"
+      "bytes": 26193,
+      "sha256": "fdaa1660ad70f01b9a1b90de131087d330d506db1fc229b66fd2bb9db798ce80"
     },
     "src/js/_programming.js": {
-      "bytes": 26263,
-      "sha256": "9a09e04d75bcf59006cbb43f62b9ed716ef54ee29fa5af8bc5b7fa389c6bf716"
+      "bytes": 26212,
+      "sha256": "f91c6fc13fcb18bdd6bf4f6037b1621a2b31dcb09ee8fbc35da857300cf4535b"
     },
     "src/js/_programming_runtime.js": {
       "bytes": 5718,
@@ -148,8 +234,8 @@
       "sha256": "a8cefb7f817789527dfbf59158fc1e42636c8b5113e59041fd258046972c485c"
     },
     "src/js/_settings_help.js": {
-      "bytes": 20337,
-      "sha256": "f6896158c2248d1289b11b9d806308464eab076d1f7e4d6f977a1ed0ed88807d"
+      "bytes": 24592,
+      "sha256": "65d52749c0499d889b5b80087a7f6befe0f9720d540c925d48e310fd65219f7c"
     },
     "src/js/_record_backup.js": {
       "bytes": 6410,

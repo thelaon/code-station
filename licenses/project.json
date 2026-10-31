@@ -1,0 +1,12 @@
+{
+  "name": "代码航站",
+  "maintainer": "thelaon",
+  "maintainer_url": "https://github.com/thelaon",
+  "repository_url": "https://github.com/thelaon/code-station",
+  "license": "MIT（仅适用于依法有权授权的自有部分）",
+  "development": "由 thelaon 发起和维护，主要通过生成式 AI 辅助开发，不宣称全部代码由维护者亲手编写或整个项目全部原创。",
+  "scope": "MIT 不覆盖第三方组件及其派生修改，不凭空产生著作权；原许可及例外保留。详见 LICENSE-SCOPE.md。",
+  "copyright_response": "维护者知悉能定位具体内容的版权异议后，将立即启动先行下架：优先暂停其可控制渠道中的相关内容或发行包，再核查、移除或替换。此承诺不等于自动远程删除或免责。",
+  "feedback": "仓库公开并开放反馈功能后可通过 Issues 联系；当前私人试用阶段，请使用取得本项目的原联系渠道。",
+  "feedback_url": "https://github.com/thelaon/code-station/issues"
+}

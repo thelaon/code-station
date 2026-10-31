@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "scope": "以下是随本应用内嵌的第三方及配套运行组件。第三方权利归各自权利人，适用相应许可证；本项目的其他声明不限制第三方许可证已授予的权利。",
+  "status": "自有可许可部分已按MIT授权，项目署名thelaon并披露AI辅助开发；第三方许可、修改标记、对应源码及WABT补充告示保持。历史工具链编号保留溯源说明，不作整体法律认证。未宣称全部分发条件已经满足。",
+  "components": [
+    {
+      "id": "tcc",
+      "name": "TCC WebAssembly 编译器",
+      "license": "LGPL 2.1（当前随附许可文本）",
+      "license_file": "licenses/TCC-COPYING.txt",
+      "files": [
+        "vendor/c-runtime/tcc.wasm"
+      ],
+      "purpose": "在本机浏览器中编译 C 程序。",
+      "source": "上游固定提交、README 和 COPYING 已在线核对。对应源码包在隔离目录经 GCC → TCC → WAT → WABT 重建，与当前二进制逐字节一致。保留源文件自身的许可及例外。",
+      "version": "44670/tcc-wasm @ 8bff9fbc019a3008395eec4cda6e90752fb88ed9，加本地修改（配置字符串 0.9.28rc）",
+      "pending": "对应源码包已补齐文件内修改标记、已查证批次日期与本次整理日期；ANNOTATIONS.json可核对标记前后指纹。未伪造逐行历史编辑日，原许可证与例外保持。"
+    },
+    {
+      "id": "wabt",
+      "name": "WABT JavaScript 工具",
+      "license": "Apache License 2.0",
+      "license_file": "licenses/WABT-LICENSE.txt",
+      "files": [
+        "vendor/c-runtime/wabt.js"
+      ],
+      "purpose": "为本机 WebAssembly 编译运行提供格式转换工具。",
+      "source": "当前文件与官方 npm 发布包 package/index.js 逐字节一致；发布包完整性与既有锁文件相符。对应 WABT 核心提交 5e81f6aeddf94fd7743c8c2049f5084c74ff6ab1。官方包及包装/核心源树未提供独立 NOTICE 文件。",
+      "version": "官方 npm wabt@1.0.37；包装仓库提交 a4bccfd9332d02f296d9db8b860fa448308aba0f",
+      "pending": "原Apache 2.0及版权行已保留；生成支持代码和可能的依赖路径采用保守告示集合，原文随HTML及源码包交付。不声称所有列出的可选库实际链接。精确历史Emscripten编号未知仅作溯源记录；4.0.4参考不冒充真实构建编号。"
+    },
+    {
+      "id": "libc",
+      "name": "C 标准库运行模块",
+      "license": "上游仓库级 LGPL 声明；本地改动另列",
+      "files": [
+        "vendor/c-runtime/libc.wasm"
+      ],
+      "purpose": "提供 C 程序所需的标准库运行功能。",
+      "source": "对应源码 SHA-256 为 9192688ab1be10dd7b5dc184062e8d7ebbb6d4f5320e4ade43d1ec42ba85c2e3；已从随附源码包实际重建，与当前 libc.wasm 逐字节相同。仓库 README/COPYING 是许可依据，缺少文件级告示不等于没有许可。",
+      "version": "固定提交的 lib/wasm32-libc.c，加已收录的本地修复",
+      "pending": "对应源码包已补齐文件内修改标记、已查证批次日期与本次整理日期；ANNOTATIONS.json可核对标记前后指纹。未伪造逐行历史编辑日，原许可证与例外保持。"
+    },
+    {
+      "id": "headers",
+      "name": "C 标准头文件容器",
+      "license": "上游仓库级声明及文件自身条款；保留原告示",
+      "files": [
+        "vendor/c-runtime/_ide-resources-patched.js"
+      ],
+      "purpose": "保存编译程序时使用的标准头文件及配套声明。",
+      "source": "已收齐基础容器、头文件生成脚本及 tccdefs.h 三个输入，生成结果与当前容器逐字节一致。stdlib 内 qsort/bsearch 和四个辅助函数体均与固定上游相同；不是旧 Picolibc 实验实现。",
+      "version": "28 份内嵌文件，21 份与上游一致、7 份有修改",
+      "pending": "对应源码包已补齐文件内修改标记、已查证批次日期与本次整理日期；ANNOTATIONS.json可核对标记前后指纹。未伪造逐行历史编辑日，原许可证与例外保持。"
+    },
+    {
+      "id": "runtime",
+      "name": "编译与运行桥",
+      "license": "上游仓库级 LGPL 声明；本地改动另列",
+      "files": [
+        "vendor/c-runtime/runtime.js"
+      ],
+      "purpose": "连接编译器、程序内存及输入输出。",
+      "source": "已在线核对上游完整文件的 Git blob；当前运行桥原字节及对上游的差异补丁均已收录，对应当前 SHA-256。",
+      "version": "固定提交 docs/runtime.js，加本地桥接修改",
+      "pending": "对应源码包已补齐文件内修改标记、已查证批次日期与本次整理日期；ANNOTATIONS.json可核对标记前后指纹。未伪造逐行历史编辑日，原许可证与例外保持。"
+    }
+  ]
+}

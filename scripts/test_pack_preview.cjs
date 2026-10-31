@@ -1,7 +1,7 @@
 // Runtime-only synthetic data; never bundled into the application.
 const path=require('path'),assert=require('assert/strict'),{pathToFileURL}=require('url');
 const {chromium}=require(process.env.CQUIZ_PLAYWRIGHT||'playwright');
-const url=pathToFileURL(path.resolve(__dirname,'../做题器.html')).href;
+const url=pathToFileURL(path.resolve(process.env.CQUIZ_APP||path.join(__dirname,'../做题器.html'))).href;
 const fixture={format:'cquiz-choice-pack',version:1,id:'preview-test',title:'Preview test',source:'Synthetic UI test',revision:1,papers:[{id:'one',year:2026,title:'Test paper',code:'A',pointsPerQuestion:1,questions:Array.from({length:12},(_,i)=>({num:i+1,stem:'Question '+(i+1),options:{A:'One',B:'Two',C:'Three',D:'Four'},answer:'A',topic:'test',tags:['test'],analysis:'Synthetic analysis'}))}]};
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
  const context=await browser.newContext();await context.addInitScript(()=>window.__CQUIZ_TEST__=true);const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await context.route(/^https?:/,r=>r.abort());await page.goto(url);await page.waitForFunction(()=>window.__cquiz);

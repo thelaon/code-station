@@ -1,0 +1,729 @@
+{
+  "format": "cquiz-study-pack",
+  "version": 1,
+  "id": "code-station-demo",
+  "title": "示例题库",
+  "subtitle": "27题 · 六种题型 · 含插图与连续小问",
+  "revision": 1,
+  "source": "代码航站配套演示题库，由thelaon维护，使用AI辅助整理。题目、代码和两幅示意图来自本项目独立编写的示例，不是考试真题；分值仅供体验。授权说明见随附README和LICENSE。",
+  "papers": [
+    {
+      "id": "basic",
+      "title": "基础题型 A 卷",
+      "year": null,
+      "code": "A",
+      "pointsPerQuestion": 2,
+      "questions": [
+        {
+          "num": 1,
+          "type": "single",
+          "stem": "计算表达式 2 + 3 × 4 的结果。",
+          "options": {
+            "A": "20",
+            "B": "14",
+            "C": "24",
+            "D": "9"
+          },
+          "answer": "B",
+          "topic": "运算顺序",
+          "tags": [
+            "运算顺序",
+            "示例"
+          ],
+          "analysis": "先算乘法3×4=12，再加2，结果为14，选B。",
+          "points": 2
+        },
+        {
+          "num": 2,
+          "type": "single",
+          "stem": "二进制数1010对应的十进制数是多少？",
+          "options": {
+            "A": "2",
+            "B": "8",
+            "C": "10",
+            "D": "12"
+          },
+          "answer": "C",
+          "topic": "数制转换",
+          "tags": [
+            "数制转换",
+            "示例"
+          ],
+          "analysis": "1010表示1×8+0×4+1×2+0×1，结果为10，选C。",
+          "points": 2
+        },
+        {
+          "num": 3,
+          "type": "single",
+          "stem": "如图，理想3 V直流电源连接1 kΩ、2 kΩ两个串联电阻。电路电流I为多少？",
+          "options": {
+            "A": "1 mA",
+            "B": "2 mA",
+            "C": "3 mA",
+            "D": "6 mA"
+          },
+          "answer": "A",
+          "topic": "电路识图",
+          "tags": [
+            "电路识图",
+            "示例"
+          ],
+          "analysis": "串联总电阻为1 kΩ+2 kΩ=3 kΩ，I=3 V÷3 kΩ=1 mA，选A。图片是独立绘制的理想电路示意。",
+          "images": [
+            {
+              "name": "3V电源与1kΩ、2kΩ串联电阻",
+              "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAvgAAAEECAIAAADS+NdLAAATPElEQVR42u3de2DO9eLA8c/WbC5jiNQKIbc0oqvcaXJSOsrpnNL1V51D5XRRR1Sr6EL3CKWjOsSRipyTdKyLQidJHZYsl3LL3YxM5rbfH+vsLOtmZpvt9fqrfTfPPnv6eLz3+Xye54nI2LY6AACURJHuAgBA6AAACB0AAKEDACB0AACEDgCA0AEAhA4AgNABABA6AABCBwBA6AAACB0AQOgAAAgdAAChAwAgdAAAhA4AgNABAIQOAIDQAQAQOgAAQgcAQOgAAAgdAAChAwAIHQAAoQMAIHQAAIQOAIDQAQAQOgCA0AEAEDoAAEIHAEDoAAAIHQAAoQMACB0AAKEDACB0AACEDgCA0AEAEDoAAEIHABA6AABCBwBA6AAACB0AgPyJKuTvt37jpvFT/jnz409WfrMmRIRja9Q465QWV/3uwhrVqx3Q7Vza55aU1MU9u3e74/o/5f3svJTPr7q1X4Xy5d5/ZXxMdPSvucFe/e+e/cmn398pUVGVYmPr1a7Z+rRTe3TtUik2Nu/Xr1j9zbjJ//jw08/Wb9xUNib62KOPPv3kpj1/2+1AfxAAoOSEzpCRo5Jnzs758KuVq75aueqNd959aejjtY+N//W306Vd25TUxW/P+rBf7z9GRETs99npH8wKIXQ8q+WvrJz97NmzJy09PS09fe78lBdfee2xuwec1iwh9xeMnTTlsVGj9+7dm/3hzszM9G3fLly8ZO2GjY/c2c+sAoBSGjrVqlbtffmlnVqfVfvY+Mxdu+Yt+HzgU09v3pI+esIrA/ve9Otv55x2bR4dNXr9xk0pqV82bdwo96eysrLenvVhCOHcDu0OdHgP3XHbeZ067NmzZ2Palo//s+C5v7+8YvU3fZLumzhyaK347zvs9X8lPzxyVAihQ8szrrr4osYn1IuMiFy1du1b78/MyNhhSgFAKLVndAbc2Ov6K3o2rFunbExMXMWKHVu1/L+Le4QQVq9de0C3U6N6tZNPbBxCyL0+lG3+F6kbNm2uXKliy1Oa57P+oqKOOar6BZ07TRj+ZJ2ax2Xs+G7kmPHZn/p2e8bgEc+GEHp27zZ0YFKLk5qUK1s2Jib6hONr33jlZf2u/6MpdThasCg1IbHrs+Mm5PsWxk6akpDY9aNP/+POxASGUJpXdPJK27o1hHBC7doH+ge7tG/72cIvkmfO7vvHa3JfT545K4TQuW2bI4444iDHFlu+/I1XXd530EPJM2cPuu3mqKiofyS/k7Hju6OqHbnfNy2ppr33wV8eHJL939FlytSMP+bcju2vvviiMlE/mDkbNm1+fuKrr059K65SxXf+PqZIhnqox7AzM/P5l199890Za9ZvqFypUuvTT73hip6OZJWACfzNuvUjx46b/cmn2zN21Kl5XM/uF3RL7Jh3Q/yQKoQxmMAIncK2Lytr0+a06TNnjXl1co3q1a75w+8O9BY6t209ZMSz36xbv2jJssb16+Vcz963+k2HtgUyzlannhIREZG5a9eSr1c0rl9vzn/mZzfWfv/Slwa7du9etmLlsBfGLF2+/OEB3x9FWrdx4+gJr0yaNn3X7t1FNbBCGENm5q5rbuu/IPXL7A83pqVNfmv6zI/njhv6WHyNGh5HDt8JnJK6+Lp+AzJ2fJf94aKly+565PH0bVuv7HFhoQ2sEMZgAhNsXRWmhYuXJCR2bdb5vE6XXDFkxKiTGjaY8PST+fjFolrVKqc0PSmEMH3mrNwPGWvWbziq2pEtEk4qkNFWKF+uWpUqIYTNW7aEEL5etTqE0Khe3VI1S+6+6YaU5KkfTXn1sbv7l42JmfbeB5u3pGd/6u9T3pjwj6kVYys8njSgqIZXCGMYMXbcgtQvmzSoP3HE0Hlvvj5p1PBTmyZsStsyZORzHkQO6wl83DE16taqObDvTbMnv/zh5In33NInIiLi6RdfKsxwL4QxmMAInaL02cIveg9IWrZiZT7+bJf2bcMPj+lk71t1ad82suBWfcuWjQkhZO7eHULYnpERQogtX74UzpUK5ct1btv6vE4dQghfr1qVfbFTq5bnn91xyuhnEtu0KqqBHYox3PfksITErnc98kRWVlbmrl0T35gWEx094oF7G9evF12mTP06xw8blBRbvvyMf8/ZsnXr//46RUaOnTTlN1dcc9p5F152U9+Fi5dkX1+zfn1CYtf5X6T2uXvg6edf9PSLYzds2tyzz62tuv9+4htvehgqwglcJS5u/LAnunfpXCk2tmJshR7ndjmtWcLOzMxNaWmFNrBDMQYTGIoydJo0qJ+SPHX+9DfefXnsU/fe1aRB/dRlX/Xqn7Rt+/YDvanENq0iIyNXrP5mydfL/xs6s0O+nm/1M7KXlCtXqhhCiC4THULY8d13pXbG7Ni5M4QQW6FC9odNGzd6sF/fuIoVi3BIBT6GR5557tWpb3VL7DTwtpsjIiIWLl6yPSOjU6uWVStXDrnOb53Trs2+ffs+/3JxzsXhf3vp4ZGjVq9dtzMzc/4XqTfcdW/uqfLEX1+Y8dGc73bufPGVSfc8MXRB6pfbtm9/cvSL+7KyPBIV1QTOa+/efZEREdWqVi3CQR7kGExgCMXhjE5kRET1qlU7tmrZ8pTmPf7UZ+WaNdPee//353c90N+Ezmje7N/zPkueObt+neMXLV22eu26WvHxTRrUL6hxbtm6NS09PYRwzFHVQwjVqlZZs379shWrSuFc2bJ125vvznhrxge14uMb1Dm+oG72hrvu/WDO3LzX255x2vD77y38H3PYC2PGvPb6eZ06DLr9lux1wVVr1oYQGubZr6xbu1YIYd2GTTlXPv184dmtz7q917VlY2L6Dhr8yYKUufNT2p15evjv61je2ef6EMIDw0Z8OHfeqMH3fzBn7kuTp2xJ33pklcoejIrDBN6wOW3+otSOrVpGlylTVBM4H2MwgaFYb12VK1u2ScMTQgj5WNEJIXRp97/dq7dnzg4Fdww529R3Z4QQ6tQ8LvvIXtNGDUMI78z+MKs0/RIz6KnhCYld2/a4ZPCIZ2PLlx/c//bIyJL55iGjJ7wyavzL53Zo98Bfbs3Z/cz+pbZKXKX9vjh7kS9z966cK107dXgsaUB8jRpVK1e+5ILzQghrN2zM+WzzJif+oVvX446uEUK48DfntDyl+TE1jgohZO7K9EhUHCbwvqysux55vGxMzC3XXR2K7lkaBzMGExiK49PL9+zZk5K6OOT3hG+n1i0HDR2+dPmKlWvWTP8+dAps3+rrVatHjBkXQuhxbpfsK+d2bP/S5ClfrVz14iuTrr74otI2XapXrfriE0NyXjuxQBTJss2Pev+jOSmpi5s2bvTQHbfl/ocwOjo6hLD12+15V/tCCBXKlcu58tvOZ+f861IlLi6EsHvPnpzPJrZtHUIIEREhhHPatQkhFPJzmPmZCbwvKyvp0SfnLfh86MCkA5rhBTiB8z0GExiK44rO3r17N29J/2DO3Gv+MmD12nWN6tVtdeop+biduIoVW7ZoHkIYNW7C8lWrG9StU692rXDQLzixdPmKZ8dNuLTPrd9uz2h8Qr2e3btlfyqhUYPObVuHEB5/7vl7Hn9q4eIlOzMzM3ftWrp8xdN/e2nIiFGhhD5p5ZM3Jg/se9Pm9PQ/Jw3amVkyf4Fr2aJ5sxMbfZ765Xv/npP7eo0jjwwh5D0vn7r0qxBC7WOP9ThyuE/gXbt3337/4Gnvvf/EPXe2OrVFKKJnvx/kGExgKPoVnS1bt7XtcUne643q1X160D353g3p0r7NzI/nTpn+zsEfQ+4/+NH+gx/NfeW0ZgmP3nVH7tceHNj35owdO2Z/8umkadMnTZue91lgJVJMTHT3Lp1Tl301/vV/vjDxtd6XXxpK3Bmd6OjoYQOTLrnxln4PPjxq8P0tEppkX2/SsH5kZGTyzFn9el+Xc4h1Y1pa8qzZsRUqNGlY3+PIYT2Bt+/YcdM9g1JSFw+//94zW5xcJBP4IMdgAkNxXNGJiY4+unr1DmedOfiO2yYMf/JgXqAz96m9gz+gExERUa5s2eNrHtctsdPIBwc+/+jg3E9VCCFUKF9u5IMDH08a0OGsM486smqZqKiqlSs3O7HRLddePeDGXiV7uvS67JIK5cuNee31b7dnlMgfsEpc3IgH7ouOLnNj0n05T+WrEhfX9vTTMnZ81ydp0NLlK3bv2bNo6bJrbx+Qmbnr9+efm783jqWYTOBNaVuuvrXfF0uWjRp8f74L4yAV4BhMYCjiFZ0qcZVSkqcW+M3Gli8/783XD/JGnnlo0AHFUGKbVkX4yjFF2AFXXNR95NjxY16bfMOVl4UQZs2d13tAUsj1PgwJiV1DCGc0P/mvDz8QCuWIw8GPIbe6tWo+cc+dvfon9ep/99inHouvcVQI4fbe185ftOiTBSndr7s+5yubNmrY+7JLPYgc1hP4hYmvpi77KoRw+c235f7K42se98/nny2cCXzwYzCBoVg/64rDy5U9LqwSF/fSpCn5e5bcYeGMk5sl3XTDhs1pf+p/d/q2b0MIteLjJwx/8vyzOx5ZpXJUVFSt+Phel10y+tGHYmL8Nnx4T+B9+4r+6ZMFPgYTGH6wNpGxbbV7AQAIVnQAAIQOAIDQAQAQOgAAQgcAQOgAAEIHAEDoAAAIHQAAoQMAIHQAAIQOACB0AACEDgCA0AEAEDoAAEIHAEDoAABCBwBA6AAACB0AAKEDACB0AACEDgCA0AEAhA4AgNABABA6AABCBwBA6AAA/FCUu4D8SUjs6k4oDlKSp7oTTGATGIIVHQBA6AAACB0AgOCMDsEuO8H5EhMYE5hgRQcAQOgAAAgdAEDoAAAIHQAAoQMAIHQAAIQOAIDQAQAQOgCA0AEAEDoAAEIHYD8zul/gTgCEDlCSW0fuAEIHkDsAvyzKXQAU852s9pOnuDcAoVMAEhK7uhMwaUMIw2KjiufZnT7b9/ifbgLzi1KSp7oThI6/bACU5H/U5E5wRgcACFZ0gFKlSHaIfmq/zHYVIHSCrc1gs890DSXqdXRyziCnmMAmMOa20CnACZH7or+EUPg8zQoQOoWUuvt9ve4BiQMInRK7lJdzO4oHVA4gdErsbqVn7gGA0CnuifOLpfLzNyJ3AEDoFK/EOaAuyf3FP3WzcgcAhE4RV87Bh0jOLfzUc7W0DgAEr4xcyJWTkjy1YBPkp27QqxcAQLCiU5iJEw7x61zt931tYwFAsKJzqCunwFdxDmh1x9IOAAidQ1g5oahfxVzrAIDQKbzKWfOvt2Z0v+DL4U9rHQAQOodf5RTadtWv38bSOgAgdAqmckKxfDNerQMAQqeAt42MBwCI8g5WhTPakp0+Vq0wgQGhU9ibVll7977f48L9Lq59O3nt28k5H7YY8nClBg3DoVnUyT1Or5sMAMHW1eF7NMdhHQAIVnQK7ShMxBFHtJ88JeR6evniZ0Yec3ZiwxtuLMwR6hsAEDqhNGyll6QNLDtxmMBAsHXlccrjKQAInVBKnhlhJwsAhE4oScskFnUAIDijEw7lQkj8OV3iz+nipA7kw6Y5H30++KG810+6o3+1M850/wDBik4o3QskygYAghUdoBiqdsaZ2S/WsO7dd1KHDW3U589Hd+zkbgGCFZ3gAG9wJBkAhE4o4XtAdq8AQOgAAAgdAAChAwAInVD8z+0e7sdcco/feWQAEDoAAEIHACB4wUAgHNRbQKQOG5o6bGjwFhBAsKIDABCs6AChuL8FBECwogMAIHQAAIQOAIDQAQAQOgCA0AneNiF4OwsAEDoAAEIHAEDoAACUrtA5fI/pHO4HjABA6IRDfR65ZHASGQCEDgBAKF1v6pmQ2PWAVkTaX9xz85b0/S6+Pf5vNapXs28FAMGKTrDX42cBgGBFJxS7RZ0ZE8c5hgwAwYpOsBDipwAAoRM8WztYzgEAoRMshwTLOQAgdEIJWyyxnAMAQifke1GkOJfEfmOznAMAQqeEtI7KAQChUyoOu6gcABA6ocQchXE0BwCETiiRG1g2rQBA6ByS1ina3Mk7AJUDAEKnII+/FFXr5P2+KgcAhE5JaB2VAwBCp1Bbp3By50e/kcoBgODdywu8dfZrjuwPD1F2/GhISRwACFZ0CvMVawp8deenblDlAECwonOoW+dHKyTnYr5z5OdrSeUAgNApsm2sH+2VX6yTX7MUJHEAQOgUr9wpkOdnSRwAEDrFPXckDgAInZJwSNkSDgAInZJfPL+ye5QNAAidErXSI24AIHgdHQAAoQMAIHQAAIQOAIDQAQCEDgCA0AEAEDoAAEIHAEDoAAAIHQAAoQMACB0AAKEDACB0AAAOvSh3QV4JiV3dCQAQrOgAAAgdAIDCFpGxbbV7Idi0AqAESUme6k4QOgBAsHUFACB0AACEDgCA0AEAEDoAAEIHABA6AABCBwBA6AAACB0AAKEDACB0AAChAwAgdAAAhA4AgNABABA6AABCBwBA6AAAQgcAQOgAAAgdAAChAwAgdAAAhA4AIHQAAIQOAIDQAQAQOgAAQgcAQOgAAEIHAEDoAAAIHQAAoQMAIHQAAIQOACB0AACEDgCA0AEAEDoAAEIHAOBA/T/P0VVBX/Xn8QAAAABJRU5ErkJggg=="
+            }
+          ],
+          "points": 2
+        },
+        {
+          "num": 4,
+          "type": "multiple",
+          "stem": "请选择所有偶数。",
+          "options": {
+            "A": "2",
+            "B": "3",
+            "C": "4",
+            "D": "5"
+          },
+          "answer": [
+            "A",
+            "C"
+          ],
+          "topic": "多选练习",
+          "tags": [
+            "多选",
+            "示例"
+          ],
+          "analysis": "2和4可以被2整除，正确项为A、C。只选A、只选C，或夹带B、D，均不得分。",
+          "points": 2
+        },
+        {
+          "num": 5,
+          "type": "multiple",
+          "stem": "下列等式中，哪些成立？",
+          "options": {
+            "A": "1+1=2",
+            "B": "2×3=6",
+            "C": "5−2=1",
+            "D": "8÷2=4"
+          },
+          "answer": [
+            "A",
+            "B",
+            "D"
+          ],
+          "topic": "多选练习",
+          "tags": [
+            "多选",
+            "示例"
+          ],
+          "analysis": "A、B、D成立；C应为5−2=3。答案必须选全A、B、D，且不能选C。",
+          "points": 2
+        },
+        {
+          "num": 6,
+          "type": "multiple",
+          "stem": "下列整数比较中，哪些成立？",
+          "options": {
+            "A": "−1<0",
+            "B": "0=0",
+            "C": "1>0",
+            "D": "2≥1"
+          },
+          "answer": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "topic": "多选练习",
+          "tags": [
+            "多选",
+            "示例"
+          ],
+          "analysis": "四个比较均成立，应同时选择A、B、C、D。",
+          "points": 2
+        },
+        {
+          "num": 7,
+          "type": "blank",
+          "stem": "依次填写：第1空为十进制10的二进制表示；第2空为十进制7的二进制表示。均不加前缀。",
+          "blanks": [
+            {
+              "mode": "text",
+              "answers": [
+                "1010"
+              ]
+            },
+            {
+              "mode": "text",
+              "answers": [
+                "111"
+              ]
+            }
+          ],
+          "topic": "文本多空",
+          "tags": [
+            "文本多空",
+            "示例"
+          ],
+          "analysis": "十进制10对应二进制1010，十进制7对应二进制111。每空1分，两空共2分；只对一空得1分。",
+          "points": 2
+        },
+        {
+          "num": 8,
+          "type": "blank",
+          "stem": "依次填写：第1空为CPU的中文名称；第2空将字母数字串stm32中的字母改成大写。",
+          "blanks": [
+            {
+              "mode": "text",
+              "answers": [
+                "中央处理器",
+                "中央处理单元"
+              ]
+            },
+            {
+              "mode": "text",
+              "answers": [
+                "STM32"
+              ]
+            }
+          ],
+          "topic": "文本别名与大小写",
+          "tags": [
+            "文本别名与大小写",
+            "示例"
+          ],
+          "analysis": "第1空接受中央处理器或中央处理单元；第2空必须为STM32。首尾空白会忽略，内部空白和大小写会保留，每空1分。",
+          "points": 2
+        },
+        {
+          "num": 9,
+          "type": "blank",
+          "stem": "填写3÷2的数值结果，不带单位。允许的绝对误差为0.001。",
+          "blanks": [
+            {
+              "mode": "number",
+              "answers": [
+                "1.5"
+              ],
+              "tolerance": 0.001
+            }
+          ],
+          "topic": "数值容差",
+          "tags": [
+            "数值容差",
+            "示例"
+          ],
+          "analysis": "参考值1.5。1.500、1.5e0、1.499、1.501均可；1.502、1.5V及计算式3/2不可。此题一空2分。",
+          "points": 2
+        },
+        {
+          "num": 10,
+          "type": "blank",
+          "stem": "依次填写：第1空为−3+3的数值；第2空为2×3的数值。两空容差均为0，不带单位。",
+          "blanks": [
+            {
+              "mode": "number",
+              "answers": [
+                "0"
+              ],
+              "tolerance": 0
+            },
+            {
+              "mode": "number",
+              "answers": [
+                "6"
+              ],
+              "tolerance": 0
+            }
+          ],
+          "topic": "数值零与科学计数",
+          "tags": [
+            "数值零与科学计数",
+            "示例"
+          ],
+          "analysis": "第1空为0，第2空为6；0.0、−0（输入半角减号-）、6.0、6e0等相同数值可接受。每空1分，两空共2分。",
+          "points": 2
+        }
+      ]
+    },
+    {
+      "id": "options",
+      "title": "可变选项 B 卷",
+      "year": null,
+      "code": "B",
+      "pointsPerQuestion": 2,
+      "questions": [
+        {
+          "num": 1,
+          "type": "single",
+          "stem": "整数2属于哪一类？",
+          "options": {
+            "A": "奇数",
+            "B": "偶数"
+          },
+          "answer": "B",
+          "topic": "整数与运算",
+          "tags": [
+            "动态选项",
+            "单选"
+          ],
+          "analysis": "2能被2整除，所以是偶数。",
+          "points": 2
+        },
+        {
+          "num": 2,
+          "type": "single",
+          "stem": "2+3的结果是多少？",
+          "options": {
+            "A": "1",
+            "B": "2",
+            "C": "3",
+            "D": "4",
+            "E": "5"
+          },
+          "answer": "E",
+          "topic": "整数与运算",
+          "tags": [
+            "动态选项",
+            "单选"
+          ],
+          "analysis": "2+3=5，对应E。",
+          "points": 2
+        },
+        {
+          "num": 3,
+          "type": "single",
+          "stem": "3×2的结果是多少？",
+          "options": {
+            "A": "1",
+            "B": "2",
+            "C": "3",
+            "D": "4",
+            "E": "5",
+            "F": "6"
+          },
+          "answer": "F",
+          "topic": "整数与运算",
+          "tags": [
+            "动态选项",
+            "单选"
+          ],
+          "analysis": "3×2=6，对应F。",
+          "points": 2
+        },
+        {
+          "num": 4,
+          "type": "single",
+          "stem": "以下整数中最大的是哪一个？",
+          "options": {
+            "A": "1",
+            "B": "2",
+            "C": "3",
+            "D": "4",
+            "E": "5",
+            "F": "6",
+            "G": "7",
+            "H": "8"
+          },
+          "answer": "H",
+          "topic": "整数与运算",
+          "tags": [
+            "动态选项",
+            "单选"
+          ],
+          "analysis": "八个选项依次为1—8，最大是8，对应H。",
+          "points": 2
+        },
+        {
+          "num": 5,
+          "type": "multiple",
+          "stem": "选择所有偶数。",
+          "options": {
+            "A": "2",
+            "B": "3",
+            "C": "4",
+            "D": "5",
+            "E": "6",
+            "F": "7"
+          },
+          "answer": [
+            "A",
+            "C",
+            "E"
+          ],
+          "topic": "整数与运算",
+          "tags": [
+            "动态选项",
+            "多选"
+          ],
+          "analysis": "2、4、6是偶数，对应A、C、E；必须全选且无错选。",
+          "points": 2
+        },
+        {
+          "num": 6,
+          "type": "multiple",
+          "stem": "选择所有偶数。",
+          "options": {
+            "A": "2",
+            "B": "3",
+            "C": "4",
+            "D": "5",
+            "E": "6",
+            "F": "7",
+            "G": "8",
+            "H": "9"
+          },
+          "answer": [
+            "A",
+            "C",
+            "E",
+            "G"
+          ],
+          "topic": "整数与运算",
+          "tags": [
+            "动态选项",
+            "多选"
+          ],
+          "analysis": "2、4、6、8是偶数，对应A、C、E、G。",
+          "points": 2
+        },
+        {
+          "num": 7,
+          "type": "multiple",
+          "stem": "选择所有素数（题型按多选呈现，本题只有一个正确项）。",
+          "options": {
+            "A": "4",
+            "B": "6",
+            "C": "8",
+            "D": "9",
+            "E": "7",
+            "F": "10"
+          },
+          "answer": [
+            "E"
+          ],
+          "topic": "整数与运算",
+          "tags": [
+            "动态选项",
+            "多选"
+          ],
+          "analysis": "只有7是素数，对应E；多选题的正确项数可以为1。",
+          "points": 2
+        }
+      ]
+    },
+    {
+      "id": "groups",
+      "title": "连续小问 C 卷",
+      "year": null,
+      "code": "C",
+      "pointsPerQuestion": 2,
+      "groups": [
+        {
+          "id": "expression",
+          "num": 3,
+          "stem": "已知整数x=2。根据示意图，完成第（1）、（2）小问。",
+          "points": 4,
+          "images": [
+            {
+              "name": "独立绘制的整数计算示意图",
+              "data": "data:image/png;base64,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6XQ6rW56wx/17RZ64crVlFu3w3r34PDIFjmkp+bcx/586gV3Mm/wb1I+bd8spooNYapAq6nCkjAAgAgECQAgAkECAIhAkAAAIhAkAIAIBAkAIAJBAgCIQJAAACIQJACACAQJACACQQIAiECQAAAiECQAgAgECQAgAkECAIhAkAAAIhAkAIAIBAkAIAJBAgCIQJAAACIQJACACAQJACACQQIAiECQAAAi6PNlL/WCO+XLfmD3mCpgquB/4QgJACACQQIAiOCQnnpG6zEAAMAREgBABk7ZAQBEIEgAABEIEgBABIIEABCBIAEARCBIAAARCBIAQASCBAAQgSABAEQgSAAAEQgSAEAEggQAEIEgAQBEIEgAABEIEgBABIIEABCBIAEARCBIAAARCBIAQASCBAAQgSABAEQgSAAAEQgSAEAEggQAEIEgAQBEIEgAABEIEgBABIIEABCBIAEARCBIAAARCBIAQASCBAAQgSABAEQgSAAAEQgSAEAEggQAEIEgAQBEIEgAABEIEgBABIIEABCBIAEARCBIAAARCBIAQASCBAAQgSABAEQgSAAAEQgSAEBJ8F/BLyIiOTck8AAAAABJRU5ErkJggg=="
+            }
+          ]
+        },
+        {
+          "id": "numbers",
+          "num": 4,
+          "stem": "给定整数集合：2、3、4、5。完成第（1）、（2）小问。",
+          "points": 4
+        }
+      ],
+      "questions": [
+        {
+          "num": 1,
+          "type": "single",
+          "stem": "1+1的结果是？",
+          "points": 2,
+          "topic": "整数与运算",
+          "tags": [
+            "连续小问",
+            "独立示例"
+          ],
+          "analysis": "1+1=2。",
+          "options": {
+            "A": "1",
+            "B": "2"
+          },
+          "answer": "B"
+        },
+        {
+          "num": 2,
+          "type": "single",
+          "stem": "3+3的结果是多少？",
+          "points": 2,
+          "topic": "整数与运算",
+          "tags": [
+            "连续小问",
+            "独立示例"
+          ],
+          "analysis": "3+3=6。",
+          "options": {
+            "A": "5",
+            "B": "6"
+          },
+          "answer": "B"
+        },
+        {
+          "num": 21,
+          "type": "single",
+          "stem": "x属于哪一类整数？",
+          "points": 2,
+          "topic": "整数与运算",
+          "tags": [
+            "连续小问",
+            "独立示例"
+          ],
+          "analysis": "2能被2整除，是偶数。",
+          "group": {
+            "id": "expression",
+            "part": 1
+          },
+          "options": {
+            "A": "奇数",
+            "B": "偶数"
+          },
+          "answer": "B"
+        },
+        {
+          "num": 22,
+          "type": "blank",
+          "stem": "填写3x+1的数值，不带单位。",
+          "points": 2,
+          "topic": "整数与运算",
+          "tags": [
+            "连续小问",
+            "独立示例"
+          ],
+          "analysis": "3×2+1=7。",
+          "group": {
+            "id": "expression",
+            "part": 2
+          },
+          "blanks": [
+            {
+              "mode": "number",
+              "answers": [
+                "7"
+              ],
+              "tolerance": 0
+            }
+          ]
+        },
+        {
+          "num": 31,
+          "type": "blank",
+          "stem": "从给定集合选出一个奇素数，填写其数值。",
+          "points": 2,
+          "topic": "整数与运算",
+          "tags": [
+            "连续小问",
+            "独立示例"
+          ],
+          "analysis": "3和5均为奇素数。本题允许填写任一符合条件的数。",
+          "group": {
+            "id": "numbers",
+            "part": 1
+          },
+          "blanks": [
+            {
+              "mode": "number",
+              "answers": [
+                "3",
+                "5"
+              ],
+              "tolerance": 0
+            }
+          ]
+        },
+        {
+          "num": 32,
+          "type": "multiple",
+          "stem": "选择给定集合中的所有偶数。",
+          "points": 2,
+          "topic": "整数与运算",
+          "tags": [
+            "连续小问",
+            "独立示例"
+          ],
+          "analysis": "2和4是偶数，对应A、C。",
+          "group": {
+            "id": "numbers",
+            "part": 2
+          },
+          "options": {
+            "A": "2",
+            "B": "3",
+            "C": "4",
+            "D": "5"
+          },
+          "answer": [
+            "A",
+            "C"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "programming",
+      "title": "程序练习 D 卷",
+      "year": null,
+      "code": "D",
+      "pointsPerQuestion": 2,
+      "questions": [
+        {
+          "num": 1,
+          "type": "code_blank",
+          "stem": "补全程序，输出整数7。",
+          "topic": "整型输出",
+          "tags": [
+            "程序填空"
+          ],
+          "analysis": "printf使用%d输出int。",
+          "code": "#include <stdio.h>\nint main(void){printf(\"%d\", ___1___);return 0;}",
+          "blanks": [
+            {
+              "num": 1,
+              "answers": [
+                "7"
+              ]
+            }
+          ],
+          "points": 2,
+          "pitfall": "%d对应int类型。本题只填写常量，不填写完整语句。",
+          "blank_analysis": [
+            {
+              "num": 1,
+              "explanation": "%d输出一个整数，填写7即可。"
+            }
+          ]
+        },
+        {
+          "num": 2,
+          "type": "fix",
+          "stem": "修正输出，使输入整数加1后输出，保留原程序行数，并为修改行添加注释。",
+          "topic": "算术运算",
+          "tags": [
+            "改错"
+          ],
+          "analysis": "将减法改为加法。",
+          "code": "#include <stdio.h>\nint main(void){\nint n;scanf(\"%d\", &n);\nprintf(\"%d\", n-1);\nreturn 0;\n}",
+          "faults": [
+            {
+              "line": 4,
+              "original": "printf(\"%d\", n-1);",
+              "fixed": "printf(\"%d\", n+1);",
+              "reason": "应加1。"
+            }
+          ],
+          "tests": [
+            {
+              "stdin": "4",
+              "expect": "5",
+              "compare": "exact"
+            },
+            {
+              "stdin": "-2",
+              "expect": "-1",
+              "compare": "exact"
+            }
+          ],
+          "points": 2
+        },
+        {
+          "num": 3,
+          "type": "program",
+          "stem": "读入两个整数，输出它们的和。",
+          "topic": "整数求和",
+          "tags": [
+            "编程"
+          ],
+          "analysis": "使用scanf读入两个int，再用printf输出和。",
+          "input": "两个整数a和b。",
+          "output": "整数a+b。",
+          "rangeNote": "-100≤a,b≤100",
+          "starter": "#include <stdio.h>\nint main(void){\n    return 0;\n}\n",
+          "examples": [
+            {
+              "stdin": "2 3",
+              "stdout": "5"
+            }
+          ],
+          "tests": [
+            {
+              "id": "sum-pos",
+              "stdin": "2 3",
+              "stdout": "5",
+              "kind": "source-sample"
+            },
+            {
+              "id": "sum-zero",
+              "stdin": "-5 5",
+              "stdout": "0",
+              "kind": "derived"
+            }
+          ],
+          "points": 2
+        }
+      ]
+    },
+    {
+      "id": "encoding",
+      "title": "字符编码 E 卷",
+      "year": null,
+      "code": "E",
+      "pointsPerQuestion": 2,
+      "questions": [
+        {
+          "num": 1,
+          "type": "fix",
+          "stem": "按GBK处理输入，输出字符串字节数、一个空格和原字符串。修正错误输出行，保留行数，并在修改行添加注释。",
+          "topic": "字符编码",
+          "tags": [
+            "GBK",
+            "示例"
+          ],
+          "analysis": "本题按GBK编码处理字符串。苏A和沪B均为3字节；strlen返回字节数，第二个输出项应为输入字符串s。",
+          "code": "#include <stdio.h>\n#include <string.h>\nint main(void){\n    char s[20];scanf(\"%19s\",s);\n    printf(\"%u %s\",(unsigned)strlen(s),\"沪\");\n    return 0;\n}",
+          "faults": [
+            {
+              "line": 5,
+              "original": "    printf(\"%u %s\",(unsigned)strlen(s),\"沪\");",
+              "fixed": "    printf(\"%u %s\",(unsigned)strlen(s),s);",
+              "reason": "输出输入字符串s。"
+            }
+          ],
+          "tests": [
+            {
+              "stdin": "苏A",
+              "expect": "3 苏A",
+              "compare": "exact"
+            },
+            {
+              "stdin": "沪B",
+              "expect": "3 沪B",
+              "compare": "exact"
+            }
+          ],
+          "quirks": {
+            "executionEncoding": "gbk"
+          },
+          "points": 2
+        }
+      ]
+    }
+  ]
+}

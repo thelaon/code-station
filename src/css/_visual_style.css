@@ -65,6 +65,8 @@ html[data-ui-style="nasa"] .foot{border-top:2px solid var(--ink);margin-top:24px
 .nasa-mode-row button.on small{color:var(--panel)}
 .nasa-type-row{margin:8px 0 20px;gap:12px}
 .nasa-paper-tools{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-top:1px solid var(--line);padding:17px 0 23px}
+html[data-ui-style=nasa] .nasa-pick-content>.full-paper-feedback{border-bottom:0;margin-bottom:0}
+html[data-ui-style=nasa] .nasa-paper-tools>.year-archive{border:0;padding:0}
 .nasa-paper-tools label{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.85em}
 .nasa-paper-tools select{font:inherit;color:var(--ink);border:1px solid var(--line);padding:9px 12px;min-height:42px}
 .nasa-paper-tools input{width:5em!important}

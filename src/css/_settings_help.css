@@ -37,3 +37,11 @@ html[data-motion=on] .category-opening .category-dialog{animation:category-dialo
 @keyframes category-backdrop-in{from{background-color:rgba(0,0,0,0)}to{background-color:rgba(0,0,0,.72)}}
 @keyframes category-dialog-in{from{opacity:0;transform:translateY(6px) scale(.995)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){html[data-motion=on] .category-opening,html[data-motion=on] .category-opening .category-dialog{animation:none}}
+
+.third-party-notices>p,.license-component p{font-size:.85em;line-height:1.8;margin:8px 0}
+.third-party-notices .license-status{padding:12px 15px;border:1px solid var(--line);border-left:3px solid var(--brand);background:var(--bg);color:var(--dim)}
+.license-component{padding:16px 0;border-bottom:1px solid var(--line)}.license-component h4{margin:0 0 6px}.license-component .license-label{color:var(--brand);font-weight:600}
+.third-party-notices summary{cursor:pointer;padding:10px 0;font-size:.85em;font-weight:600}.third-party-notices summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.license-fingerprint{display:block;padding:10px;background:var(--bg);white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.7 Consolas,monospace}
+.license-document{border:1px solid var(--line);padding:0 12px;margin:10px 0}.license-document pre{max-height:340px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);padding:14px;font:12px/1.65 Consolas,monospace;tab-size:4}
+.project-notice{margin:12px 0 22px}.project-notice p{margin:8px 0;line-height:1.8;font-size:.84em}.project-notice a{color:var(--brand);text-decoration:underline;overflow-wrap:anywhere}.project-notice .project-license{font-weight:700;color:var(--ink)}.project-notice summary{cursor:pointer;font-weight:600;font-size:.85em;padding:8px 0}.project-notice a:focus-visible,.project-notice summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px}

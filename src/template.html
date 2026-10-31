@@ -464,6 +464,7 @@
 <script id="bank-data" type="application/json">====DSH-BANK-DATA====</script>
 <script id="blank-data" type="application/json">====DSH-BLANK-DATA====</script>
 <script id="fix-data" type="application/json">====DSH-FIX-DATA====</script>
+<script id="third-party-data" type="application/json">====CQ-THIRD-PARTY====</script>
 
 <script>
 ====DSH-FIX-ENGINE====
@@ -512,6 +513,8 @@ var HAS_FIX = TOTALF > 0;
 
 
 var BUILD = 'dev';
+var APP_VERSION = 'dev';
+var APP_PROFILE = 'development';
 var DATA_BUILD = 'dev';
 var DATA_BUILD_KEY = 'cqframe.build.v1';
 var GUIDE_SEEN_KEY = 'cqframe.guide.seen.v1';
@@ -529,16 +532,13 @@ function clearStoredUserData(){
   }catch(e){}
 }
 
-try{
-  if(DATA_BUILD !== 'dev' && localStorage.getItem(DATA_BUILD_KEY) !== DATA_BUILD)
-    clearStoredUserData();
-}catch(e){}
+// A different build identifies an upgrade, never permission to delete user data.
 
 
 function footText(s){
   if(CQStorage.hasPending())s=s.replace('进度自动保存','存在未保存更改');
-  var tag = (BUILD && BUILD !== 'dev') ? ('　·　构建 ' + BUILD) : '';
-  return s + tag;
+  var tag = (APP_PROFILE === 'development' && BUILD && BUILD !== 'dev') ? ('　·　构建 ' + BUILD) : '';
+  return s + (APP_VERSION !== 'dev' ? '　·　' + APP_VERSION : '') + tag;
 }
 
 var LSKEY = {
@@ -548,7 +548,7 @@ var LSKEY = {
 };
 
 
-try{recoverPackTransaction();}catch(e){CQStorage.recovery(e,false);return;}
+try{CQStorage.checkSchema();recoverPackTransaction();CQStorage.adoptSchema(DATA_BUILD);}catch(e){CQStorage.recovery(e,false);return;}
 function load(k, dft){
   try{ var s = CQStorage.read(k); return s ? JSON.parse(s) : dft; }
   catch(e){ return dft; }
@@ -1717,6 +1717,7 @@ function refreshProgress(){
 ====CQ-VISUAL-CODE====
 
 function renderHome(){
+  $('#foot').textContent=footText('所有数据只存在本机浏览器，不联网');
   if(!PAPERS.length||!libraryList().length){
     renderNav();var emptyHost=renderLibraryShell(emptyNode(viewEl())),welcome=el('section','card framework-welcome');
     welcome.appendChild(el('span','welcome-kicker','本机离线 · 无需注册'));welcome.appendChild(el('h2',null,PACKS.length?'题库均已停用':'尚未添加题库'));
@@ -1809,7 +1810,7 @@ function renderHome(){
         left.appendChild(el('div','info','按当前试卷所含题型与标注分值计分，不含编程题。交卷后统一判分；倒计时在后台或关闭页面后继续，到时收卷。'));
       }
       left.appendChild(el('div','tip',
-        examPick ? '改错按现有逐处核对规则计分；可自行编译运行，考试中不显示对错或参考改法。'
+        examPick ? '改错题按各处修改计分。可编译自测，交卷前不显示对错和参考改法。'
         : '按考试顺序做完一整套：先选择题，再填空、改错和编程；按题目标注分值计分，交卷后看总分。'));
       var tb = el('table');
       var thead = el('thead'), htr = el('tr');
@@ -2718,7 +2719,7 @@ function renderResult(){
   var grid = el('div','grid result-grid study-result study-page');
   var left = el('div','card result-card'), right = el('details','card result-jump');
   var st = sessionStat(report);
-  var head=studyHeading('成绩回顾','任务简报','MISSION DEBRIEF','本次成绩与需要继续巩固的题目。','printout');
+  var head=studyHeading('成绩回顾','任务简报','MISSION DEBRIEF','查看本次成绩和逐题答卷。','printout');
   head.className+=' study-result-heading';grid.appendChild(head);
   var samePaper = report.order.every(function(o){return o.pid === report.order[0].pid;});
 
@@ -3098,7 +3099,7 @@ function dataSection(box){
   var r2 = rowOf(s, '导入学习进度', '先导入备份对应的原题包，再选择学习记录JSON合并；旧版内置题库记录也支持。');
   r2.ctl.appendChild(btn('选择文件导入', importData));
   var danger=el('details','settings-danger');danger.appendChild(el('summary',null,'清空数据（谨慎操作）'));s.appendChild(danger);
-  var r3 = rowOf(danger, '清空所有学习进度', '包括导入题包、答题记录、历次考试成绩、代码草稿、自测输入、复习、统计和设置。新构建首次打开也会清空；同一版本内保留进度。');
+  var r3 = rowOf(danger, '清空所有学习进度', '包括导入题包、答题记录、历次考试成绩、代码草稿、自测输入、复习、统计和设置。升级保留数据；仅在你确认清空时删除。');
   r3.ctl.appendChild(btn('清空全部进度', clearAll));
   if(r3.hintEl) r3.hintEl.className = 'hint dbig';
 }
@@ -3192,6 +3193,7 @@ document.addEventListener('input',function(){if(VIEW==='practice')cancelAutoNext
 
 
 window.__cq = {
+  profile:APP_PROFILE,
   queueAutoNext:queueAutoNext, exportData:exportData,
   el:el, viewEl:viewEl, emptyNode:emptyNode, save:save, load:load,
   renderNav:renderNav, scheduleAfter:scheduleAfter, bumpDaily:bumpDaily,

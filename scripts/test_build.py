@@ -6,8 +6,8 @@ class BuildTests(unittest.TestCase):
     def setUp(self):
         (ROOT/'dist').mkdir(exist_ok=True)
         self.temp=tempfile.TemporaryDirectory(dir=ROOT/'dist',prefix='build-test-');self.root=Path(self.temp.name)
-        for name in ['src','vendor']:shutil.copytree(ROOT/name,self.root/name)
-        for name in ['build.py','build-manifest.json']:shutil.copyfile(ROOT/name,self.root/name)
+        for name in ['src','vendor','licenses','third_party']:shutil.copytree(ROOT/name,self.root/name)
+        for name in ['build.py','build-manifest.json','LICENSE','LICENSE-SCOPE.md','COPYRIGHT.md']:shutil.copyfile(ROOT/name,self.root/name)
         spec=importlib.util.spec_from_file_location('test_builder',self.root/'build.py');self.mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(self.mod)
     def tearDown(self):self.temp.cleanup()
     def test_source_output_rejected(self):
@@ -29,6 +29,37 @@ class BuildTests(unittest.TestCase):
         self.assertFalse((self.root/'.out.html.transaction.json').exists())
     def test_reproducible(self):
         a=self.root/'a.html';b=self.root/'b.html';self.mod.build(a,'fixed','2026-10-29 12:00');self.mod.build(b,'fixed','2026-10-29 12:00');self.assertEqual(a.read_bytes(),b.read_bytes())
+    def test_public_and_private_delivery_boundaries(self):
+        import re
+        private=self.root/'private.html';public=self.root/'public.html'
+        a=self.mod.build(private,'fixed','2026-10-29 12:00','development');b=self.mod.build(public,'fixed','2026-10-29 12:00','public')
+        def notice(p):return json.loads(re.search(r'<script id="third-party-data" type="application/json">(.*?)</script>',p.read_text('utf-8'),re.S)[1])
+        x,y=notice(private),notice(public)
+        self.assertEqual((a['profile'],b['profile']),('development','public'))
+        self.assertTrue(x['status']);self.assertNotIn('status',y)
+        self.assertTrue(all('pending' in item for item in x['components']));self.assertTrue(all('pending' not in item for item in y['components']))
+        self.assertEqual(x['license_texts'],y['license_texts']);self.assertEqual(x['source_archive'],y['source_archive']);self.assertEqual(a['resources'],b['resources'])
+        p=self.root/'build-manifest.json';spec=json.loads(p.read_text('utf-8'));spec['default_profile']='public';p.write_text(json.dumps(spec),encoding='utf-8')
+        self.assertEqual(self.mod.build(self.root/'default.html','fixed','2026-10-29 12:00')['html_sha256'],b['html_sha256'])
+    def test_license_required_and_embedded_safely(self):
+        license=self.root/'licenses/WABT-LICENSE.txt';original=license.read_bytes()
+        license.unlink()
+        with self.assertRaises(FileNotFoundError):self.mod.build(self.root/'missing.html')
+        text='</script><script>untrusted()</script>\n'+original.decode('utf-8');license.write_bytes(text.encode('utf-8'))
+        self.mod.build(self.root/'safe.html')
+        import re
+        html=(self.root/'safe.html').read_text('utf-8');block=re.search(r'<script id="third-party-data" type="application/json">(.*?)</script>',html,re.S)[1]
+        self.assertNotIn('</script>',block)
+        self.assertEqual(json.loads(block)['license_texts']['licenses/WABT-LICENSE.txt']['text'],text)
+    def test_vendor_inventory_required(self):
+        p=self.root/'licenses/components.json';data=json.loads(p.read_text('utf-8'));data['components'].pop();p.write_text(json.dumps(data),encoding='utf-8')
+        with self.assertRaisesRegex(ValueError,'every bundled vendor file'):self.mod.build(self.root/'incomplete.html')
+    def test_wabt_supplement_required(self):
+        p=self.root/'licenses/WABT-THIRD-PARTY-NOTICES.txt';p.write_bytes(p.read_bytes()+b'changed')
+        with self.assertRaisesRegex(ValueError,'Supplemental WABT notice fingerprint mismatch'):self.mod.build(self.root/'stale-notice.html')
+    def test_wabt_runtime_requires_new_notice_record(self):
+        p=self.root/'vendor/c-runtime/wabt.js';p.write_bytes(p.read_bytes()+b'\n')
+        with self.assertRaisesRegex(ValueError,'WABT notice record does not match runtime'):self.mod.build(self.root/'changed-runtime.html')
     def test_interrupted_install_recovers(self):
         output=self.root/'out.html';self.mod.build(output,'before','2026-10-29 12:00')
         runner=self.root/'crash.py';runner.write_text("import build,os\nfrom pathlib import Path\nreplace=os.replace\ndef crash(a,b):\n if Path(a).name=='next-meta':os._exit(73)\n return replace(a,b)\nos.replace=crash\nbuild.build(Path('out.html'),'interrupted','2026-10-29 12:00')\n",encoding='utf-8')

@@ -4,6 +4,7 @@ var FixEngine = (function(){
 
   
   function __cq(){ return window.__cq || {}; }
+  function publicUI(){ return __cq().profile==='public'; }
   function el(t, c, x){ return __cq().el(t, c, x); }
   function viewEl(){ return __cq().viewEl(); }
   function emptyNode(n){ return __cq().emptyNode(n); }
@@ -128,7 +129,7 @@ var FixEngine = (function(){
   function buildWorkerUrl(){
     var parts = WORKER_SRC.map(function(id){
       var n = $(id);
-      if(!n) throw new Error('页面缺少引擎资源块 #' + id + '（构建时没注入？）');
+      if(!n) throw new Error(publicUI()?'编译器组件缺失，请重新下载完整程序。':'页面缺少引擎资源块 #'+id);
       stage('workerSrc:' + id, { len: n.textContent.length });
       return n.textContent;
     });
@@ -367,8 +368,8 @@ var FixEngine = (function(){
           clearTimeout(p.timer);
           stage('ask:post-throw', { type: msg.type, id: id,
                                     err: String(e && (e.name + ': ' + e.message) || e) });
-          rej(new Error('这条消息无法发给判题线程（' + String(e && e.message || e) +
-                        '）。载荷大小 ' + JSON.stringify(msg).length + ' 字节。'));
+          rej(new Error(publicUI()?'无法启动本次判题，请导出代码后重新打开页面重试。':
+            ('这条消息无法发给判题线程（'+String(e && e.message || e)+'）。载荷大小 '+JSON.stringify(msg).length+' 字节。')));
         }
     });
   }
@@ -582,7 +583,7 @@ var FixEngine = (function(){
       var nDrop = (quirks.droppedTests.length != null)
         ? quirks.droppedTests.length : Number(quirks.droppedTests) || 0;
       left.appendChild(el('div','warnline',
-        '本题有 ' + nDrop + ' 个测试点因上面的限制被移除，不计入对拍。'));
+        '本题有 ' + nDrop + ' 个测试点因上面的限制被移除，不参与输出核对。'));
     }
 
     
@@ -616,7 +617,7 @@ var FixEngine = (function(){
     fbar.appendChild(bRun);
 
     var bJudge = el('button','primary','提交');
-    bJudge.title = '交卷：编译、按预设输入对拍、逐处核对，分数会记进复习排程。';
+    bJudge.title = '提交后按各处修改计分，并更新复习记录。';
     fbar.appendChild(bJudge);
     left.appendChild(fbar);
 
@@ -774,12 +775,11 @@ var FixEngine = (function(){
       var r = (res && res.result) || {};
       rep.innerHTML = runReportHtml(r, fq);
       repCard.innerHTML = ''; repCard.appendChild(rep);
-      status.textContent = '引擎耗时 ' + res.ms + ' ms' +
-        (res.killed ? '　（含被强杀前的等待）' : '') + '　这次没判分、没记录成绩';
+      status.textContent = publicUI()?(res.killed?'运行超时，已停止。自测不计分。':'运行完成，仅供自测。'):('引擎耗时 '+res.ms+' ms'+(res.killed?'　（含被强杀前的等待）':'')+'　仅供自测，不计分');
       st.judging = null;
       bRun.disabled = false; bJudge.disabled = false;
       
-      if(res.killed){
+      if(res.killed && !publicUI()){
         FixEngine.debug(4000).then(function(d){
           var t = (d && d.dbg) || null, g = (t && t.guard) || null;
           if(t) rep.appendChild(el('div','note','诊断：引擎 ' +
@@ -962,8 +962,7 @@ var FixEngine = (function(){
         else if(/✗|编译没通过/.test(t)) row.className = 'bad';
         else if(/^应该：|^输入：|^用时/.test(t)) row.className = 'dim';
       });
-      status.textContent = '引擎耗时 ' + res.ms + ' ms' +
-        (res.killed ? '　（含被强杀前的等待）' : '') + '　这次没判分、没记录成绩';
+      status.textContent = publicUI()?(res.killed?'运行超时，已停止。自测不计分。':'运行完成，仅供自测。'):('引擎耗时 '+res.ms+' ms'+(res.killed?'　（含被强杀前的等待）':'')+'　仅供自测，不计分');
       st.judging = null;
       bRun.disabled = false; bJudge.disabled = false; bCase.disabled = false; bIoRun.disabled = false;
     }, function(e){
@@ -1003,7 +1002,7 @@ var FixEngine = (function(){
     putCode(cur.pid, fnum, ta.value);
     var per = fixPer(fq);
     var full = fixScoreOf(fq);
-    status.textContent = '正在启动判题引擎……（首次判题要装载 C 编译器，约 5～20 秒；之后再判就快了）';
+    status.textContent = publicUI()?'正在准备编译器，首次使用可能稍慢…':'正在启动判题引擎……（首次判题要装载 C 编译器，约 5～20 秒；之后再判就快了）';
 
     
     var preset = null, partial = null;
@@ -1063,8 +1062,7 @@ var FixEngine = (function(){
         scheduleAfter(cur.pid, 'x' + fnum, r.fixed >= r.total);
         bumpDaily();
         save(LSKEY().session, SESSION());
-        status.textContent = '引擎耗时 ' + res.ms + ' ms' +
-          (res.killed ? '　（含被强杀前的等待）' : '') + ' · 已保存';
+        status.textContent = publicUI()?'判分完成，成绩已保存。':('引擎耗时 '+res.ms+' ms'+(res.killed?'　（含被强杀前的等待）':'')+' · 已保存');
       }
       st.judging = null;
       bRun.disabled = false; bJudge.disabled = false;

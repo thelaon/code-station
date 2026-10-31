@@ -42,7 +42,7 @@ def install_pair(output,raw,report):
         journal.unlink()
     finally:
         if stage.exists() and not journal.exists():shutil.rmtree(stage)
-def build(output,build_id=None,stamp=None):
+def build(output,build_id=None,stamp=None,profile=None):
     inputs={}
     def read(name,binary=False):
         p=(ROOT/name).resolve()
@@ -51,6 +51,10 @@ def build(output,build_id=None,stamp=None):
         return raw if binary else raw.decode('utf-8').replace('\r\n','\n')
     spec=json.loads(read('build-manifest.json'))
     if spec.get('version')!=1:raise ValueError('Unsupported build manifest')
+    app_version=spec['app_version']
+    if not isinstance(app_version,str) or not re.fullmatch(r'[0-9]+\.[0-9]+(?:\.[0-9]+)?v',app_version):raise ValueError('Invalid app version')
+    profile=profile or spec.get('default_profile','development')
+    if profile not in ('development','public'):raise ValueError('Invalid build profile')
     def join(names):return '\n'.join(read(name) for name in names)
     template=read(spec['template']);engine=join(spec['engine']);resources=[]
     for rid,names,encoding in spec['resources']:
@@ -59,7 +63,44 @@ def build(output,build_id=None,stamp=None):
         else:raise ValueError('Unsupported resource encoding: '+encoding)
         if '</script' in body.lower():raise ValueError('Unsafe inline resource: '+rid)
         resources.append('<script id="%s" type="text/plain">%s</script>'%(rid,body))
+    notice_spec=spec['third_party']
+    notices=json.loads(read(notice_spec['inventory']))
+    notices['project']=json.loads(read(notice_spec['project_notice']))
+    if notices.get('version')!=1:raise ValueError('Unsupported third-party inventory')
+    if profile=='public':
+        public=json.loads(read(notice_spec['public_notice']))
+        notices.pop('status',None);notices['scope']=public['scope']
+        notices['project'].update(public['project'])
+        for item in notices['components']:
+            item['source']=public['sources'][item['id']]
+            item.pop('pending',None)
+            item.pop('version',None)
+    texts={}
+    for name in notice_spec['texts']:
+        raw=read(name,True)
+        texts[name]={'text':raw.decode('utf-8'),'sha256':sha(raw)}
+    listed=[]
+    for item in notices['components']:
+        if item.get('license_file') and item['license_file'] not in texts:raise ValueError('Missing third-party license: '+item['license_file'])
+        item['artifacts']=[]
+        for name in item['files']:
+            if name not in inputs:raise ValueError('Unbuilt third-party artifact: '+name)
+            listed.append(name);item['artifacts'].append({'path':name,**inputs[name]})
+    vendor_files=[name for _,names,_ in spec['resources'] for name in names if name.startswith('vendor/')]
+    if len(listed)!=len(set(listed)) or set(listed)!=set(vendor_files):raise ValueError('Third-party inventory must cover every bundled vendor file exactly once')
+    notices['license_texts']=texts
+    wabt_record=json.loads(read(notice_spec['wabt_notice_record']))
+    if inputs['vendor/c-runtime/wabt.js']['sha256']!=wabt_record['artifact_sha256']:raise ValueError('WABT notice record does not match runtime')
+    supplement=texts[wabt_record['supplemental_file']]
+    if supplement['sha256']!=wabt_record['supplemental_sha256']:raise ValueError('Supplemental WABT notice fingerprint mismatch')
+    for entry in wabt_record['parts']:
+        raw=read(entry['file'],True)
+        if sha(raw)!=entry['sha256'] or raw.decode('utf-8') not in supplement['text']:raise ValueError('Missing or changed WABT attribution part: '+entry['file'])
+    archive_name=notice_spec['source_archive'];archive_raw=read(archive_name,True)
+    notices['source_archive']={'filename':Path(archive_name).name,'bytes':len(archive_raw),'sha256':sha(archive_raw),'base64':base64.b64encode(archive_raw).decode('ascii')}
+    notice_json=json.dumps(notices,ensure_ascii=False,separators=(',',':')).replace('<','\\u003c').replace('>','\\u003e').replace('&','\\u0026')
     replacements={key:json.dumps(value,ensure_ascii=False,separators=(',',':')) for key,value in EMPTY.items()}
+    replacements['====CQ-THIRD-PARTY====']=notice_json
     replacements.update({'====CQ-BOOTSTRAP====':read(spec['bootstrap']),'====DSH-FIX-CODE====':read(spec['frontend']),'====DSH-FIX-ENGINE====':engine,'====DSH-FIX-RES====':'\n'.join(resources),'====CQ-VISUAL-STYLE====':join(spec['styles']),'====CQ-VISUAL-CODE====':join(spec['scripts'])})
     for token,value in replacements.items():
         if template.count(token)!=1:raise ValueError('Expected exactly one placeholder: '+token)
@@ -70,6 +111,10 @@ def build(output,build_id=None,stamp=None):
     stamp=stamp or datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%Y-%m-%d %H:%M')
     if not re.fullmatch(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}',stamp):raise ValueError('Invalid timestamp')
     template=template.replace("var DATA_BUILD = 'dev';","var DATA_BUILD = '%s';"%build_id)
+    if template.count("var APP_VERSION = 'dev';")!=1:raise ValueError('Missing application version')
+    template=template.replace("var APP_VERSION = 'dev';","var APP_VERSION = '%s';"%app_version)
+    if template.count("var APP_PROFILE = 'development';")!=1:raise ValueError('Missing application profile')
+    template=template.replace("var APP_PROFILE = 'development';","var APP_PROFILE = '%s';"%profile)
     if template.count("var BUILD = 'dev';")!=1:raise ValueError('Missing build stamp')
     size=0
     while True:
@@ -80,10 +125,10 @@ def build(output,build_id=None,stamp=None):
     protected=[(ROOT/n).resolve() for n in inputs]
     if output.suffix.lower()!='.html' or output in protected or any(output.is_relative_to(ROOT/n) for n in ['src','vendor','scripts','docs','licenses']):raise ValueError('Output must be an HTML artifact outside source directories')
     output.parent.mkdir(parents=True,exist_ok=True)
-    report={'product':'代码航站','builtin_questions':0,'storage_prefix':'cqframe.','build_id':build_id,'stamp':stamp,'html_bytes':size,'html_sha256':sha(raw),'inputs':inputs,'resources':{rid:sha(re.search(r'<script[^>]*id="'+rid+r'"[^>]*>(.*?)</script>',final,re.S)[1].encode()) for rid,_,_ in spec['resources']}}
+    report={'product':'代码航站','app_version':app_version,'profile':profile,'builtin_questions':0,'storage_prefix':'cqframe.','build_id':build_id,'stamp':stamp,'html_bytes':size,'html_sha256':sha(raw),'inputs':inputs,'resources':{rid:sha(re.search(r'<script[^>]*id="'+rid+r'"[^>]*>(.*?)</script>',final,re.S)[1].encode()) for rid,_,_ in spec['resources']}}
     install_pair(output,raw,report)
     return report
 def main():
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--output',type=Path,default=ROOT/'dist/代码航站.html');ap.add_argument('--build-id',help='Fixed id for reproducibility checks; normal builds generate a new id');ap.add_argument('--stamp',help='Fixed timestamp: YYYY-MM-DD HH:MM');args=ap.parse_args()
-    result=build(args.output,args.build_id,args.stamp);print(json.dumps({'output':str(args.output.resolve()),'bytes':result['html_bytes'],'builtin_questions':0,'sha256':result['html_sha256']},ensure_ascii=False))
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--output',type=Path,default=ROOT/'dist/代码航站.html');ap.add_argument('--build-id',help='Fixed id for reproducibility checks; normal builds generate a new id');ap.add_argument('--stamp',help='Fixed timestamp: YYYY-MM-DD HH:MM');ap.add_argument('--profile',choices=['development','public'],help='Private test details or concise public UI');args=ap.parse_args()
+    result=build(args.output,args.build_id,args.stamp,args.profile);print(json.dumps({'output':str(args.output.resolve()),'profile':result['profile'],'bytes':result['html_bytes'],'builtin_questions':0,'sha256':result['html_sha256']},ensure_ascii=False))
 if __name__=='__main__':main()

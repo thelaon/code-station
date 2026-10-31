@@ -50,7 +50,7 @@ function renderNasaHome(){
   var hero=el('section','nasa-hero'),copy=el('div'),label=el('div','nasa-caption','CODE STATION / PRACTICE');
   copy.appendChild(label);
   var title=el('h2',null,ACTIVE_LIBRARY==='builtin'?'C 语言':libraryTitle());title.appendChild(el('span',null,'练习档案。'));copy.appendChild(title);
-  var intro=el('p',null,'从读懂程序，到独立解题。');intro.appendChild(el('br'));intro.appendChild(document.createTextNode('每一道真题，都是新的探索。'));copy.appendChild(intro);
+  var intro=el('p',null,'选择试卷，开始练习。');intro.appendChild(el('br'));intro.appendChild(document.createTextNode('可按题型练习，也可限时模拟考试。'));copy.appendChild(intro);
   var heroMeta=el('div','nasa-hero-meta');heroMeta.appendChild(el('b',null,homePapers().length+' 套试卷'));
   heroMeta.appendChild(el('span',null,nasaYearSummary(years)));
   heroMeta.appendChild(el('span',null,'离线学习'));copy.appendChild(heroMeta);hero.appendChild(copy);
@@ -169,7 +169,7 @@ function renderNasaHome(){
   right.appendChild(el('p','note',due ? '今日到期 '+due+' 题' : '今天没有到期题目'));
   var stack=el('div','stack'),today=btn('开始今日复习'+(due?' ('+due+')':''),function(){startReview('today',SET.dailyMax);},true);today.disabled=!due;stack.appendChild(today);
   stack.appendChild(btn('复习全部未掌握 ('+pool+')',function(){startReview('all',0);}));stack.appendChild(btn('重做全部错题',function(){startWrong();}));right.appendChild(stack);
-  right.appendChild(el('hr','sep'));right.appendChild(el('p','note','完成练习后，错题会按复习安排回到这里。用法与快捷键见顶栏「?」。'));
+  right.appendChild(el('hr','sep'));right.appendChild(el('p','note','错题会按计划安排复习。操作说明和快捷键见顶部“?”。'));
   grid.appendChild(left);grid.appendChild(right);v.appendChild(grid);
   $('#foot').textContent=footText(libraryTitle()+' · '+librarySummary()+' · 数据仅保存在本机，不联网');
   createNasaBadge(canvas,badge);
