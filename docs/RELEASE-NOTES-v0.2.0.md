@@ -1,12 +1,12 @@
-# 代码航站 0.2v
+# 代码航站 v0.2.0
 
 代码航站的首次发行。解压后打开做题器.html即可使用，无需账号或服务器。
 
 ## 下载
 
-- code-station-0.2v.zip：普通用户发行包，附可选示例题库。
-- code-station-demo-0.2v.zip：独立示例题库，解压后导入其中的JSON。
-- code-station-source-0.2v.zip：可独立构建的源码及生成页面。
+- code-station-v0.2.0.zip：普通用户发行包，附可选示例题库。
+- code-station-demo-v0.2.0.zip：独立示例题库，解压后导入其中的JSON。
+- code-station-source-v0.2.0.zip：可独立构建的源码及生成页面。
 - runtime-corresponding-source.zip：内嵌编译器及运行组件的对应源码、修改和重建说明。
 - SHA256SUMS.txt：以上文件的校验值。
 

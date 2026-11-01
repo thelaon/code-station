@@ -28,7 +28,7 @@ def main():
         for name in report['files']:
             target=stage/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/name,target)
         spec=json.loads((stage/'build-manifest.json').read_text('utf-8'));spec['default_profile']='public'
-        (stage/'build-manifest.json').write_text(json.dumps(spec,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+        (stage/'build-manifest.json').write_text(json.dumps(spec,ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
         subprocess.run([sys.executable,'-X','utf8',str(stage/'build.py'),'--output',str(stage/'做题器.html'),*common],check=True)
         if (stage/'做题器.html').read_bytes()!=(user_dir/'做题器.html').read_bytes():raise ValueError('Public source and standalone UI differ')
         public=audit_files(stage)

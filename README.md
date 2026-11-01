@@ -4,9 +4,9 @@
 
 ## 下载与使用
 
-当前版本：**0.2v**。
+当前版本：**v0.2.0**。
 
-1. 从[Releases](https://github.com/thelaon/code-station/releases/tag/0.2v)下载`code-station-0.2v.zip`并解压。
+1. 从[Releases](https://github.com/thelaon/code-station/releases/tag/v0.2.0)下载`code-station-v0.2.0.zip`并解压。
 2. 双击“做题器.html”。在“导入 / 管理题包”中选择JSON题包，预览后确认导入。
 3. 可先导入随附“示例题包/示例题库.json”体验；顶部“?”提供完整说明。
 
@@ -21,7 +21,7 @@
 
 数据保存在当前浏览器。题库、学习记录、代码草稿需要分别备份；恢复时先恢复题库。升级保留数据，移动HTML、换浏览器或清理浏览器数据前请先备份。复制HTML不会带走浏览器记录。
 
-已在Windows桌面Edge验证；窄屏检查使用桌面模拟。更多用法见[使用说明](docs/发行版使用说明.md)，功能边界见[版本说明](docs/RELEASE-NOTES-0.2v.md)。
+已在Windows桌面Edge验证；窄屏检查使用桌面模拟。更多用法见[使用说明](docs/发行版使用说明.md)，功能边界见[版本说明](docs/RELEASE-NOTES-v0.2.0.md)。
 
 ## 从源码构建
 

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "app_version": "0.2v",
+  "app_version": "v0.2.0",
   "default_profile": "public",
   "third_party": {
     "inventory": "licenses/components.json",

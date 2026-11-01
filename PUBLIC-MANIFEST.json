@@ -1,5 +1,5 @@
 {
-  "app_version": "0.2v",
+  "app_version": "v0.2.0",
   "profile": "public",
   "scope": "application HTML has no embedded questions; includes optional independently authored external demo JSON; no Git history or private evidence",
   "files": {
@@ -16,8 +16,8 @@
       "sha256": "00cba790052b8682cc4a406fb1c367e4e2522ca46e4cd1eb21399914b9015760"
     },
     "CHECKS.md": {
-      "bytes": 1738,
-      "sha256": "528a17d4275b3821ceb8fbdefc1f4c9ed63d2ce65bf614991014c8052827583a"
+      "bytes": 1716,
+      "sha256": "2f84e8dd151919fa5da219b80734835551969c020772fdee05b3e5398df30a32"
     },
     "COPYRIGHT.md": {
       "bytes": 2402,
@@ -32,40 +32,40 @@
       "sha256": "af3beb30a9299316d479177e154f2270377e44cd082d6fb9cfb31f519dbeefb1"
     },
     "README.md": {
-      "bytes": 3862,
-      "sha256": "8b540c7a80e5b4c1cc17a435e749b99ca1f29deba6da21921d5cb885dc03a860"
+      "bytes": 3808,
+      "sha256": "bb6f7a7a8e15f339b1edc335b19804c84bfb9f3e37773d642ad9226e35678a55"
     },
     "build-manifest.json": {
-      "bytes": 2783,
-      "sha256": "7f5d4f24d136bcb2d661f4b211a285be6378055f8e58088721396b58bad42f76"
+      "bytes": 2666,
+      "sha256": "1bd69bb98d21164b915a46232b4cc0d80d4df5085ef2a31029293e95efda0e8d"
     },
     "build.py": {
-      "bytes": 9977,
-      "sha256": "41182f53d0476acbc1b0305eb3e61ba078d618c4cf02ebf5cd439c1b96062712"
+      "bytes": 9871,
+      "sha256": "7ba109253c4cf1285e0c7f9fd93b6522acd4ab42d1bc02a6f77287700b15b63a"
     },
     "docs/DEVELOPMENT.md": {
-      "bytes": 3002,
-      "sha256": "9cb44dd71e76774ded3905b1d679831510f75b9080d50d9eb48ce147ee49b154"
+      "bytes": 2968,
+      "sha256": "4d260ee8eaba182060a353262601b8887df7ce7aa3951db8fd7801d1bca787f3"
     },
-    "docs/RELEASE-NOTES-0.2v.md": {
-      "bytes": 2205,
-      "sha256": "d408dc3971a861caff30ec8cf8dd8e2b9c453906a8993276677351eb682db047"
+    "docs/RELEASE-NOTES-v0.2.0.md": {
+      "bytes": 2213,
+      "sha256": "1713627fcd29d33185bf284d974bb0f8473297948211f021326326eb5633e9c1"
     },
     "docs/WABT-dependency-notices-2026-10-31.md": {
-      "bytes": 3892,
-      "sha256": "afea32639746496e5a60a588e91b1f40aed780d9a8d1eeacf2a7da386691adad"
+      "bytes": 3860,
+      "sha256": "1bae79b52c68f96ccc4751f8ced183ba2dc7176fa2c49f645a7e9483ccad4fa6"
     },
     "docs/发行版使用说明.md": {
-      "bytes": 1831,
-      "sha256": "74695013aa2c372b4e42aed513f9eeb3532f723b66b6140ed216efebcc1e4d25"
+      "bytes": 1813,
+      "sha256": "3a90799b2bc535683c28b5b6ea11802b3c36a80634df41939b3efd2def062c1a"
     },
     "examples/demo-bank/LICENSE": {
       "bytes": 1064,
       "sha256": "a1e4deebf257d61dcb7216465fdb7a7bd255ef234b4611958d3a3afbc4e18383"
     },
     "examples/demo-bank/README.md": {
-      "bytes": 2683,
-      "sha256": "56bd273982723d9d0e8903fc9b68ed5f74ae4ce3f423d0d5a9d24b956e4cf6ce"
+      "bytes": 2649,
+      "sha256": "f568e8d4c5b75bd5af42e2b5daef3eea074be14e64de3db4416d450beeea570d"
     },
     "examples/demo-bank/参考答案.md": {
       "bytes": 1772,
@@ -108,8 +108,8 @@
       "sha256": "0f7570b44976cda6b3e1638505678f51ed7b3d6855c0678d3a0d66f4d416c6a0"
     },
     "release-files.json": {
-      "bytes": 1788,
-      "sha256": "9e138b247dd4d545c4f21b3e717617cc84dc756fa6a30391385a2105e4289bee"
+      "bytes": 1790,
+      "sha256": "73292120911d4dcaeed8da1b18fcf01f75800f94e4a27c520071c37c40906bcd"
     },
     "scripts/audit_release.py": {
       "bytes": 6683,
@@ -120,8 +120,8 @@
       "sha256": "74915e070b3e2c238df8c2ecb47f48171715381cb3100aef170e2177924106a2"
     },
     "scripts/prepare_release.py": {
-      "bytes": 4339,
-      "sha256": "bae7714f225294176b1c6d271c16e13153536cc689898637d840e955f6a9fe18"
+      "bytes": 4352,
+      "sha256": "a39b1ec227894f80dd1d3363b7ce57687c99ec0783a7df8a4d575658b639b5ff"
     },
     "scripts/regression.cjs": {
       "bytes": 7088,
@@ -132,8 +132,8 @@
       "sha256": "134b2b17c5f61a150f556e13578cfb806cfff4f7602110bbdfb66ef61f0d7107"
     },
     "scripts/test_build.py": {
-      "bytes": 5948,
-      "sha256": "d08424444009d9868847d039e0e558139191bd9b9d71a8a10ae9dce92060eb33"
+      "bytes": 6589,
+      "sha256": "56d405cf9abbcf4eb37d2a4a9eca7c06db75f86902dbf8a230b9d97657e881a9"
     },
     "scripts/test_demo_bank.cjs": {
       "bytes": 7359,
@@ -372,12 +372,12 @@
       "sha256": "021f7a1f3609d46af0254404bba6d8ea1061904df9a687c650dc1416e46f59c9"
     },
     "做题器.build.json": {
-      "bytes": 10079,
-      "sha256": "c8744df6d4cd5ac50fde1d33a142f03ef820057f611fc83beff3196db0a980c3"
+      "bytes": 10081,
+      "sha256": "adc13fd1522e8856b855cbc3a4a2239f72904060d733a6f0a85dea144ef35276"
     },
     "做题器.html": {
-      "bytes": 4646851,
-      "sha256": "1beeeca81d1a1a88146fc0f6dc0727c795ddd2c0923c89ad2517c1da1ca62034"
+      "bytes": 4646853,
+      "sha256": "007c5f1eea04cd0a114c13b490d375c2d392e13e4aada07b570cf246b39ed465"
     },
     "第三方组件说明.md": {
       "bytes": 2099,

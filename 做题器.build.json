@@ -1,17 +1,17 @@
 {
   "product": "代码航站",
-  "app_version": "0.2v",
+  "app_version": "v0.2.0",
   "profile": "public",
   "builtin_questions": 0,
   "storage_prefix": "cqframe.",
   "build_id": "0550cc95e8af426486b514c20e334b1d.public",
   "stamp": "2026-10-31 22:39",
-  "html_bytes": 4646851,
-  "html_sha256": "1beeeca81d1a1a88146fc0f6dc0727c795ddd2c0923c89ad2517c1da1ca62034",
+  "html_bytes": 4646853,
+  "html_sha256": "007c5f1eea04cd0a114c13b490d375c2d392e13e4aada07b570cf246b39ed465",
   "inputs": {
     "build-manifest.json": {
-      "bytes": 2783,
-      "sha256": "7f5d4f24d136bcb2d661f4b211a285be6378055f8e58088721396b58bad42f76"
+      "bytes": 2666,
+      "sha256": "1bd69bb98d21164b915a46232b4cc0d80d4df5085ef2a31029293e95efda0e8d"
     },
     "src/template.html": {
       "bytes": 155356,

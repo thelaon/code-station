@@ -7,7 +7,7 @@
 | src/css/ | 默认与航天主题、题库管理、学习页、编程和设置说明样式 |
 | src/judge/ | 逐处核对、形式检查、诊断、输出比较及两个Worker |
 | vendor/c-runtime/ | 固定的编译器/运行库二进制、WABT、运行桥和头文件容器 |
-| build-manifest.json | app_version（当前0.2v）、CSS/JS依赖顺序及资源块映射；唯一构建输入清单 |
+| build-manifest.json | app_version（当前v0.2.0）、CSS/JS依赖顺序及资源块映射；唯一构建输入清单 |
 | build.py | 仅使用本工程文件的单HTML构建器 |
 | scripts/check.py | 无题源依赖的成品、语法及指纹检查 |
 | dist/ | 默认输出，不纳入Git |
@@ -35,4 +35,4 @@
 
 本工程能够重建应用HTML；TCC/libc为固定的已构建二进制，对应源码和独立重建步骤随third_party/runtime-stable/runtime-corresponding-source.zip交付并内嵌于HTML。重建运行组件需按包内说明准备外部工具，不属于Python标准库构建HTML的依赖。修改编译器时，先重建和验证，再替换vendor资源并更新指纹及来源说明。
 
-当前来源及许可范围见第三方组件说明和LICENSE-SCOPE.md。公开候选由scripts/prepare_release.py按release-files.json导出；不会复制.git、私人取证快照或用户题库。版本说明见docs/RELEASE-NOTES-0.2v.md；发行文件中不包含私人审查过程和旧验收报告。
+当前来源及许可范围见第三方组件说明和LICENSE-SCOPE.md。公开候选由scripts/prepare_release.py按release-files.json导出；不会复制.git、私人取证快照或用户题库。版本说明见docs/RELEASE-NOTES-v0.2.0.md；发行文件中不包含私人审查过程和旧验收报告。

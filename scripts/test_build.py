@@ -66,4 +66,12 @@ class BuildTests(unittest.TestCase):
         r=subprocess.run([sys.executable,'-B',str(runner)],cwd=self.root,capture_output=True);self.assertEqual(r.returncode,73)
         self.assertTrue((self.root/'.out.html.transaction.json').exists())
         result=self.mod.build(output,'recovered','2026-10-29 12:00');self.assertEqual(result['html_sha256'],self.mod.sha(output.read_bytes()));self.assertFalse((self.root/'.out.html.transaction.json').exists())
+    def test_semantic_version_format(self):
+        p=self.root/'build-manifest.json';spec=json.loads(p.read_text('utf-8'))
+        for version in ['0.2v','0.2.0','v0.2','v00.2.0','v0.02.0','v0.2.00']:
+            spec['app_version']=version;p.write_text(json.dumps(spec),encoding='utf-8')
+            with self.assertRaisesRegex(ValueError,'Invalid app version'):self.mod.build(self.root/'invalid.html')
+        for version in ['v0.2.0','v1.0.0','v12.34.56']:
+            spec['app_version']=version;p.write_text(json.dumps(spec),encoding='utf-8')
+            self.assertEqual(self.mod.build(self.root/'valid.html')['app_version'],version)
 if __name__=='__main__':unittest.main()

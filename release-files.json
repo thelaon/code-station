@@ -40,7 +40,7 @@
     "third_party/wabt-1.0.37/notice-delivery.json",
     "docs/DEVELOPMENT.md",
     "docs/发行版使用说明.md",
-    "docs/RELEASE-NOTES-0.2v.md",
+    "docs/RELEASE-NOTES-v0.2.0.md",
     "docs/WABT-dependency-notices-2026-10-31.md"
   ],
   "excluded": [

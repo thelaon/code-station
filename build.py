@@ -52,7 +52,7 @@ def build(output,build_id=None,stamp=None,profile=None):
     spec=json.loads(read('build-manifest.json'))
     if spec.get('version')!=1:raise ValueError('Unsupported build manifest')
     app_version=spec['app_version']
-    if not isinstance(app_version,str) or not re.fullmatch(r'[0-9]+\.[0-9]+(?:\.[0-9]+)?v',app_version):raise ValueError('Invalid app version')
+    if not isinstance(app_version,str) or not re.fullmatch(r'v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)',app_version):raise ValueError('Invalid app version')
     profile=profile or spec.get('default_profile','development')
     if profile not in ('development','public'):raise ValueError('Invalid build profile')
     def join(names):return '\n'.join(read(name) for name in names)
