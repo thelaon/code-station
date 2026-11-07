@@ -94,9 +94,8 @@ html[data-ui-style="nasa"] button.nasa-paper[aria-pressed="true"]:hover{transfor
 .nasa-pool-count small{font:400 .24em/1.5 "Microsoft YaHei",sans-serif;letter-spacing:0;margin-left:9px;color:var(--dim)}
 .nasa-review-panel{background:var(--ns-head)!important;padding:22px!important}.nasa-review-panel .stack button{min-width:0;white-space:normal}
 .nasa-random{padding:18px;background:var(--ns-head);margin:8px 0 18px}
-html[data-ui-style="nasa"] .practice-head{margin-top:22px;border-top:4px solid var(--ink);padding:18px 22px;background:var(--ns-head)}
-html[data-ui-style="nasa"] .practice-head h2{letter-spacing:.025em;margin-bottom:14px}
-html[data-ui-style="nasa"] .practice-head .meta{gap:10px 18px;font-size:.86em;margin-bottom:0}
+html[data-ui-style="nasa"] .practice-head{margin-top:12px;border-top:4px solid var(--ink);padding:12px 16px;background:var(--ns-head)}
+html[data-ui-style="nasa"] .practice-head h2{letter-spacing:.025em}
 html[data-ui-style="nasa"] .time-cell{font-family:Consolas,"Microsoft YaHei",monospace}
 html[data-ui-style="nasa"] .practice-grid{align-items:start}
 html[data-ui-style="nasa"] .practice-main{padding:22px;min-height:340px}

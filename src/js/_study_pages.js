@@ -104,6 +104,132 @@ function renderLibraryShell(view){
   if(PACK_LOAD_ERRORS.length)side.appendChild(el('p','note','有本地题包未能加载，请重新导入原文件。'));
   var content=el('div','library-content');layout.appendChild(side);layout.appendChild(content);view.appendChild(layout);return content;
 }
+function renderWeeklyAnswers(days){
+  var chart=el('div','week7');
+  var total=days.reduce(function(sum,day){return sum+day[1];},0);
+  var active=days.filter(function(day){return day[1]>0;}).length;
+  var heading=el('div','week7-head');
+  heading.appendChild(el('strong',null,'共 '+total.toLocaleString('zh-CN')+' 次作答'));
+  heading.appendChild(el('span',null,active?'练习了 '+active+' 天':'近 7 天暂无作答'));
+  chart.appendChild(heading);
+
+  var max=Math.max(1,...days.map(function(day){return day[1];}));
+  var roughStep=Math.max(1,max/4);
+  var magnitude=Math.pow(10,Math.floor(Math.log10(roughStep)));
+  var step=magnitude*[1,2,5,10].find(function(unit){return magnitude*unit>=roughStep;});
+  var intervals=Math.ceil(max/step);
+  var ceiling=step*intervals;
+  var xUnit=100/days.length;
+  var svgNS='http://www.w3.org/2000/svg';
+  var graph=document.createElementNS(svgNS,'svg');
+  graph.classList.add('week7-graph');
+  graph.setAttribute('viewBox','0 0 100 100');
+  graph.setAttribute('preserveAspectRatio','none');
+  graph.setAttribute('aria-hidden','true');
+
+  var layout=el('div','week7-layout'), axis=el('div','week7-axis'), plot=el('div','week7-plot');
+  axis.setAttribute('aria-hidden','true');
+  var tickFormat=new Intl.NumberFormat('zh-CN',{notation:'compact',maximumFractionDigits:1});
+  for(var i=0;i<=intervals;i++){
+    var y=i/intervals*100;
+    axis.appendChild(el('span',null,tickFormat.format((intervals-i)*step)));
+    var guide=document.createElementNS(svgNS,'line');
+    guide.classList.add('week7-guide');
+    guide.setAttribute('x1','0');
+    guide.setAttribute('x2','100');
+    guide.setAttribute('y1',String(y));
+    guide.setAttribute('y2',String(y));
+    graph.appendChild(guide);
+  }
+
+  var dates=el('div','week7-days'), detail=el('p','week7-detail');
+  dates.setAttribute('role','group');
+  dates.setAttribute('aria-label','按日期查看作答次数');
+  detail.setAttribute('aria-live','polite');
+  var buttons=[],points=[];
+  function selectDay(index){
+    buttons.forEach(function(button,i){button.setAttribute('aria-pressed',String(i===index));});
+    var day=days[index], date=day[0].slice(5).replace('-',' 月 ')+' 日';
+    var label=index===days.length-1?'今天（'+date+'）':date;
+    detail.textContent=label+' · '+day[1].toLocaleString('zh-CN')+' 次作答';
+  }
+  days.forEach(function(day,i){
+    var y=100-(day[1]/ceiling)*100;
+    points.push(((i+.5)*xUnit)+','+y);
+    var button=btn('',function(){selectDay(i);});
+    button.classList.add('week7-day');
+    button.setAttribute('aria-label',day[0]+'，'+day[1]+' 次作答');
+    var marker=el('span','week7-marker');
+    marker.style.setProperty('--day-y',y+'%');
+    button.appendChild(marker);
+    var label=el('span','week7-label');
+    var today=i===days.length-1;
+    label.appendChild(el('span','week7-long',today?'今天':day[0].slice(5)));
+    label.appendChild(el('span','week7-short',today?'今天':day[0].slice(8)));
+    button.appendChild(label);
+    dates.appendChild(button);
+    buttons.push(button);
+  });
+  var line=document.createElementNS(svgNS,'polyline');
+  line.classList.add('week7-line');
+  line.setAttribute('points',points.join(' '));
+  graph.appendChild(line);
+  plot.appendChild(graph);
+  plot.appendChild(dates);
+  layout.appendChild(axis);
+  layout.appendChild(plot);
+  chart.appendChild(layout);
+  chart.appendChild(detail);
+  selectDay(days.length-1);
+  return chart;
+}
+function renderAnswerDays(panel, days, log){
+  panel.appendChild(el('h3',null,'每日作答次数'));
+  if(!days.length){
+    panel.appendChild(el('p','empty','还没有作答记录。提交后会按日期累计。'));
+    return;
+  }
+
+  panel.appendChild(el('p','study-answer-history-caption','共 '+days.length.toLocaleString('zh-CN')+' 天有记录 · 按日期从新到旧'));
+  var body=el('div','study-answer-history-body');
+  var month='', list;
+  for(var i=days.length-1;i>=0;i--){
+    var date=days[i], yearMonth=date.slice(0,7);
+    if(yearMonth!==month){
+      month=yearMonth;
+      var group=el('section','study-answer-month');
+      group.appendChild(el('h4',null,month.slice(0,4)+' 年 '+Number(month.slice(5))+' 月'));
+      list=el('ul');
+      group.appendChild(list);
+      body.appendChild(group);
+    }
+    var row=el('li','study-answer-history-row');
+    var day=el('time',null,date);
+    day.dateTime=date;
+    row.appendChild(day);
+    row.appendChild(el('strong',null,log[date].toLocaleString('zh-CN')+' 次'));
+    list.appendChild(row);
+  }
+  panel.appendChild(body);
+}
+function openAnswerHistory(days, log){
+  var byYear=new Map();
+  days.forEach(function(date){
+    var year=date.slice(0,4);
+    if(!byYear.has(year))byYear.set(year,[]);
+    byYear.get(year).push(date);
+  });
+  var categories=[['all','全部日期']];
+  Array.from(byYear.keys()).reverse().forEach(function(year){
+    categories.push([year,year+' 年']);
+  });
+  categoryDialog('全部作答记录','按月份查看每日次数，也可以直接切换年份。','answer-history',categories,{
+    eyebrow:'ANSWER HISTORY',
+    renderPanel:function(panel,year){
+      renderAnswerDays(panel,year==='all'?days:byYear.get(year),log);
+    }
+  });
+}
 function renderStudyStats(){
   renderNav();var v=emptyNode(viewEl()), page=el('div','study-page');
   page.appendChild(studyHeading('统计','学习遥测','LEARNING TELEMETRY','查看作答记录、复习进度和考试成绩。','satellite'));
@@ -121,7 +247,12 @@ function renderStudyStats(){
   console.appendChild(groups);page.appendChild(console);
   var columns=el('div','study-columns'), trend=el('section','card study-trend');trend.appendChild(el('h3',null,'最近 7 天作答量'));
   var last7=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);last7.push([todayKey(d),STATS.log[todayKey(d)]||0]);}
-  trend.appendChild(week7Chart(el('div'),last7));columns.appendChild(trend);
+  trend.appendChild(renderWeeklyAnswers(last7));
+  var historyButton=btn('全部作答记录',function(){openAnswerHistory(days,STATS.log);});
+  historyButton.classList.add('study-answer-history-trigger');
+  historyButton.setAttribute('aria-haspopup','dialog');
+  trend.appendChild(historyButton);
+  columns.appendChild(trend);
   var exams=el('section','card study-exams');exams.appendChild(el('h3',null,'考试成绩'));
   if(!EXAMS.length){exams.appendChild(el('div','empty','还没有成绩记录。完成模拟考试或交卷后批改的整卷练习后，可在这里选择场次、查看成绩。'));}
   else{
@@ -150,7 +281,12 @@ function renderStudyStats(){
 function renderStudyReview(){
   renderNav();var v=emptyNode(viewEl()), page=el('div','study-page');
   page.appendChild(studyHeading('复习','任务队列','REVIEW OPERATIONS','选择试卷，复习到期题目或手动标记的题目。','board'));
-  var card=el('section','card study-review'),summary=el('div','study-review-summary');card.appendChild(summary);
+  var card=el('section','card study-review');
+  var lead=el('section','study-review-lead'),copy=el('div','study-review-lead-copy');
+  var scope=el('h3'),countLabel=el('p','study-review-count'),tip=el('p','tip');
+  copy.appendChild(scope);copy.appendChild(countLabel);copy.appendChild(tip);lead.appendChild(copy);
+  card.appendChild(lead);
+  var summary=el('div','study-review-summary');card.appendChild(summary);
   var seg=el('div','toolbar'),filters=[],cards=[],keys=[],selectedKeys=[],limit=0;
   seg.setAttribute('role','group');seg.setAttribute('aria-label','复习范围');
   [['due','今日到期'],['all','全部未掌握'],['mastered','已掌握'],['marks','我的标记']].forEach(function(x){
@@ -164,18 +300,19 @@ function renderStudyReview(){
     var order=shuffle(selectedKeys.slice());if(max>0)order=order.slice(0,max);
     SESSION=newSession((RV.paper?papLabel(RV.paper):'集中复习')+' · '+order.length+' 题',order.map(function(k){return toOrder(splitKey(k));}),RV.mode==='marks'?'mark':'review');go2practice();
   }
-  var fb=el('div','footbar study-launch'),br=el('button','primary'),more=btn('',function(){launch(0);});
-  br.onclick=function(){launch(limit);};fb.appendChild(br);fb.appendChild(more);fb.appendChild(btn('设置',openSettings));card.appendChild(fb);
-  var tip=el('p','tip'),empty=el('div','empty');card.appendChild(tip);card.appendChild(empty);
+  var actions=el('div','study-review-start'),br=el('button','primary'),more=btn('',function(){launch(0);});
+  br.onclick=function(){launch(limit);};actions.appendChild(br);actions.appendChild(more);lead.appendChild(actions);
+  var empty=el('div','empty');card.appendChild(empty);
   var listing=el('details','study-question-list'),listTitle=el('summary'),listBody=el('div');
   listing.appendChild(listTitle);listing.appendChild(listBody);card.appendChild(listing);
   var manage=el('details','study-notes');manage.appendChild(el('summary',null,'复习规则与记录管理'));manage.appendChild(el('p','tip','答对后按 1 → 3 → 7 → 14 → 30 → 60 天延长间隔，答错当天进入复习计划。'));
   var tools=el('div','footbar');tools.appendChild(btn('导出学习记录',exportData));
+  tools.appendChild(btn('复习设置',function(){openSettings('review');}));
   var restore=btn('把已掌握的题全部放回复习池',function(){if(confirm('把所有已掌握的题放回复习池？')){resetAllMastered();refreshRecords();}});
   tools.appendChild(restore);manage.appendChild(tools);card.appendChild(manage);
   function refreshRecords(){
     renderNav();emptyNode(summary);
-    [['今日到期',dueCount()],['待复习',poolActive().length],['已掌握',poolMastered().length],['今日已作答',STATS.log[todayKey()]||0]].forEach(function(m){summary.appendChild(studyMetric(m[0],m[1],'题'));});
+    [['待复习',poolActive().length,'题'],['已掌握',poolMastered().length,'题'],['今日作答',STATS.log[todayKey()]||0,'次']].forEach(function(m){summary.appendChild(studyMetric(m[0],m[1],m[2]));});
     refreshPool();
   }
   
@@ -191,20 +328,24 @@ function renderStudyReview(){
       var body=el('span','study-paper-body'),badge=el('span','study-paper-letter',paperCode(p));body.appendChild(badge);
       var text=el('span','study-paper-copy');text.appendChild(el('span','study-paper-code','PAPER / '+(p.label?nasaYear(p)+'-'+p.code:p.id)));text.appendChild(el('strong',null,papLabel(p.id)));
       var counts={c:0,m:0,b:0,f:0,p:0};pk.forEach(function(k){var o=splitKey(k);counts[o.program?'p':o.blank?'b':o.fix?'f':isMultipleQuestion(findQ(o.pid,o.num))?'m':'c']++;});
-      text.appendChild(el('span','study-paper-count',[counts.c?'单选 '+counts.c:'',counts.m?'多选 '+counts.m:'',counts.b?'填空 '+counts.b:'',counts.f?'改错 '+counts.f:'',counts.p?'编程 '+counts.p:''].filter(Boolean).join(' · ')+' · 共 '+pk.length+' 题'));
-      if(pk.some(function(k){return REC[k] && !REC[k].master && REC[k].due<=Date.now();}))text.appendChild(el('span','study-paper-due','今日到期'));
+      text.appendChild(el('span','study-paper-count',[counts.c?'单选 '+counts.c:'',counts.m?'多选 '+counts.m:'',counts.b?'填空 '+counts.b:'',counts.f?'改错 '+counts.f:'',counts.p?'编程 '+counts.p:''].filter(Boolean).join(' · ')));
+      if(RV.mode!=='due'&&pk.some(function(k){return REC[k] && !REC[k].master && REC[k].due<=Date.now();}))text.appendChild(el('span','study-paper-due','含今日到期'));
       body.appendChild(text);paper.appendChild(body);
-      var bottom=el('span','study-paper-bottom'),status=el('span','study-paper-status');bottom.appendChild(el('span','study-barcode'));bottom.appendChild(status);paper.appendChild(bottom);
+      var bottom=el('span','study-paper-bottom'),status=el('span','study-paper-status');
+      bottom.appendChild(el('strong','study-paper-total',pk.length+(RV.mode==='due'?' 题到期':' 题')));
+      bottom.appendChild(status);paper.appendChild(bottom);
       paper.onclick=function(){RV.paper=RV.paper===p.id?null:p.id;refreshSelection();};
       cards.push({pid:p.id,node:paper,status:status});deck.appendChild(paper);if(animate)revealPickContent(paper,index);
     });
     refreshSelection();
   }
   function refreshSelection(){
-    cards.forEach(function(c){var selected=RV.paper===c.pid;c.node.className='study-paper'+(selected?' selected':'');c.node.setAttribute('aria-pressed',String(selected));c.node.setAttribute('aria-label',papLabel(c.pid)+(selected?'，已选择，再次点击取消':'，选择本卷'));c.status.textContent=selected?'已选择':'选择本卷';});
+    cards.forEach(function(c){var selected=RV.paper===c.pid;c.node.className='study-paper'+(selected?' selected':'');c.node.setAttribute('aria-pressed',String(selected));c.status.textContent=selected?'✓ 已选本卷':'选择本卷';});
     selectedKeys=keys.filter(function(k){return !RV.paper || splitKey(k).pid===RV.paper;});limit=RV.mode==='due'?SET.dailyMax:0;
     var count=limit?Math.min(limit,selectedKeys.length):selectedKeys.length;
-    br.textContent='复习'+(RV.paper?'本卷':RV.mode==='due'?'今日':RV.mode==='mastered'?'已掌握':RV.mode==='marks'?'标记':'全部')+' '+count+' 题';
+    scope.textContent=RV.paper?papLabel(RV.paper):RV.mode==='due'?'今日到期':RV.mode==='mastered'?'已掌握':RV.mode==='marks'?'我的标记':'全部未掌握';
+    countLabel.textContent=selectedKeys.length+' 题'+(RV.mode==='due'&&RV.paper?'到期':'');
+    br.textContent=(RV.paper?'开始本卷复习':RV.mode==='due'?'开始今日复习':'开始复习')+'（'+count+' 题）';
     br.appendChild(el('small','study-ignite',' IGNITE'));br.disabled=!count;
     more.textContent='本次做更多（'+selectedKeys.length+' 题）';more.style.display=limit && selectedKeys.length>limit?'':'none';
     tip.style.display=RV.mode==='due'?'':'none';tip.textContent='本次最多 '+SET.dailyMax+' 题，可在设置中调整。';
@@ -289,7 +430,14 @@ function openReportQuestion(s,index){
   box.appendChild(el('div','tip','只读答卷 · 本题用时 '+questionTimeLabel(o,s)));
   box.appendChild(renderFigures(q,o));
   if(q.stem)box.appendChild(renderStem(q.stem));
-  if(o.fix){
+  if(o.program){
+    var verdict=programVerdict(s,o);
+    box.appendChild(el('p',null,programResultSummary(verdict)+' · 得分 '+fmtScore(verdict?verdict.score:0)+' / '+fmtScore(programPoints(q))+' 分'));
+    if(verdict){
+      box.appendChild(el('h4',null,'你的代码'));
+      box.appendChild(el('pre',null,verdict.code));
+    }
+  }else if(o.fix){
     box.appendChild(el('h4',null,'你的代码'));box.appendChild(el('pre',null,s.exam.codes[fxid(o.pid,o.num)]===undefined?q.code:s.exam.codes[fxid(o.pid,o.num)]));
     var faults=el('details');faults.appendChild(el('summary',null,'参考改法与本次得分'));
     var fr=s.fix[fxid(o.pid,o.num)];faults.appendChild(el('p',null,(fr?fmtScore(fr.score):'0')+' / '+fmtScore(fixScoreOf(q))+' 分；按逐处规则核对，未作编译运行验证。'));

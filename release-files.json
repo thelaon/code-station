@@ -41,6 +41,7 @@
     "docs/DEVELOPMENT.md",
     "docs/发行版使用说明.md",
     "docs/RELEASE-NOTES-v0.2.0.md",
+    "docs/RELEASE-NOTES-v0.2.1.md",
     "docs/WABT-dependency-notices-2026-10-31.md"
   ],
   "excluded": [

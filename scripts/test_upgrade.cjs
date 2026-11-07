@@ -26,7 +26,26 @@ const pack={format:'cquiz-choice-pack',version:1,id:'upgrade',title:'Upgrade fix
     const {c,p,set}=await setup();await p.evaluate(()=>{localStorage.setItem('cqframe.marks.v1','{"keep":true}');localStorage.setItem('cqframe.pack-txn.v1',JSON.stringify({format:'cquiz-pack-transaction',before:[['cqframe.marks.v1','{}']]}));});set(current);await p.reload();await p.waitForFunction(()=>window.__cquiz);assert.equal(await p.evaluate(()=>localStorage.getItem('cqframe.marks.v1')),'{}');assert.equal(await p.evaluate(()=>localStorage.getItem('cqframe.pack-txn.v1')),null);checks.push('interrupted pack transaction recovers before upgrade metadata is committed');await c.close();
   }
   {
-    const {c,p,set}=await setup();await p.evaluate(pack=>__cquiz.questionPacks.install(pack),pack);const before=await p.evaluate(()=>localStorage.getItem('cqframe.packs.v1'));await c.addInitScript(()=>{const original=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k==='cqframe.storage-schema.v1')throw new DOMException('quota','QuotaExceededError');return original.call(this,k,v);};});set(current);await p.reload();await p.locator('#storage-recovery').waitFor();assert.equal(await p.evaluate(()=>localStorage.getItem('cqframe.packs.v1')),before);assert.equal(await p.evaluate(()=>localStorage.getItem('cqframe.storage-schema.v1')),null);checks.push('failed upgrade marker write retains original data and never pretends migration completed');await c.close();
+    const {c,p,set}=await setup();
+    await p.evaluate(pack=>__cquiz.questionPacks.install(pack),pack);
+    // v0.2.0 already has a schema marker. Only the legacy fixture needs to adopt one.
+    const marker=actualOld?'cqframe.build.v1':'cqframe.storage-schema.v1';
+    const saved=()=>p.evaluate(marker=>({
+      pack:localStorage.getItem('cqframe.packs.v1'),
+      marker:localStorage.getItem(marker)
+    }),marker);
+    const before=await saved();
+    await c.addInitScript(marker=>{
+      const original=Storage.prototype.setItem;
+      Storage.prototype.setItem=function(k,v){
+        if(k===marker)throw new DOMException('quota','QuotaExceededError');
+        return original.call(this,k,v);
+      };
+    },marker);
+    set(current);await p.reload();await p.locator('#storage-recovery').waitFor();
+    assert.deepEqual(await saved(),before);
+    checks.push('failed upgrade marker write retains original data and never pretends migration completed');
+    await c.close();
   }
   console.log(JSON.stringify({passed:checks.length,checks}));
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

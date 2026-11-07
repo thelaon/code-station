@@ -24,7 +24,7 @@ function revealPickContent(node,index){
   node.addEventListener('animationend',finish);node.addEventListener('animationcancel',finish);
 }
 function nasaPaperSummary(pid){
-  if(PICK.view !== 'split') return PICK.view==='exam'?{parts:paperParts(pid),score:paperTotal(pid)}:{parts:practiceParts(pid),score:practiceTotal(pid)};
+  if(PICK.view !== 'split') return {parts:practiceParts(pid),score:practiceTotal(pid)};
   if(PICK.split==='program')return {parts:'编程 '+programQuestions(pid).length+' 题',score:programTotal(pid)};
   if(PICK.split === 'blank'){
     var bp=BPMAP[pid];return {parts:bp ? bp.count+' 题 · '+bp.blanks+' 空' : '暂无填空题',score:bp ? bp.total : 0};
@@ -36,7 +36,7 @@ function nasaPaperSummary(pid){
 }
 function nasaAvailablePapers(){
   return homePapers().filter(function(p){
-    if(PICK.view !== 'split') return PICK.view!=='exam'||fullOrder(p.id).length>0;
+    if(PICK.view !== 'split') return PICK.view!=='exam'||practiceOrder(p.id).length>0;
     if(PICK.split==='program')return programQuestions(p.id).length>0;
     if(PICK.split === 'blank') return !!(BPMAP[p.id] && BPMAP[p.id].count);
     if(PICK.split === 'fix') return !!(FXBY[p.id] && FXBY[p.id].length);
@@ -94,7 +94,7 @@ function renderNasaHome(){
     modeButtons.forEach(function(b){var active=PICK.view===b.value;b.node.className=active?'on':'';b.node.setAttribute('aria-pressed',String(active));});
     types.style.display=PICK.view==='split'?'':'none';
     typeButtons.forEach(function(b){var active=PICK.split===b.value;b.node.className='seg'+(active?' on':'');b.node.setAttribute('aria-pressed',String(active));});
-    instructionText.textContent=PICK.view==='exam' ? '按当前试卷所含题型和标注分值计分，不含编程题；交卷后统一判分。倒计时在后台及关闭页面期间继续，到时收卷。改错按逐处核对计分，可自行编译自测。' : '整卷可选择即时批改或交卷后批改，包含编程题且不倒计时；题型专练逐题反馈。分值以当前试卷标注为准。';
+    instructionText.textContent=PICK.view==='exam' ? '按当前试卷所含题型和标注分值计分，编程题在交卷后运行用例。倒计时在后台及关闭页面期间继续，到时收卷。改错按逐处核对计分，可自行编译自测。' : '整卷可选择即时批改或交卷后批改，包含编程题且不倒计时；题型专练逐题反馈。分值以当前试卷标注为准。';
     var left=emptyNode(options);
     if(PICK.view==='full')left.appendChild(fullPaperFeedbackControl());
     if(PICK.view==='split' && PICK.split==='random'){

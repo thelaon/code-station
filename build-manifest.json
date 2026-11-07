@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "app_version": "v0.2.0",
+  "app_version": "v0.2.1",
   "default_profile": "public",
   "third_party": {
     "inventory": "licenses/components.json",
@@ -34,6 +34,7 @@
     "src/js/_question_pack_schema.js",
     "src/js/_objective_questions.js",
     "src/js/_pack_manager.js",
+    "src/js/_pack_review.js",
     "src/js/_question_packs.js",
     "src/js/_visual_style.js",
     "src/js/_study_pages.js",

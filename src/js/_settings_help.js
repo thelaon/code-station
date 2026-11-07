@@ -1,5 +1,6 @@
 
-function categoryDialog(title, caption, kind, items){
+function categoryDialog(title, caption, kind, items, options){
+  options=options||{};
   var M=modalBox(title,true),box=M.box;emptyNode(box);
   box.className+=' category-dialog '+kind+'-panel';box.style.maxWidth='1040px';box.style.overflowY='hidden';animateCategoryClose(M);
   if(PREF.motion!==false && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
@@ -11,7 +12,7 @@ function categoryDialog(title, caption, kind, items){
     }
     box.addEventListener('animationend',finishEntry);box.addEventListener('animationcancel',finishEntry);
   }
-  var head=el('div','category-head'),copy=el('div');copy.appendChild(el('small','category-eyebrow',kind==='settings'?'CONTROL PANEL':'FLIGHT MANUAL'));
+  var head=el('div','category-head'),copy=el('div');copy.appendChild(el('small','category-eyebrow',options.eyebrow||(kind==='settings'?'CONTROL PANEL':'FLIGHT MANUAL')));
   copy.appendChild(el('h2',null,title));copy.appendChild(el('p',null,caption));head.appendChild(copy);
   var close=btn('关闭',function(){M.m.requestClose();});close.setAttribute('aria-label','关闭'+title);head.appendChild(close);box.appendChild(head);
   var layout=el('div','category-layout'),nav=el('div','category-nav'),body=el('div','category-body'),tabs=[],panels=[];
@@ -25,6 +26,7 @@ function categoryDialog(title, caption, kind, items){
   });
   var activeIndex=-1;
   function activate(index){var animate=activeIndex>=0&&activeIndex!==index&&categoryMotionEnabled();activeIndex=index;tabs.forEach(function(t,i){t.setAttribute('aria-selected',String(i===index));t.tabIndex=i===index?0:-1;panels[i].classList.remove('category-section-enter');panels[i].hidden=i!==index;});body.scrollTop=0;if(animate){panels[index].classList.add('category-section-enter');}
+    if(options.renderPanel&&!panels[index].firstChild)options.renderPanel(panels[index],items[index][0]);
     if(nav.scrollWidth>nav.clientWidth){var n=nav.getBoundingClientRect(),t=tabs[index].getBoundingClientRect();nav.scrollLeft+=t.left<n.left?t.left-n.left:t.right>n.right?t.right-n.right:0;}
   }
   panels.forEach(function(panel){panel.addEventListener('animationend',function(e){if(e.target===panel)panel.classList.remove('category-section-enter');});});
@@ -120,14 +122,14 @@ function openHelp(initial){
   var M=categoryDialog('使用说明','从导入题库到备份记录，按需要查阅。','guide',[['start','快速开始'],['questions','题型与提交'],['exam','模拟考试'],['review','复习与统计'],['data','题库与备份'],['keys','操作与快捷键']]);
   var p=M.panels[0];p.appendChild(el('h3',null,'欢迎来到代码航站'));
   p.appendChild(el('p','guide-lead','代码航站在浏览器中离线运行。导入题包后即可开始练习。'));
-  var steps=el('ol','guide-steps');[['导入题库','首页左侧“导入 / 管理题包”中选择本地 JSON，检查预览后确认导入。已有题库时，从左侧总目录切换。'],['选择练习','选择试卷后，可进行整卷练习、题型专练或模拟考试。题型、题量和满分以当前试卷显示为准。'],['作答与回顾','题型专练即时反馈；整卷按所选批改方式执行。延后批改和模拟考试在交卷后查看成绩与解析。'],['保存自己的记录','浏览器会自动保存当前进度。换设备、清理浏览器或升级前，请分别备份题库、学习记录和需要保留的代码草稿。']].forEach(function(x){var li=el('li');li.appendChild(el('strong',null,x[0]));li.appendChild(el('p',null,x[1]));steps.appendChild(li);});p.appendChild(steps);
+  var steps=el('ol','guide-steps');[['导入题库','在“题库管理”中选择本地 JSON。通过检查后，可点“审阅题目”核对和修改。确认导入后，也可从已导入题包打开审阅。'],['选择练习','选择试卷后，可进行整卷练习、题型专练或模拟考试。题型、题量和满分以当前试卷显示为准。'],['作答与回顾','题型专练即时反馈；整卷按所选批改方式执行。延后批改和模拟考试在交卷后查看成绩与解析。'],['保存自己的记录','浏览器会自动保存当前进度。换设备、清理浏览器或升级前，请分别备份题库、学习记录和需要保留的代码草稿。']].forEach(function(x){var li=el('li');li.appendChild(el('strong',null,x[0]));li.appendChild(el('p',null,x[1]));steps.appendChild(li);});p.appendChild(steps);
   helpBlock(p,'使用前请留意','题库与学习记录是两种备份；普通练习与考试的反馈时机不同；数据保存在当前浏览器，请定期导出。');
   p=M.panels[1];p.appendChild(el('h3',null,'按题型完成作答'));
   [['单选题','普通练习点击一个选项即记录本题答案并给出反馈，首次作答计入成绩。答过的题可用“撤销本题作答重做”重新练习。'],['多选题','可以反复勾选或取消，再点击“提交”。全部选对且无错选才得分；少选、多选或错选不得分。选项数量由题目决定，支持 A—H。'],['普通填空','按顺序填写各空，再点击“提交”。匹配方式、大小写、空格或数值容差由题包规定，按题面提示输入；各空按题目分值计分。'],['程序填空','在代码空位内输入后点击“提交”，逐空核对题包提供的答案及等价写法。使用英文半角符号。空数和每空分值看题目，部分正确可得部分分。'],['程序改错','按题面要求修改代码。“编译并运行”用于自测，不记分；“提交”生成报告并记录结果。成绩依据逐处核对，编译与运行结果帮助定位问题；当前工具无法处理的情况以报告提示为准。'],['编程题','支持整卷练习与题型专练。运行用于自测；“提交”按题包公开用例判分，全部通过视为答对。公开用例通过不代表覆盖所有可能输入。工具或环境限制不记为错答。'],['连续小问','同一材料可拆成多个独立小问，沿题序连续显示。题干可能重复，答题卡显示类似 7(1)、7(2)；各小问分别提交、计分和复习。']].forEach(function(x){helpBlock(p,x[0],x[1]);});
   helpBlock(p,'答案、解析与自动跳题','普通练习查看答案会按页面确认提示记为错答并加入复习。答对后自动跳题默认关闭，可在“设置 → 答题习惯”开启并选择等待秒数；只对整题答对生效，展开解析可取消当次跳转。');
   p=M.panels[2];p.appendChild(el('h3',null,'考试期间先作答，交卷后看成绩'));
   helpBlock(p,'整卷练习的批改方式','首页的整卷练习可选择“即时批改”或“交卷后批改”。即时批改逐题反馈；交卷后批改允许修改答案、隐藏答案解析，仅保留答题、交卷和放弃入口，不倒计时。整卷包含编程题。选择交卷后批改时，自测只展示输出，交卷后统一判分。成绩可在统计中回顾。题型专练仍即时反馈。');
-  helpList(p,['首页选择“模拟考试”，设置 1—180 分钟（默认 60 分钟），选择试卷后开始。考试按试卷所含的单选、多选、填空与改错组卷；当前不包含编程题。','考试中选项和输入会保存，可修改或清除；不提前显示对错和解析。标记为“待检查”方便交卷前回看。','答题卡：蓝色表示已作答，浅黄表示部分填写，★ 表示待检查。当前题另有边框标识；这些颜色不代表答对或答错。','倒计时按截止时间计算，打开设置、切到后台或关闭页面也继续。关闭期间到时，再次打开时自动收卷。','考试界面只保留答题操作；点击交卷或放弃考试结束。放弃不生成成绩，也不计入复习和统计。',
+  helpList(p,['首页选择“模拟考试”，设置 1—180 分钟（默认 60 分钟），选择试卷后开始。考试按试卷所含题型组卷，编程题在交卷后运行用例。','考试中选项和输入会保存，可修改或清除；不提前显示对错和解析。标记为“待检查”方便交卷前回看。','答题卡：蓝色表示已作答，浅黄表示部分填写，★ 表示待检查。当前题另有边框标识；这些颜色不代表答对或答错。','倒计时按截止时间计算，打开设置、切到后台或关闭页面也继续。关闭期间到时，再次打开时自动收卷。','考试界面只保留答题操作；点击交卷或放弃考试结束。放弃不生成成绩，也不计入复习和统计。',
     '可手动交卷，也会在到时后收卷；未答计零分，交卷后该场答卷只读。改错考试分数按逐处核对规则计算，交卷时不重新编译运行。','在“统计 → 考试成绩”选择场次，默认最近一次。进入详情可回看各题、答案和用时，不覆盖正在进行的普通练习。']);
   helpBlock(p,'两种时间','考试剩余时间持续倒数；“本题用时”是当前题的活动阅读时间，切题、离开练习、打开弹窗或进入后台会暂停。两者用途不同。');
   p=M.panels[3];p.appendChild(el('h3',null,'复习与学习统计'));
@@ -144,12 +146,4 @@ function openHelp(initial){
   helpBlock(p,'输入框内优先打字','光标在输入框、编辑器、按钮或其他可编辑控件中时，不触发全局切题快捷键。多选和填空仍需点击“提交”。图片可以点击放大；顶部“?”可随时重新打开本说明。');
   p.appendChild(btn('第三方组件与许可证',function(){M.m.remove();openSettings('licenses');}));
   var foot=el('div','category-foot');foot.appendChild(el('span',null,'随时从顶部“?”重新查阅'));foot.appendChild(btn('开始使用',function(){M.m.requestClose();},true));M.box.appendChild(foot);if(typeof initial==='string')M.select(initial);
-}
-function showFirstVisitGuide(){
-  try{if(localStorage.getItem(GUIDE_SEEN_KEY)==='1')return;localStorage.setItem(GUIDE_SEEN_KEY,'1');}catch(e){}
-  var M=modalBox('欢迎来到代码航站',true);M.box.className+=' welcome-panel';
-  M.box.appendChild(el('p','guide-lead','第一次使用，建议先读这份简短说明。'));
-  helpList(M.box,['先导入题包，再选择练习或模拟考试。','题库、学习记录和代码草稿需要分别备份。','使用说明可随时在顶部“?”打开。']);
-  M.box.appendChild(el('p','note','此提示只展示一次。'));
-  var actions=el('div','footbar');actions.appendChild(btn('阅读使用说明',function(){M.m.remove();openHelp();},true));actions.appendChild(btn('稍后再看',function(){M.m.remove();}));M.box.appendChild(actions);
 }
