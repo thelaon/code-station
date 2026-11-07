@@ -65,11 +65,40 @@ var ProgrammingPage=(function(){
   function select(id){if(state.selected===id)return;abortRead();invalidate('已切题；旧运行已停止。');state.selected=id;lastResult=null;persist();paintQuestion();}
   function paintQuestion(){
     var q=question(),d=draft();ui.title.textContent=q.title;ui.id.textContent=(APP_PROFILE==='public'?'':q.id+' · ')+'第 '+(ids().indexOf(q.id)+1)+' / '+ids().length+' 题 · 公开用例 '+q.tests.length+' 组';emptyNode(ui.statement);field('题目要求',q.statement,ui.statement);(q.imgs&&q.imgs.data||[]).forEach(function(src,i){var im=node('img');im.src=src;im.alt='题目插图 '+(i+1);im.style.maxWidth='100%';ui.statement.appendChild(im);});var more=node('details','program-problem-details');more.appendChild(node('summary',null,'输入输出说明与样例'));field('输入说明',q.input,more);field('输出说明',q.output,more);if(q.rangeNote)more.appendChild(node('p','note',q.rangeNote));more.appendChild(ui.examples);ui.statement.appendChild(more);
-    emptyNode(ui.examples);q.examples.forEach(function(c,i){var example=node('section','program-example');example.appendChild(node('h4',null,'样例 '+(i+1)));field('输入',c.stdin,example);field('输出',c.stdout,example);example.appendChild(btn('用作自定义输入',function(){abortRead();invalidate('自定义输入已变更。');ui.stdin.value=c.stdin;draft().input=c.stdin;persist();}));ui.examples.appendChild(example);});
-    emptyNode(ui.publicCases);q.tests.forEach(function(c,i){var details=node('details','program-case');details.appendChild(node('summary',null,'公开用例 '+(i+1)+' · '+(c.kind==='source-sample'?'题面样例':'边界与补充')));field('输入',c.stdin,details);field('预期输出',c.stdout,details);(c.stdoutAlternatives||[]).forEach(function(value){field('也接受以下输出',value,details);});ui.publicCases.appendChild(details);});ui.code.value=d.code;ui.stdin.value=d.input;ui.code.scrollTop=0;updateLines();ui.result.hidden=true;ui.result.classList.remove('program-stale');ui.saved.textContent=storageBlocked?'原草稿格式异常，保存已暂停':'本题草稿自动保存';paintDirectory();paintControls();notify(bridge.ready()?'':'暂时无法运行代码，可继续编辑和导出草稿。');
+    emptyNode(ui.examples);q.examples.forEach(function(c,i){var example=node('section','program-example');example.appendChild(node('h4',null,'样例 '+(i+1)));field('输入',c.stdin,example);field('输出',c.stdout,example);example.appendChild(btn('用作自定义输入',function(){abortRead();invalidate('自定义输入已变更。');ui.stdin.value=c.stdin;ui.inputDetails.open=true;draft().input=c.stdin;persist();}));ui.examples.appendChild(example);});
+    emptyNode(ui.publicCases);q.tests.forEach(function(c,i){var details=node('details','program-case');details.appendChild(node('summary',null,'公开用例 '+(i+1)+' · '+(c.kind==='source-sample'?'题面样例':'边界与补充')));field('输入',c.stdin,details);field('预期输出',c.stdout,details);(c.stdoutAlternatives||[]).forEach(function(value){field('也接受以下输出',value,details);});ui.publicCases.appendChild(details);});ui.code.value=d.code;ui.stdin.value=d.input;ui.inputDetails.open=!!d.input;ui.code.scrollTop=0;updateLines();ui.result.hidden=true;ui.result.classList.remove('program-stale');ui.saved.textContent=storageBlocked?'原草稿格式异常，保存已暂停':'本题草稿自动保存';paintDirectory();paintControls();notify(bridge.ready()?'':'暂时无法运行代码，可继续编辑和导出草稿。');
   }
   function renderResult(event){
-    var r=event.result;ui.result.hidden=false;ui.result.classList.remove('program-stale');ui.resultTitle.textContent=r.status==='compile_error'?'编译未通过':r.status==='tool_error'?'工具或环境限制':event.request.kind==='run'?'自定义运行结果':'公开用例 '+r.passed+' / '+r.total+' 通过';emptyNode(ui.resultBody);if(r.diagnostics)field('编译信息',r.diagnostics,ui.resultBody);r.items.forEach(function(c,i){var details=node('details','program-case program-verdict-'+c.kind);details.open=r.items.length===1;details.appendChild(node('summary',null,(event.request.kind==='run'?'自定义输入':'用例 '+(i+1))+' · '+labels[c.kind]));field('输入',c.stdin,details);if(c.expected!==undefined)field('预期输出',c.expected,details);(c.expectedAlternatives||[]).forEach(function(value){field('也接受以下输出',value,details);});field('实际标准输出',c.stdout,details);if(c.stderr)field('标准错误',c.stderr,details);if(c.exitCode!==undefined)details.appendChild(node('p','note','退出码：'+c.exitCode));ui.resultBody.appendChild(details);});notify('结果对应提交时的代码与输入；修改后需重新运行。');
+    var r=event.result, selfTest=event.request.kind==='run';
+    ui.result.hidden=false;
+    ui.result.classList.remove('program-stale');
+    var heading=r.status==='compile_error'?'编译未通过':r.status==='tool_error'?'工具或环境限制':
+      selfTest?'自定义运行结果':'公开用例 '+r.passed+' / '+r.total+' 通过';
+    ui.resultTitle.textContent=heading;
+    ui.result.dataset.result=r.status!=='completed'?'error':selfTest?'run':r.passed===r.total?'pass':'partial';
+    emptyNode(ui.resultBody);
+    if(r.diagnostics)field('编译信息',r.diagnostics,ui.resultBody);
+    r.items.forEach(function(c,i){
+      var details=node('details','program-case program-verdict-'+c.kind);
+      details.open=selfTest;
+      details.appendChild(node('summary',null,(selfTest?'自定义输入':'用例 '+(i+1))+' · '+labels[c.kind]));
+      field('输入',c.stdin,details);
+      var outputs=node('div','program-case-outputs'),actual=node('div');
+      field('实际标准输出',c.stdout,actual);
+      outputs.appendChild(actual);
+      if(c.expected!==undefined){
+        var expected=node('div');
+        field('预期输出',c.expected,expected);
+        (c.expectedAlternatives||[]).forEach(function(value){field('也接受以下输出',value,expected);});
+        outputs.classList.add('program-case-compare');
+        outputs.appendChild(expected);
+      }
+      details.appendChild(outputs);
+      if(c.stderr)field('标准错误',c.stderr,details);
+      if(c.exitCode!==undefined)details.appendChild(node('p','note','退出码：'+c.exitCode));
+      ui.resultBody.appendChild(details);
+    });
+    notify('');
   }
   function request(kind){abortRead();var q=question(),d=draft();if(bytes(d.code)>MAX_CODE||bytes(d.input)>MAX_INPUT){notify('代码最多64KiB，自定义输入最多16KiB；请缩短后再运行。');return;}persist();try{bridge.run({questionId:q.id,kind:kind,code:d.code,tests:kind==='run'?[{id:'custom',stdin:d.input}]:q.tests.map(function(c){var test={id:c.id,stdin:c.stdin,expected:c.stdout};if(c.stdoutAlternatives)test.expectedAlternatives=c.stdoutAlternatives.slice();return test;})});}catch(e){notify(e.message);}}
   function readFile(file,max,done){abortRead();if(!file)return;if(file.size>max){notify('文件过大，未改变当前草稿。');return;}var token=fileToken,id=state.selected;reader=new FileReader();reader.onload=function(){if(!ui||token!==fileToken||id!==state.selected)return;done(reader.result);};reader.onerror=function(){if(ui&&token===fileToken)notify('文件读取失败，请重新选择。');};reader.readAsText(file,'utf-8');}
@@ -83,11 +112,22 @@ var ProgrammingPage=(function(){
     var statementPanel=panel('题目'),id=node('p','program-id'),title=node('h2'),statement=node('div'),examples=node('div','program-examples');statementPanel.appendChild(id);statementPanel.appendChild(title);statementPanel.appendChild(statement);statementPanel.appendChild(examples);main.appendChild(statementPanel);
     var editor=panel('代码工作区'),tools=node('div','toolbar'),mark=btn('☆ 标记本题',function(){draft().marked=!draft().marked;persist();paintDirectory();}),codeFile=node('input');codeFile.type='file';codeFile.accept='.c,.txt,text/plain';codeFile.setAttribute('aria-label','导入C代码文件');tools.appendChild(codeFile);tools.appendChild(btn('导出代码',function(){saveFile(draft().code,question().id.replace(/[^\w\u4e00-\u9fff-]/g,'-')+'.c');}));tools.appendChild(btn('恢复初始代码',function(){if(!confirm('恢复本题初始代码？当前代码将被替换。'))return;abortRead();invalidate('已恢复初始代码。');draft().code=question().starter;ui.code.value=draft().code;updateLines();persist();paintDirectory();}));tools.appendChild(mark);editor.appendChild(tools);
     var editBox=node('div','program-editor'),lines=node('pre','program-lines'),code=node('textarea','program-code');lines.setAttribute('aria-hidden','true');code.spellcheck=false;code.wrap='off';code.setAttribute('aria-label','C程序代码');code.setAttribute('autocapitalize','off');code.setAttribute('autocomplete','off');editBox.appendChild(lines);editBox.appendChild(code);editor.appendChild(editBox);var editMeta=node('div','program-edit-meta'),saved=node('span'),counter=node('span');editMeta.appendChild(saved);editMeta.appendChild(counter);editor.appendChild(editMeta);main.appendChild(editor);
-    var inputPanel=panel('自定义输入'),stdin=node('textarea','program-stdin');stdin.rows=5;stdin.spellcheck=false;stdin.setAttribute('aria-label','自定义标准输入');inputPanel.appendChild(stdin);var actions=node('div','toolbar'),run=btn('运行输入',function(){request('run');}),submit=btn('提交',function(){request('submit');},true),stop=btn('停止',function(){bridge.cancel('已停止运行。');});actions.appendChild(run);actions.appendChild(submit);actions.appendChild(stop);inputPanel.appendChild(actions);inputPanel.appendChild(node('p','note','“运行输入”仅作自测；“提交”按公开用例判分。'));main.appendChild(inputPanel);
-    var status=node('p','card program-status');status.setAttribute('role','status');status.setAttribute('aria-live','polite');main.appendChild(status);var result=panel('运行结果'),resultTitle=node('h3'),resultBody=node('div');result.hidden=true;result.classList.add('program-result');result.appendChild(resultTitle);result.appendChild(resultBody);main.appendChild(result);
+    var runPanel=node('section','program-run-panel'),inputDetails=node('details','program-input-details');
+    var stdin=node('textarea','program-stdin');stdin.rows=4;stdin.spellcheck=false;stdin.setAttribute('aria-label','自定义标准输入');
+    inputDetails.appendChild(node('summary',null,'自定义输入'));inputDetails.appendChild(stdin);runPanel.appendChild(inputDetails);
+    var actions=node('div','toolbar program-run-actions');
+    var run=btn('运行输入',function(){request('run');}),submit=btn('提交',function(){request('submit');},true);
+    var stop=btn('停止',function(){bridge.cancel('已停止运行。');});
+    actions.appendChild(run);actions.appendChild(submit);actions.appendChild(stop);runPanel.appendChild(actions);
+    runPanel.appendChild(node('p','note','运行输入用于自测，提交会按公开用例判分。'));
+    var status=node('p','program-status');status.setAttribute('role','status');runPanel.appendChild(status);
+    var result=node('section','program-result'),resultTitle=node('h3'),resultBody=node('div');
+    result.hidden=true;resultTitle.setAttribute('aria-live','polite');
+    result.appendChild(resultTitle);result.appendChild(resultBody);runPanel.appendChild(result);
+    editor.appendChild(runPanel);
     side.appendChild(node('h2',null,'编程目录'));var directory=node('div','program-directory');side.appendChild(directory);side.appendChild(node('p','note','深底：当前题 · 浅蓝：已编写 · ★：已标记。此处不表示程序对错。'));side.appendChild(node('h3',null,'公开用例'));side.appendChild(node('p','note','换行格式自动统一，允许末尾多一个换行；其余空格、标点和小数位需一致。有多种参考输出时，匹配其中一种即可。'));var publicCases=node('div');side.appendChild(publicCases);
     var backup=panel('草稿备份'),backupTools=node('div','toolbar');backupTools.appendChild(btn('导出编程草稿',function(){saveFile(rawBackup||JSON.stringify(state,null,2),rawBackup?'编程草稿-原始备份.json':'编程草稿.json','application/json;charset=utf-8');}));var workspaceFile=node('input');workspaceFile.type='file';workspaceFile.accept='.json,application/json';workspaceFile.setAttribute('aria-label','导入编程草稿备份');backupTools.appendChild(workspaceFile);backup.appendChild(backupTools);backup.appendChild(node('p','note','代码草稿需单独导出；学习成绩、复习与进度沿用普通练习记录。升级保留本页草稿；确认清空全部学习数据时才会一并删除。'));root.appendChild(backup);host.appendChild(root);
-    ui={root:root,title:title,id:id,statement:statement,examples:examples,directory:directory,publicCases:publicCases,code:code,stdin:stdin,lines:lines,saved:saved,counter:counter,status:status,engine:engine,engineHint:engineHint,run:run,submit:submit,stop:stop,mark:mark,result:result,resultTitle:resultTitle,resultBody:resultBody};
+    ui={root:root,title:title,id:id,statement:statement,examples:examples,directory:directory,publicCases:publicCases,code:code,stdin:stdin,inputDetails:inputDetails,lines:lines,saved:saved,counter:counter,status:status,engine:engine,engineHint:engineHint,run:run,submit:submit,stop:stop,mark:mark,result:result,resultTitle:resultTitle,resultBody:resultBody};
     function edited(){abortRead();invalidate('代码或输入已变更，旧结果失效。');draft().code=code.value;draft().input=stdin.value;updateLines();if(bytes(code.value)>MAX_CODE||bytes(stdin.value)>MAX_INPUT){notify('内容超过64KiB代码或16KiB输入限制，尚未保存；请缩短或导出代码。');saved.textContent='尚未保存';}else persist();paintDirectory();}
     code.oninput=stdin.oninput=edited;code.onscroll=function(){lines.scrollTop=code.scrollTop;};code.onkeydown=function(e){if(e.key==='Tab'){e.preventDefault();var v=indent(code.value,code.selectionStart,code.selectionEnd,e.shiftKey);code.value=v.text;code.setSelectionRange(v.start,v.end);edited();}};
     codeFile.onchange=function(){var f=codeFile.files[0];readFile(f,MAX_CODE,function(text){if(bytes(text)>MAX_CODE){notify('代码文件内容超限，未改变草稿。');return;}invalidate('已导入代码，旧结果失效。');draft().code=text;code.value=text;updateLines();persist();paintDirectory();});};

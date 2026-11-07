@@ -102,18 +102,34 @@ function inspectPackLibraryBackup(input){
 }
 function restorePackLibraryBackup(input){assertPackManagement();var checked=inspectPackLibraryBackup(input);if(SESSION&&!SESSION.done&&checked.packs.some(function(p){return checked.states[p.id]&&checked.states[p.id].enabled===false&&packSessionUses(p.id,SESSION);}))throw new Error('备份会停用当前练习题库，请先完成或放弃这组。');packCatalogChanged(checked.packs,checked.states);return checked.incoming.length;}
 function packUsageText(u){return '复习档案 '+u.review+' · 标记 '+u.marks+' · 考试 '+u.exams+' 场 · 当前练习 '+u.session+' · 改错草稿 '+u.fixDrafts+' · 编程草稿 '+u.programDrafts;}
-function packManagerAfterChange(){if(typeof VIEW!=='undefined'&&VIEW==='home')renderHome();else go('home');}
-function openPackUpdate(input){
+
+function openPackUpdate(input,resumeReview){
   var info;try{assertPackManagement();info=inspectPackUpdate(input);}catch(e){alert(e.message);return;}
   var M=modalBox('更新题库',true),box=M.box;box.classList.add('pack-manager');
+  var applied=false;
+  if(resumeReview){
+    var close=M.m.remove;
+    M.m.remove=function(){close();if(!applied)resumeReview();};
+  }
   box.appendChild(el('h3',null,info.pack.title));box.appendChild(el('p',null,'修订 '+info.old.revision+' → '+info.pack.revision+' · 新增 '+info.added+' · 删除 '+info.removed+' · 内容修改 '+info.edited+' 题'));
   box.appendChild(el('p','note',info.changed?'题目、顺序或判分内容有变化。':'题目结构、内容及判分保持一致，解析或目录说明更新后保留学习记录。'));
   box.appendChild(el('p','note',packUsageText(info.usage)));var agreed=el('input');agreed.type='checkbox';
   var label=el('label','pack-confirm');label.appendChild(agreed);label.appendChild(el('span',null,'清除本题库的关联记录，更新后重新练习'));if(info.requiresReset)box.appendChild(label);
   if(info.requiresReset)box.appendChild(el('p','warn','涉及本题库的整场考试和混合练习将移除，其他题库的独立档案、标记和累计作答趋势保留。请先导出学习记录和代码草稿。'));
   var status=el('p','pack-status');status.setAttribute('role','status');box.appendChild(status);
-  var apply=btn('确认更新',function(){try{updateQuestionPack(info.pack,agreed.checked);M.m.remove();packManagerAfterChange();openQuestionPacks();}catch(e){status.textContent=e.message;}},true);apply.disabled=info.requiresReset;agreed.onchange=function(){apply.disabled=info.requiresReset&&!agreed.checked;};
-  var bar=el('div','toolbar');bar.appendChild(btn('导出旧题包',function(){downloadQuestionPack(info.old);}));bar.appendChild(btn('导出学习记录',exportData));bar.appendChild(apply);bar.appendChild(btn('取消',function(){M.m.remove();openQuestionPacks();}));box.appendChild(bar);
+  var apply=btn('确认更新',function(){try{updateQuestionPack(info.pack,agreed.checked);applied=true;M.m.remove();go('packs');}catch(e){status.textContent=e.message;}},true);apply.disabled=info.requiresReset;agreed.onchange=function(){apply.disabled=info.requiresReset&&!agreed.checked;};
+  var bar=el('div','toolbar');bar.appendChild(btn('导出旧题包',function(){downloadQuestionPack(info.old);}));bar.appendChild(btn('导出学习记录',exportData));bar.appendChild(apply);bar.appendChild(btn('取消',function(){M.m.remove();}));box.appendChild(bar);
+}
+function reviewInstalledPack(pack,draft){
+  openPackQuestionReview(pack,{installed:true,draft:draft,apply:function(checked,dialog){
+    assertPackManagement();
+    if(packById(pack.id)!==pack)throw new Error('题包已变化，请重新打开审阅。');
+    if(SESSION&&!SESSION.done&&packSessionUses(pack.id,SESSION))throw new Error('请先完成或放弃这个题库的当前练习，再保存修改。');
+    var revised=Object.assign({},checked.pack,{revision:pack.revision+1});
+    inspectPackUpdate(revised);
+    dialog.m.remove();
+    openPackUpdate(revised,function(){reviewInstalledPack(pack,checked.pack);});
+  }});
 }
 function openPackRemoval(id){
   var pack=packById(id),usage;try{assertPackManagement();if(!pack)throw new Error('题库已变化，请重新打开。');usage=packUsage(id);}catch(e){alert(e.message);return;}
@@ -122,24 +138,105 @@ function openPackRemoval(id){
   var agreed=el('input');agreed.type='checkbox';var label=el('label','pack-confirm');label.appendChild(agreed);label.appendChild(el('span',null,'同时清除本题库的关联记录'));if(packHasUsage(usage))box.appendChild(label);
   if(packHasUsage(usage))box.appendChild(el('p','warn','涉及本题库的整场考试或当前混合练习也会删除；其他题库的独立档案、标记和累计作答趋势保留。代码草稿请先在做题页另行导出。'));
   var status=el('p','pack-status');status.setAttribute('role','status');box.appendChild(status);
-  var remove=btn('确认删除',function(){try{removeQuestionPack(id,agreed.checked);M.m.remove();packManagerAfterChange();openQuestionPacks();}catch(e){status.textContent=e.message;}},true);remove.disabled=packHasUsage(usage);agreed.onchange=function(){remove.disabled=packHasUsage(usage)&&!agreed.checked;};
+  var remove=btn('确认删除',function(){try{removeQuestionPack(id,agreed.checked);M.m.remove();go('packs');}catch(e){status.textContent=e.message;}},true);remove.disabled=packHasUsage(usage);agreed.onchange=function(){remove.disabled=packHasUsage(usage)&&!agreed.checked;};
   var bar=el('div','toolbar');bar.appendChild(btn('导出题包',function(){downloadQuestionPack(pack);}));bar.appendChild(btn('导出学习记录',exportData));bar.appendChild(remove);bar.appendChild(btn('取消',function(){M.m.remove();openQuestionPacks();}));box.appendChild(bar);
 }
-function renderPackManager(box,modal,onChanged){
-  var stored=el('details','pack-installed');stored.open=true;stored.appendChild(el('summary',null,'已导入题包（'+PACKS.length+'）'));var tools=el('div','pack-manager-tools'),find=el('input');find.type='search';find.placeholder='题库名称、标识或来源';find.setAttribute('aria-label','查找已导入题包');tools.appendChild(find);
+function createPackFilePicker(config){
+  var control=el('label','pack-file-picker');
+  var input=el('input','pack-picker-native');
+  input.type='file';input.accept='.json,application/json';input.multiple=!!config.multiple;
+  input.setAttribute('aria-label',config.inputLabel||config.title);
+  control.appendChild(input);
+  var badge=el('span','pack-picker-format','JSON');badge.setAttribute('aria-hidden','true');
+  control.appendChild(badge);
+  var copy=el('span','pack-picker-copy');
+  copy.appendChild(el('strong',null,config.title));
+  copy.appendChild(el('span','pack-picker-hint',config.hint));
+  var selection=el('span','pack-picker-selection');selection.setAttribute('aria-live','polite');
+  copy.appendChild(selection);control.appendChild(copy);
+  var action=el('span','pack-picker-button',config.action);
+  action.setAttribute('aria-hidden','true');control.appendChild(action);
+  function paint(){
+    var names=Array.from(input.files,function(file){return file.name;});
+    selection.textContent=names.length>1?'已选 '+names.length+' 个文件 · '+names[0]+' 等':names[0]||'';
+    selection.title=names.join('、');
+    action.textContent=names.length?'重新选择':config.action;
+  }
+  input.addEventListener('change',paint);
+  return {control:control,input:input,reset:function(){input.value='';paint();}};
+}
+function renderPackManager(box,onChanged){
+  var stored=el('section','pack-installed');
+  stored.setAttribute('aria-label','已导入题包');
+  var tools=el('div','pack-manager-tools'),find=el('input');
+  find.type='search';find.placeholder='题库名称、标识或来源';
+  find.setAttribute('aria-label','查找已导入题包');tools.appendChild(find);
   var filter=el('select');filter.setAttribute('aria-label','题库状态筛选');[['all','全部状态'],['on','已启用'],['off','已停用']].forEach(function(v){var op=el('option',null,v[1]);op.value=v[0];filter.appendChild(op);});tools.appendChild(filter);var sort=el('select');sort.setAttribute('aria-label','题库排序');[['recent','导入顺序'],['title','按名称'],['count','题量最多']].forEach(function(v){var o=el('option',null,v[1]);o.value=v[0];sort.appendChild(o);});tools.appendChild(sort);stored.appendChild(tools);
-  var overview=el('div','pack-overview'),matched=el('p','pack-match-count');matched.setAttribute('aria-live','polite');stored.insertBefore(overview,tools);stored.appendChild(matched);
+  var matched=el('p','pack-match-count');matched.setAttribute('aria-live','polite');stored.appendChild(matched);
   var status=el('p','pack-status');status.setAttribute('role','status');status.textContent='停用会隐藏练习入口并保留记录；考试历史仍可查看。';stored.appendChild(status);var list=el('div','pack-catalog');stored.appendChild(list);
-  function draw(){emptyNode(list);emptyNode(overview);var total=PACKS.reduce(function(n,p){return n+p.papers.reduce(function(n,r){return n+r.questions.length;},0);},0);[['已导入',PACKS.length,'个题库'],['已启用',PACKS.filter(function(p){return packEnabled(p.id);}).length,'个题库'],['题目总数',total,'题']].forEach(function(m){var cell=el('div');cell.appendChild(el('span',null,m[0]));cell.appendChild(el('strong',null,String(m[1])));cell.appendChild(el('small',null,m[2]));overview.appendChild(cell);});var term=find.value.trim().toLowerCase(),packs=PACKS.filter(function(p){return (p.title+' '+p.id+' '+p.source).toLowerCase().indexOf(term)>=0&&(filter.value!=='on'||packEnabled(p.id))&&(filter.value!=='off'||!packEnabled(p.id));});function size(p){return p.papers.reduce(function(n,r){return n+r.questions.length;},0);}if(sort.value==='title')packs.sort(function(a,b){return a.title.localeCompare(b.title,'zh-CN');});else if(sort.value==='count')packs.sort(function(a,b){return size(b)-size(a);});matched.textContent='显示 '+packs.length+' / '+PACKS.length+' 个题库';if(!packs.length)list.appendChild(el('p','pack-empty',PACKS.length?'没有符合条件的题库，试试其他关键词或状态。':'还没有导入题库。切换到“导入 / 更新题包”开始添加。'));
+  function draw(){
+    emptyNode(list);
+    var term=find.value.trim().toLowerCase();
+    var packs=PACKS.filter(function(p){
+      return (p.title+' '+p.id+' '+p.source).toLowerCase().indexOf(term)>=0 &&
+        (filter.value!=='on'||packEnabled(p.id)) && (filter.value!=='off'||!packEnabled(p.id));
+    });
+    function size(p){return p.papers.reduce(function(n,r){return n+r.questions.length;},0);}
+    if(sort.value==='title')packs.sort(function(a,b){return a.title.localeCompare(b.title,'zh-CN');});
+    else if(sort.value==='count')packs.sort(function(a,b){return size(b)-size(a);});
+    if(term||filter.value!=='all')matched.textContent='显示 '+packs.length+' / '+PACKS.length+' 个题包';
+    else matched.textContent='共 '+PACKS.length+' 个题包 · 已启用 '+PACKS.filter(function(p){return packEnabled(p.id);}).length+' 个';
+    if(!packs.length)list.appendChild(el('p','pack-empty',PACKS.length?'没有符合条件的题库，试试其他关键词或状态。':'还没有导入题库。切换到“导入 / 更新题包”开始添加。'));
     packs.forEach(function(pack){var row=el('section','pack-installed-row pack-catalog-card');row.dataset.packId=pack.id;var copy=el('div','pack-catalog-copy');var heading=el('div','pack-card-heading');heading.appendChild(el('h3',null,pack.title));heading.appendChild(el('span','pack-state-badge '+(packEnabled(pack.id)?'is-on':'is-off'),packEnabled(pack.id)?'已启用':'已停用'));copy.appendChild(heading);copy.appendChild(el('p','note',pack.id+' · 修订'+pack.revision+' · '+(packEnabled(pack.id)?'已启用':'已停用')));var counts={};pack.papers.forEach(function(p){p.questions.forEach(function(q){var t=q.type||'single';counts[t]=(counts[t]||0)+1;});});var names={single:'单选',multiple:'多选',blank:'填空',code_blank:'程序填空',fix:'改错',program:'编程'};copy.appendChild(el('p',null,pack.papers.length+' 套 · '+Object.keys(counts).map(function(k){return names[k]+' '+counts[k]+' 题';}).join(' · ')));var source=el('details','pack-source');source.appendChild(el('summary',null,'来源与说明'));source.appendChild(el('p','note',pack.source));copy.appendChild(source);row.appendChild(copy);
       try{copy.appendChild(el('p','note pack-record-summary',packUsageText(packUsage(pack.id))));}catch(e){copy.appendChild(el('p','note',e.message));}
-      var actions=el('div','toolbar pack-card-actions');var enter=btn('进入题库',function(){modal.m.remove();selectLibrary(pack.id);go('home');});enter.classList.add('pack-enter');enter.disabled=!packEnabled(pack.id);actions.appendChild(enter);
-      actions.appendChild(btn('导出题包',function(){downloadQuestionPack(pack);}));actions.appendChild(btn(packEnabled(pack.id)?'停用':'启用',function(){try{setPackEnabled(pack.id,!packEnabled(pack.id));if(onChanged)onChanged();packManagerAfterChange();draw();status.textContent='已'+(packEnabled(pack.id)?'启用':'停用')+'：'+pack.title+'。学习记录保留。';}catch(e){status.textContent=e.message;}}));
-      var removeButton=btn('删除',function(){modal.m.remove();openPackRemoval(pack.id);});removeButton.classList.add('pack-danger');actions.appendChild(removeButton);row.appendChild(actions);list.appendChild(row);
+      var actions=el('div','toolbar pack-card-actions');var enter=btn('进入题库',function(){selectLibrary(pack.id);go('home');});enter.classList.add('pack-enter');enter.disabled=!packEnabled(pack.id);actions.appendChild(enter);
+      var review=btn('审阅题目',function(){reviewInstalledPack(pack);});
+      review.setAttribute('aria-label','审阅题目 '+pack.title);actions.appendChild(review);
+      actions.appendChild(btn('导出题包',function(){downloadQuestionPack(pack);}));actions.appendChild(btn(packEnabled(pack.id)?'停用':'启用',function(){try{setPackEnabled(pack.id,!packEnabled(pack.id));if(onChanged)onChanged();renderNav();draw();status.textContent='已'+(packEnabled(pack.id)?'启用':'停用')+'：'+pack.title+'。学习记录保留。';}catch(e){status.textContent=e.message;}}));
+      var removeButton=btn('删除',function(){openPackRemoval(pack.id);});removeButton.classList.add('pack-danger');actions.appendChild(removeButton);row.appendChild(actions);list.appendChild(row);
     });}
   find.oninput=filter.onchange=sort.onchange=draw;draw();
-  var bar=el('div','toolbar pack-backup-actions');bar.appendChild(btn('导出题库备份',function(){downloadQuestionPack(makePackLibraryBackup(),'题库备份-'+todayKey()+'.json');}));bar.appendChild(btn('导出学习记录',exportData));
-  var restore=el('input');restore.type='file';restore.accept='.json,application/json';restore.setAttribute('aria-label','恢复题库备份');var label=el('label','pack-input-label','恢复题库备份');label.appendChild(restore);bar.appendChild(label);stored.appendChild(bar);
-  var restoreToken=0;restore.onchange=function(){var file=restore.files[0],token=++restoreToken;restore.value='';if(!file)return;if(file.size>40*1024*1024){status.textContent='题库备份不能超过40MiB。';return;}var reader=new FileReader();status.textContent='正在检查题库备份…';reader.onload=function(){if(token!==restoreToken||!modal.m.isConnected)return;var input,checked;try{input=JSON.parse(reader.result.replace(/^\uFEFF/,''));checked=inspectPackLibraryBackup(input);}catch(e){status.textContent=e.message;return;}Promise.all(checked.incoming.map(decodeQuestionPackImages)).then(function(errors){if(token!==restoreToken||!modal.m.isConnected)return;if(errors.some(function(a){return a.length;})){status.textContent='备份含无法解码的图片，未恢复。';return;}status.textContent='检查通过：'+checked.incoming.length+' 个题包。确认后恢复题包与启用状态，现有学习记录保留。';var confirmRestore=btn('确认恢复题库',function(){try{restorePackLibraryBackup(input);modal.m.remove();packManagerAfterChange();openQuestionPacks();}catch(e){status.textContent=e.message;}},true);status.appendChild(confirmRestore);});};reader.onerror=function(){status.textContent='备份读取失败。';};reader.readAsText(file,'utf-8');};
+  var backup=el('section','pack-backup-actions');
+  var backupHead=el('div','pack-backup-head'),exportActions=el('div','toolbar');
+  backupHead.appendChild(el('h3',null,'备份与恢复'));
+  exportActions.appendChild(btn('导出题库备份',function(){downloadQuestionPack(makePackLibraryBackup(),'题库备份-'+todayKey()+'.json');}));
+  exportActions.appendChild(btn('导出学习记录',exportData));
+  backupHead.appendChild(exportActions);backup.appendChild(backupHead);
+  var picker=createPackFilePicker({title:'恢复题库备份',hint:'选择此前导出的 JSON 题库备份，最大 40 MiB。',action:'选择备份'});
+  var restore=picker.input;backup.appendChild(picker.control);
+  var restoreStatus=el('div','pack-status pack-restore-status');
+  restoreStatus.setAttribute('aria-live','polite');restoreStatus.hidden=true;backup.appendChild(restoreStatus);
+  stored.appendChild(backup);
+  var restoreToken=0;
+  restore.onchange=function(){
+    var file=restore.files[0],token=++restoreToken;
+    restore.value='';
+    restoreStatus.hidden=!file;
+    restoreStatus.textContent='';
+    if(!file)return;
+    if(file.size>40*1024*1024){restoreStatus.textContent='题库备份不能超过 40 MiB。';return;}
+    var reader=new FileReader();
+    function alive(){return token===restoreToken&&box.isConnected;}
+    restoreStatus.textContent='正在检查题库备份…';
+    reader.onload=function(){
+      if(!alive())return;
+      var input,checked;
+      try{input=JSON.parse(reader.result.replace(/^\uFEFF/,''));checked=inspectPackLibraryBackup(input);}
+      catch(e){restoreStatus.textContent=e.message;return;}
+      Promise.all(checked.incoming.map(decodeQuestionPackImages)).then(function(errors){
+        if(!alive())return;
+        if(errors.some(function(a){return a.length;})){restoreStatus.textContent='备份含无法解码的图片，未恢复。';return;}
+        restoreStatus.textContent='检查通过：'+checked.incoming.length+' 个题包。确认后恢复题包与启用状态，现有学习记录保留。';
+        var confirmRestore=btn('确认恢复题库',function(){
+          if(!alive())return;
+          try{restorePackLibraryBackup(input);go('packs');}
+          catch(e){restoreStatus.textContent=e.message;}
+        },true);
+        restoreStatus.appendChild(confirmRestore);
+      });
+    };
+    reader.onerror=function(){if(alive())restoreStatus.textContent='备份读取失败。';};
+    reader.readAsText(file,'utf-8');
+  };
   stored.appendChild(el('p','note','题库备份包含题目、插图与启用状态。学习记录与编程草稿分别导出；恢复时先恢复题库，再恢复记录。更新题库请在上方选择较高修订的JSON，点击“查看更新”。'));box.appendChild(stored);return stored;
 }

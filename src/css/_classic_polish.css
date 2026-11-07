@@ -40,10 +40,10 @@ html[data-ui-style=classic] .classic-first-use p,html[data-ui-style=classic] .cl
 html[data-ui-style=classic] .classic-first-use{background:var(--classic-blue-soft);border-color:var(--classic-blue-line)}
 html[data-ui-style=classic] .classic-review-links button{font-size:max(.84em,13px)}
 html[data-ui-style=classic] .classic-home-hint{font-size:max(.8em,12px)}
-html[data-ui-style=classic] .practice-head{padding:20px 22px;margin:0;border:1px solid var(--line);background:var(--panel);border-radius:12px}
+html[data-ui-style=classic] .practice-head{padding:14px 20px;margin:0;border:1px solid var(--line);background:var(--panel);border-radius:12px}
 html[data-ui-style=classic] .practice-mode-tag{font-size:max(.76em,12px);letter-spacing:0}
 html[data-ui-style=classic] .practice-head h2{font-size:1.35em}
-html[data-ui-style=classic] .practice-head .practice-details{font-size:max(.83em,13px);gap:8px 18px}
+html[data-ui-style=classic] .practice-head .practice-details{font-size:max(.8em,13px)}
 html[data-ui-style=classic] .practice-timer{background:transparent;border:0;padding:0}
 html[data-ui-style=classic] .timer-display{gap:0;font-weight:600;color:var(--ink)}
 html[data-ui-style=classic] .practice-progress{font-size:max(.83em,13px)}
@@ -89,6 +89,7 @@ html[data-ui-style=classic] .pack-manager .pack-catalog-card{border-left-width:1
 .welcome-steps li{counter-increment:welcome;position:relative;padding-left:30px;min-width:0}
 .welcome-steps li:before{content:counter(welcome);position:absolute;left:0;top:2px;width:21px;height:21px;border:1px solid var(--line);border-radius:50%;font:600 12px/20px Consolas,monospace;text-align:center;color:var(--brand)}
 .welcome-steps strong{display:block;font-size:.9em;margin-bottom:7px}.welcome-steps span{font-size:.83em;line-height:1.7;color:var(--dim)}
+.framework-welcome{width:100%;max-width:800px;margin-inline:auto}
 html[data-ui-style=classic] .framework-welcome{padding:30px}
 html[data-ui-style=classic] .framework-welcome h2{font-size:1.6em;margin:0}
 html[data-ui-style=classic] .framework-welcome>p{max-width:46em;font-size:.92em;color:var(--dim);line-height:1.85;margin:14px 0 22px}
@@ -106,7 +107,7 @@ html[data-ui-style=classic] .foot{font-size:max(.75em,11px)}
  html[data-ui-style=classic] .study-page .card{padding:18px}
  html[data-ui-style=classic] .study-metric-groups{grid-template-columns:1fr;gap:10px}
  html[data-ui-style=classic] .study-metric-group{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px}
- html[data-ui-style=classic] .practice-head{padding:18px}
+ html[data-ui-style=classic] .practice-head{padding:12px 14px}
  html[data-ui-style=classic] .practice-head h2{font-size:1.18em}
  html[data-ui-style=classic] .practice-main{padding:18px}
  html[data-ui-style=classic] .framework-welcome{padding:22px}

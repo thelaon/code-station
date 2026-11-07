@@ -26,6 +26,27 @@
 .program-case summary{cursor:pointer}.program-case .program-text{font-family:Consolas,"Microsoft YaHei",monospace;font-size:.95em;padding:8px;background:var(--bg)}
 .program-verdict-pass{border-left:3px solid var(--ok);padding-left:12px}.program-verdict-wrong_output,.program-verdict-runtime_error{border-left:3px solid var(--bad);padding-left:12px}
 .program-status{font-size:.9em;margin:0}.program-stale{opacity:.7}.program-page> .program-panel{margin-top:18px}
+.program-run-panel{margin-top:15px;padding-top:13px;border-top:1px solid var(--line)}
+.program-input-details{margin-bottom:11px}
+.program-input-details summary{cursor:pointer;padding:4px 0;font-weight:650}
+.program-input-details .program-stdin{margin:7px 0 0;min-height:90px}
+.program-run-actions button{min-height:44px}
+.program-run-panel > .note{margin:8px 0}
+.program-run-panel > .program-status{margin:8px 0;color:var(--dim)}
+.program-run-panel [hidden]{display:none!important}
+.program-result{
+  margin-top:12px;padding:12px;min-width:0;background:var(--bg);
+  border:1px solid var(--line);border-inline-start:3px solid var(--brand);border-radius:6px;
+}
+.program-result[data-result=pass]{border-inline-start-color:var(--ok)}
+.program-result[data-result=error],.program-result[data-result=partial]{border-inline-start-color:var(--bad)}
+.program-result h3{margin:0 0 6px}
+.program-result .program-case:last-child{border-bottom:0}
+.program-case-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.program-case-outputs > div{min-width:0}
+.program-case-outputs .program-text{border:1px solid var(--line);background:var(--panel)}
+html[data-ui-style=nasa] .program-result{border-radius:0}
+@media(max-width:700px){.program-case-compare{grid-template-columns:1fr;gap:2px}}
 html[data-ui-style="nasa"] .program-head{background:var(--ns-hero);color:var(--ns-hero-ink);border-top:4px solid var(--brand);padding:24px 28px}
 html[data-ui-style="nasa"] .program-head .program-eyebrow{color:#bba66c}html[data-ui-style="nasa"] .program-head p{color:#d5cdb7}
 html[data-ui-style="nasa"] .program-art{background:#dce0c9;color:#263b32;border-color:#9da78d;box-shadow:8px 8px 0 #34483d}

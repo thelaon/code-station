@@ -33,15 +33,26 @@ function renderProgramPicker(host,animate){
   });table.appendChild(body);host.appendChild(scrollTable(table));
 }
 function programVerdict(s,o){return s&&s.programs&&s.programs[qid(o.pid,o.num)]||null;}
+function programResultSummary(verdict){
+  if(!verdict)return '未作答';
+  var summary=verdict.passed+' / '+verdict.total+' 个用例通过';
+  if(verdict.good)return summary;
+  if(verdict.compileError===true&&verdict.passed===0)return '编译错误 · '+summary;
+  if(Number.isInteger(verdict.timeoutCount)&&verdict.timeoutCount>0&&verdict.timeoutCount<=verdict.total-verdict.passed){
+    return '运行超时 '+verdict.timeoutCount+' 个用例 · '+summary;
+  }
+  return summary;
+}
 function renderDeferredProgram(cur,q){
   var owner=SESSION,key=qid(cur.pid,cur.num),main=el('div','deferred-program');
   main.appendChild(renderFigures(q,cur));main.appendChild(renderStem(q.statement||q.stem));
   [['输入说明',q.input],['输出说明',q.output],['数据范围',q.rangeNote]].forEach(function(pair){if(pair[1]){main.appendChild(el('h4',null,pair[0]));main.appendChild(el('pre','pack-text',pair[1]));}});
   (q.examples||[]).forEach(function(example,i){var d=el('details');d.appendChild(el('summary',null,'样例 '+(i+1)));d.appendChild(el('pre','pack-text','输入：\n'+example.stdin+'\n输出：\n'+example.stdout));main.appendChild(d);});
-  var label=el('label','pack-input-label','C 程序代码'),code=el('textarea','program-code deferred-code');code.setAttribute('aria-label','C程序代码');code.spellcheck=false;code.wrap='off';code.value=Object.prototype.hasOwnProperty.call(owner.exam.codes,key)?owner.exam.codes[key]:q.starter;code.readOnly=owner.done;label.appendChild(code);main.appendChild(label);
+  var label=el('label','pack-input-label','C 程序代码'),code=el('textarea','program-code deferred-code');code.setAttribute('aria-label','C程序代码');code.spellcheck=false;code.wrap='off';code.value=Object.prototype.hasOwnProperty.call(owner.exam.codes,key)?owner.exam.codes[key]:q.starter;code.readOnly=owner.done||timedExamAwaitingGrade(owner);label.appendChild(code);main.appendChild(label);
   var note=el('p','note',owner.done?'已交卷，代码只读。':'代码自动保存在本场答卷，交卷后统一核对公开用例。');main.appendChild(note);
   code.oninput=function(){if(!examCanEdit())return;if(new TextEncoder().encode(code.value).length>65536){note.textContent='代码超过64KiB，尚未保存，请缩短代码。';return;}owner.exam.codes[key]=code.value;save(LSKEY.session,owner);refreshProgress();note.textContent='代码已保存到本场答卷；交卷后批改。';};
-  if(owner.done){var verdict=programVerdict(owner,cur);main.appendChild(el('p','note',verdict?'公开用例 '+verdict.passed+' / '+verdict.total+' 通过 · 得分 '+fmtScore(verdict.score)+' 分':'未作答 · 0 分'));return main;}
+  if(owner.done){var verdict=programVerdict(owner,cur);main.appendChild(el('p','note',programResultSummary(verdict)+' · 得分 '+fmtScore(verdict?verdict.score:0)+' 分'));return main;}
+  if(timedExamAwaitingGrade(owner)){main.appendChild(el('p','note','答卷已锁定，重试批改后可查看成绩。'));return main;}
   var input=el('textarea','program-stdin');input.rows=3;input.setAttribute('aria-label','自测输入');input.value=q.examples&&q.examples.length?q.examples[0].stdin:'';main.appendChild(el('h4',null,'自测输入'));main.appendChild(input);
   var output=el('pre','pack-text'),run=btn('运行输入',async function(){
     if(!examCanEdit())return;run.disabled=true;output.textContent='正在运行…';
@@ -58,7 +69,12 @@ async function gradeDeferredPrograms(owner){
     var request={protocol:1,requestId:'paper-grade-'+Date.now()+'-'+i,questionId:q.id,kind:'submit',code:code,tests:q.tests.map(function(t){var test={id:t.id,stdin:t.stdin,expected:t.stdout};if(t.stdoutAlternatives)test.expectedAlternatives=t.stdoutAlternatives.slice();return test;})};
     var response=await CQuizProgrammingRuntime.execute(request),result=ProgrammingPage.inspectResponse(request,response);
     if(result.status==='tool_error'||result.items.some(function(item){return item.kind==='tool_error';}))throw new Error(result.diagnostics||'运行环境暂时不可用');
-    var good=result.status==='completed'&&result.total>0&&result.passed===result.total;results[key]={good:good,passed:result.passed,total:result.total,score:good?programPoints(q):0,code:code,at:Date.now()};
+    var good=result.status==='completed'&&result.total>0&&result.passed===result.total;
+    var verdict={good:good,passed:result.passed,total:result.total,score:good?programPoints(q):0,code:code,at:Date.now()};
+    if(result.status==='compile_error')verdict.compileError=true;
+    var timeoutCount=result.items.filter(function(item){return item.kind==='timeout';}).length;
+    if(timeoutCount)verdict.timeoutCount=timeoutCount;
+    results[key]=verdict;
   }
   return results;
 }
@@ -86,7 +102,9 @@ function renderProgramPractice(cur,q){
 function programResultRow(report,o,i,samePaper){
   var q=findP(o.pid,o.num);if(!q)return null;
   var r=programVerdict(report,o),row=el('tr','clickable');row.appendChild(el('td',null,(samePaper?'':papLabel(o.pid)+' ')+qLabel(o)));
-  row.appendChild(el('td',null,!r?'未提交':r.good?'✔ 对':'✘ 错'));row.appendChild(el('td',null,r?r.passed+' / '+r.total+' 个用例通过':'—'));
+  var exam=isExam(report);
+  var status=exam?fmtScore(r?r.score:0)+' 分':!r?'未提交':r.good?'✔ 对':'✘ 错';
+  row.appendChild(el('td',null,status));row.appendChild(el('td',null,exam||r?programResultSummary(r):'—'));
   row.appendChild(el('td',null,programPoints(q)?'满分 '+fmtScore(programPoints(q))+' 分':'按用例检查'));
   var rec=REC[qid(o.pid,o.num)];row.appendChild(el('td',null,rec?dueLabel(rec):'—'));row.appendChild(el('td','time-cell',questionTimeLabel(o,report)));
   var td=el('td'),b=btn('看原题',function(e){if(e)e.stopPropagation();openReportQuestion(report,i);});td.appendChild(b);row.appendChild(td);row.onclick=function(){openReportQuestion(report,i);};return row;

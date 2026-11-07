@@ -39,7 +39,8 @@ function normalizeLibraryPick(){if(!librarySupports(PICK.split))PICK.split=['cho
 function selectLibrary(id){
   if(id===ACTIVE_LIBRARY||!libraryList().some(function(p){return p.id===id;}))return;
   ACTIVE_LIBRARY=id;save(LIBRARY_KEY,id);normalizeLibraryPick();
-  NASA_PICK={year:null,paper:null,initialized:false};renderHome();
+  NASA_PICK={year:null,paper:null,initialized:false};
+  if(VIEW==='home')renderHome();
 }
 function packConflict(pack){
   if(PACKS.some(function(p){return p.id===pack.id;}))return '题包标识已存在。请在题库管理中更新；不同题库应使用新的标识。';
@@ -130,33 +131,58 @@ function makePackImportReport(entries,rows){
   return {format:'cquiz-pack-import-report',version:1,checkedAt:new Date().toISOString(),saved:false,notice:'这是导入前的本地格式与重复检查，不证明答案、解析或题源正确，也不是题包或学习备份。',selectionIssue:questionPackBatchConflict(selected),items:rows.map(function(row){return {file:row.name,state:row.state,message:row.message,selected:row.state==='ready'&&entries[row.index].checked!==false,id:row.pack?row.pack.id:null,title:row.pack?row.pack.title:null,revision:row.pack?row.pack.revision:null,summary:row.summary||null,errors:row.errors,warnings:row.warnings};})};
 }
 
+var packPageCleanup=null;
+function leaveQuestionPacks(){
+  if(packPageCleanup)packPageCleanup();
+  packPageCleanup=null;
+}
 function openQuestionPacks(){
   if(isExam()&&!SESSION.done){alert('请先交卷，再管理题包。');return;}
-  var M=modalBox('题库管理',true),box=M.box,epoch=PACK_EPOCH,token=0,reader=null,entries=[],rows=[],active=-1,busy=false;
-  box.classList.add('pack-manager','pack-workspace');box.style.maxWidth='1080px';
-  var remove=M.m.remove;M.m.remove=function(){token++;if(reader&&reader.readyState===1)reader.abort();remove();};
+  if(VIEW!=='packs')go('packs');
+}
+function renderQuestionPacks(){
+  renderNav();
+  var view=emptyNode(viewEl()),box=el('section','card pack-manager pack-workspace'),epoch=PACK_EPOCH,token=0,reader=null,entries=[],rows=[],busy=false;
+  view.appendChild(box);
+  packPageCleanup=function(){token++;if(reader&&reader.readyState===1)reader.abort();};
+  function backToHome(){
+    go('home');
+    var homeButton=document.querySelector('#nav button');
+    if(homeButton)homeButton.focus({preventScroll:true});
+  }
+  var intro=el('header','pack-workspace-heading');
+  var copy=el('div'),title=el('h2',null,'题库管理');
+  title.tabIndex=-1;
+  copy.appendChild(el('span','pack-workspace-kicker','LOCAL ARCHIVE'));
+  copy.appendChild(title);
+  copy.appendChild(el('p',null,'导入、更新和备份本机题库。'));
+  intro.appendChild(copy);
+  intro.appendChild(btn('返回选卷',backToHome));
+  box.appendChild(intro);
+  var importPanel=el('section','pack-import-panel');importPanel.setAttribute('aria-label','导入与更新题包');
   var shortcuts=el('div','toolbar pack-workspace-tabs');var manageTab=btn('管理已导入题库',function(){showPanel(true);}),importTab=btn('导入 / 更新题包',function(){showPanel(false);});shortcuts.appendChild(manageTab);shortcuts.appendChild(importTab);box.appendChild(shortcuts);
-  box.appendChild(el('p','note','选择本地 JSON 题包，检查预览后确认导入。请确认题目、答案和来源无误。'));
-  var modes=el('div','toolbar pack-input-switch'),fileMode=btn('文件导入',function(){switchMode(false);}),pasteMode=btn('粘贴JSON',function(){switchMode(true);});modes.appendChild(fileMode);modes.appendChild(pasteMode);box.appendChild(modes);
-  var fileArea=el('div','pack-file-area'),fileLabel=el('label','pack-input-label','选择本地题包JSON（可多选，最多20个文件）'),file=el('input');file.type='file';file.multiple=true;file.accept='.json,application/json';file.setAttribute('aria-label','选择本地题包JSON');fileLabel.appendChild(file);fileArea.appendChild(fileLabel);box.appendChild(fileArea);
-  var pasteArea=el('div','pack-paste-area'),pasteLabel=el('label','pack-input-label','粘贴完整的题包JSON'),paste=el('textarea');paste.rows=8;paste.spellcheck=false;paste.setAttribute('aria-label','粘贴题包JSON');paste.placeholder='粘贴以 { 开始的完整JSON题包；Word原文需要先整理成题包。';pasteLabel.appendChild(paste);pasteArea.appendChild(pasteLabel);pasteArea.appendChild(btn('校验并预览',function(){validateText();}));pasteArea.hidden=true;box.appendChild(pasteArea);
-  var examples=el('div','toolbar');examples.appendChild(btn('下载示例题包',function(){downloadQuestionPack(sampleQuestionPack());}));examples.appendChild(btn('下载混合题型示例',function(){downloadQuestionPack(sampleObjectivePack());}));examples.appendChild(btn('下载动态选项示例',function(){downloadQuestionPack(sampleDynamicPack());}));examples.appendChild(btn('下载连续小问示例',function(){downloadQuestionPack(sampleSubquestionPack());}));examples.appendChild(btn('下载程序题包示例',function(){downloadQuestionPack(sampleStudyPack());}));if(!BANK.framework)box.appendChild(examples);
-  var status=el('p','pack-status','选择文件或粘贴JSON后先检查；确认导入才会保存。');status.setAttribute('role','status');status.setAttribute('aria-live','polite');box.appendChild(status);
-  var batch=el('div','pack-batch');box.appendChild(batch);
-  var preview=el('div','pack-preview');box.appendChild(preview);
-  var summary=el('p','pack-selection-summary');summary.setAttribute('role','status');box.appendChild(summary);
+  importPanel.appendChild(el('p','note','选择本地 JSON 题包。通过格式检查后，可打开审阅界面核对和修改题目。'));
+  var modes=el('div','toolbar pack-input-switch'),fileMode=btn('文件导入',function(){switchMode(false);}),pasteMode=btn('粘贴JSON',function(){switchMode(true);});modes.appendChild(fileMode);modes.appendChild(pasteMode);importPanel.appendChild(modes);
+  var fileArea=el('div','pack-file-area');
+  var filePicker=createPackFilePicker({title:'导入本地题包',hint:'支持 JSON，每次最多选 20 个文件，每个不超过 2 MiB。',action:'选择题包',inputLabel:'选择本地题包JSON',multiple:true});
+  var file=filePicker.input;fileArea.appendChild(filePicker.control);importPanel.appendChild(fileArea);
+  var pasteArea=el('div','pack-paste-area'),pasteLabel=el('label','pack-input-label','粘贴完整的题包JSON'),paste=el('textarea');paste.rows=8;paste.spellcheck=false;paste.setAttribute('aria-label','粘贴题包JSON');paste.placeholder='粘贴以 { 开始的完整JSON题包；Word原文需要先整理成题包。';pasteLabel.appendChild(paste);pasteArea.appendChild(pasteLabel);pasteArea.appendChild(btn('检查题包',function(){validateText();}));pasteArea.hidden=true;importPanel.appendChild(pasteArea);
+  var examples=el('div','toolbar');examples.appendChild(btn('下载示例题包',function(){downloadQuestionPack(sampleQuestionPack());}));examples.appendChild(btn('下载混合题型示例',function(){downloadQuestionPack(sampleObjectivePack());}));examples.appendChild(btn('下载动态选项示例',function(){downloadQuestionPack(sampleDynamicPack());}));examples.appendChild(btn('下载连续小问示例',function(){downloadQuestionPack(sampleSubquestionPack());}));examples.appendChild(btn('下载程序题包示例',function(){downloadQuestionPack(sampleStudyPack());}));if(!BANK.framework)importPanel.appendChild(examples);
+  var status=el('p','pack-status','选择文件或粘贴 JSON 后先做格式检查。使用前请审阅题目。');status.setAttribute('role','status');status.setAttribute('aria-live','polite');importPanel.appendChild(status);
+  var batch=el('div','pack-batch');importPanel.appendChild(batch);
+  var summary=el('p','pack-selection-summary');summary.setAttribute('role','status');importPanel.appendChild(summary);
   var confirmImport=btn('确认导入',function(){
     if(busy)return;
-    if(epoch!==PACK_EPOCH){clearDraft('题库状态已变化，请关闭后重新打开导入窗口。');return;}
+    if(epoch!==PACK_EPOCH){clearDraft('题库状态已变化，请重新进入题库管理。');return;}
     var packs=selected();var conflict=questionPackBatchConflict(packs);if(conflict){status.textContent=conflict;return;}
-    try{var imported=installQuestionPacks(packs);M.m.remove();activate(imported[0].id);}
+    try{var imported=installQuestionPacks(packs);selectLibrary(imported[0].id);go('packs');
+      viewEl().querySelector('.pack-installed .pack-status').textContent='已导入 '+imported.length+' 个题包。使用前请先点「审阅题目」，核对题干、答案和解析。';}
     catch(e){status.textContent=e.message;}
   },true),reportButton=btn('下载检查报告',function(){downloadQuestionPack(makePackImportReport(entries,rows),'题包导入检查报告.json');});
-  confirmImport.disabled=true;reportButton.disabled=true;var bottom=el('div','toolbar pack-import-bottom');bottom.appendChild(confirmImport);bottom.appendChild(reportButton);bottom.appendChild(btn('关闭',function(){M.m.remove();}));box.appendChild(bottom);
-  function activate(id){ACTIVE_LIBRARY=id;save(LIBRARY_KEY,id);NASA_PICK={year:null,paper:null,initialized:false};normalizeLibraryPick();go('home');}
-  function alive(current){return current===token&&epoch===PACK_EPOCH&&M.m.isConnected;}
-  function clearDraft(message){token++;if(reader&&reader.readyState===1)reader.abort();entries=[];rows=[];active=-1;busy=false;emptyNode(batch);emptyNode(preview);summary.textContent='';confirmImport.disabled=true;reportButton.disabled=true;status.textContent=message;}
-  function switchMode(isPaste){file.value='';clearDraft('输入方式已切换，本次预览已清除。确认导入才会保存。');fileArea.hidden=isPaste;pasteArea.hidden=!isPaste;fileMode.setAttribute('aria-pressed',String(!isPaste));pasteMode.setAttribute('aria-pressed',String(isPaste));}
+  confirmImport.disabled=true;reportButton.disabled=true;var bottom=el('div','toolbar pack-import-bottom');bottom.appendChild(confirmImport);bottom.appendChild(reportButton);importPanel.appendChild(bottom);
+  function alive(current){return current===token&&epoch===PACK_EPOCH&&box.isConnected;}
+  function clearDraft(message){token++;if(reader&&reader.readyState===1)reader.abort();entries=[];rows=[];busy=false;emptyNode(batch);summary.textContent='';confirmImport.disabled=true;reportButton.disabled=true;status.textContent=message;}
+  function switchMode(isPaste){filePicker.reset();clearDraft('输入方式已切换，本次预览已清除。确认导入才会保存。');fileArea.hidden=isPaste;pasteArea.hidden=!isPaste;fileMode.setAttribute('aria-pressed',String(!isPaste));pasteMode.setAttribute('aria-pressed',String(isPaste));}
   fileMode.setAttribute('aria-pressed','true');pasteMode.setAttribute('aria-pressed','false');
   function selected(){return rows.filter(function(row){return row.state==='ready'&&entries[row.index].checked!==false;}).map(function(row){return row.pack;});}
   function updateSelection(){
@@ -169,57 +195,36 @@ function openQuestionPacks(){
     rows=inspectQuestionPackBatch(entries);emptyNode(batch);
     rows.forEach(function(row,i){
       var item=el('section','pack-batch-item pack-state-'+row.state),head=el('div','pack-batch-head'),label=el('label','pack-batch-label'),checkbox=el('input');checkbox.type='checkbox';checkbox.checked=row.state==='ready'&&entries[i].checked!==false;checkbox.disabled=row.state!=='ready';checkbox.setAttribute('aria-label','导入 '+(row.pack?row.pack.title:row.name));checkbox.onchange=function(){entries[i].checked=checkbox.checked;updateSelection();};label.appendChild(checkbox);label.appendChild(el('strong',null,row.pack?row.pack.title:row.name));head.appendChild(label);
-      var actions=el('div','toolbar');var view=btn('预览',function(){active=i;renderPreview(true);});view.disabled=!row.pack;view.setAttribute('aria-label','预览 '+(row.pack?row.pack.title:row.name));actions.appendChild(view);actions.appendChild(btn('移除',function(){entries.splice(i,1);active=-1;renderBatch();}));head.appendChild(actions);item.appendChild(head);item.appendChild(el('p','note',row.name+(row.pack?' · '+row.pack.id+' · 修订'+row.pack.revision:'')));item.appendChild(el('p','pack-row-message',row.message));
-      if(row.pack&&row.state==='conflict'&&PACKS.some(function(p){return p.id===row.pack.id&&row.pack.revision>p.revision;})&&(groupsForUpdate(rows,row.pack.id)===1)){actions.appendChild(btn('查看更新',function(){M.m.remove();openPackUpdate(row.pack);}));}
+      var actions=el('div','toolbar');if(row.pack){var review=btn('审阅题目',function(){reviewEntry(i,entries[i],row.pack);});review.classList.add('pack-review-open');review.setAttribute('aria-label','审阅题目 '+row.pack.title);actions.appendChild(review);}actions.appendChild(btn('移除',function(){entries.splice(i,1);renderBatch();}));head.appendChild(actions);item.appendChild(head);item.appendChild(el('p','note',row.name+(row.pack?' · '+row.pack.id+' · 修订'+row.pack.revision:'')));item.appendChild(el('p','pack-row-message',row.message));
+      if(row.pack&&row.state==='conflict'&&PACKS.some(function(p){return p.id===row.pack.id&&row.pack.revision>p.revision;})&&(groupsForUpdate(rows,row.pack.id)===1)){actions.appendChild(btn('查看更新',function(){openPackUpdate(row.pack);}));}
       if(row.summary){var counts={single:0,multiple:0,blank:0,code_blank:0,fix:0,program:0};row.pack.papers.forEach(function(p){p.questions.forEach(function(q){counts[q.type||'single']++;});});item.appendChild(el('p','note',row.summary.papers+' 套 / '+row.summary.questions+' 题 / '+row.summary.images+' 张图 · 单选 '+counts.single+' · 多选 '+counts.multiple+' · 填空 '+counts.blank+' · 程序填空 '+counts.code_blank+' · 改错 '+counts.fix+' · 编程 '+counts.program));}
       if(row.errors.length){var errors=issueList('需要修正',row.errors,'pack-issues');errors.open=true;item.appendChild(errors);}
       if(row.warnings.length)item.appendChild(issueList('建议人工核对（不阻止导入）',row.warnings,'pack-warnings'));
       batch.appendChild(item);
     });
-    var valid=rows.filter(function(row){return !!row.pack;});if(active<0||!rows[active]||!rows[active].pack)active=valid.length?valid[0].index:-1;renderPreview();updateSelection();
+    updateSelection();
   }
-  function renderPreview(expanded){
-    emptyNode(preview);if(active<0||!rows[active]||!rows[active].pack)return;
-    var pack=rows[active].pack;preview.appendChild(el('h3',null,'题包预览 · '+pack.title));
-    var disclosure=el('details','pack-preview-disclosure'),heading=el('summary'),caption=el('strong',null,'展开题目预览'),count=pack.papers.reduce(function(n,p){return n+p.questions.length;},0),body=el('div','pack-preview-body'),initialized=false;
-    heading.appendChild(caption);heading.appendChild(el('span','note',pack.papers.length+' 套试卷 · '+count+' 题 · 含参考答案'));disclosure.appendChild(heading);disclosure.appendChild(body);preview.appendChild(disclosure);
-    function updateDisclosure(){caption.textContent=disclosure.open?'收起题目预览':'展开题目预览';if(disclosure.open&&!initialized){initialized=true;renderContents();}}
-    disclosure.ontoggle=updateDisclosure;disclosure.open=!!expanded;updateDisclosure();
-    function renderContents(){
-    body.appendChild(el('p','note',pack.source));if(pack.format==='cquiz-study-pack')body.appendChild(el('p','note','程序填空、改错可计入练习与考试；编程题进入普通练习、复习和统计；暂不计入模拟考试。'));
-    var tools=el('div','pack-preview-tools'),label=el('label',null,'预览试卷 '),select=el('select');select.setAttribute('aria-label','预览试卷');pack.papers.forEach(function(p,i){var op=el('option',null,p.title+' · '+fmtScore(p.questions.reduce(function(n,q){return n+(q.type==='program'?0:QuestionPackSchema.points(p,q));},0))+'分（考试计分）');op.value=String(i);select.appendChild(op);});label.appendChild(select);tools.appendChild(label);
-    var typeLabel=el('label',null,'题型 '),type=el('select');type.setAttribute('aria-label','预览题型');[['all','全部'],['single','单选'],['multiple','多选'],['blank','填空'],['code_blank','程序填空'],['fix','改错'],['program','编程']].forEach(function(a){var op=el('option',null,a[1]);op.value=a[0];type.appendChild(op);});typeLabel.appendChild(type);tools.appendChild(typeLabel);
-    var queryLabel=el('label',null,'查找 '),query=el('input');query.type='search';query.placeholder='题干、选项、知识点或标签';query.setAttribute('aria-label','查找预览题目');queryLabel.appendChild(query);tools.appendChild(queryLabel);
-    var jumpLabel=el('label',null,'题号 '),jump=el('input');jump.type='number';jump.min='1';jump.max='99999';jump.setAttribute('aria-label','定位预览题号');jumpLabel.appendChild(jump);tools.appendChild(jumpLabel);
-    var locate=btn('定位',function(){var no=Number(jump.value),qs=filtered(),idx=qs.findIndex(function(q){return q.num===no;});if(!Number.isInteger(no)||idx<0){feedback.textContent='当前试卷和筛选条件下没有这个题号，请调整条件。';return;}pageNum=Math.floor(idx/5);showPage();var target=list.querySelector('[data-preview-num="'+no+'"]');if(target)target.scrollIntoView({block:'nearest'});});tools.appendChild(locate);body.appendChild(tools);
-    var feedback=el('p','note pack-preview-feedback');feedback.setAttribute('role','status');body.appendChild(feedback);var list=el('div','pack-preview-list'),pager=el('div','toolbar pack-preview-pager'),pageNum=0;body.appendChild(list);body.appendChild(pager);
-    function filtered(){var p=pack.papers[Number(select.value)||0],term=query.value.trim().toLowerCase();return p.questions.filter(function(q){return (type.value==='all'||(q.type||'single')===type.value)&&(!term||[q.stem,(QuestionPackSchema.groupOf(p,q)||{}).stem||'',q.topic,q.tags.join(' '),q.options?Object.keys(q.options).map(function(k){return q.options[k];}).join(' '):''].join(' ').toLowerCase().indexOf(term)>=0);});}
-    function showPage(){
-      emptyNode(list);emptyNode(pager);var p=pack.papers[Number(select.value)||0],qs=filtered(),total=Math.ceil(qs.length/5);pageNum=Math.min(pageNum,Math.max(0,total-1));feedback.textContent='当前 '+qs.length+' / '+p.questions.length+' 题；预览包含参考答案，请核对后再导入。';
-      if(!qs.length){list.appendChild(el('p','note','没有符合条件的题目。'));return;}
-      qs.slice(pageNum*5,pageNum*5+5).forEach(function(q){
-        var item=el('section','pack-question');item.setAttribute('data-preview-num',String(q.num));item.appendChild(el('h4',null,'第'+QuestionPackSchema.questionNumber(q,p)+'题 · '+({blank:'填空',multiple:'多选',code_blank:'程序填空',fix:'改错',program:'编程'}[q.type]||'单选')+' · '+(q.type==='program'?'练习 '+fmtScore(QuestionPackSchema.points(p,q))+'分，不计考试分':fmtScore(QuestionPackSchema.points(p,q))+'分')));var group=QuestionPackSchema.groupOf(p,q);if(group){var material=el('section','shared-material');material.appendChild(el('div','shared-material-title','共用题干 · 第'+group.num+'题'));material.appendChild(el('pre','pack-text',group.stem));group.images.forEach(function(im){var img=el('img');img.src=im.data;img.alt=im.name;material.appendChild(img);});item.appendChild(material);}item.appendChild(el('pre','pack-text',q.stem));
-        q.images.forEach(function(im){var img=el('img');img.src=im.data;img.alt=im.name;item.appendChild(img);});
-        if(q.type==='code_blank'){item.appendChild(el('pre','pack-text',q.code));q.blanks.forEach(function(b){item.appendChild(el('p','note','第'+b.num+'空：'+b.answers.join(' / ')));});}
-        else if(q.type==='fix'){item.appendChild(el('pre','pack-text',q.code));q.faults.forEach(function(f){item.appendChild(el('p','note','第'+f.line+'行：'+f.original+' → '+f.fixed));});item.appendChild(el('p','note','测试点 '+q.tests.length+' 组'));}
-        else if(q.type==='program'){item.appendChild(el('pre','pack-text',q.starter));item.appendChild(el('p','note',q.input+'\n'+q.output+' · 公开测试 '+q.tests.length+' 组'));}
-        else if(q.type==='blank')q.blanks.forEach(function(b,i){item.appendChild(el('p','note','第'+(i+1)+'空：'+b.answers.join(' / ')+' · '+(b.mode==='number'?'数值，绝对误差 '+b.tolerance:'文本，忽略首尾空白')));});else QuestionPackSchema.optionKeys(q).forEach(function(k){item.appendChild(el('pre','pack-text',k+'. '+q.options[k]));});
-        item.appendChild(el('p','note',(q.type==='blank'?'普通填空':q.type==='multiple'?'多选 · 答案 '+q.answer.join('、'):q.type==='single'||!q.type?'单选 · 答案 '+q.answer:'程序题 · '+q.type)+' · '+q.topic+' · '+q.tags.join(' / ')));item.appendChild(el('pre','pack-text',q.analysis));list.appendChild(item);
-      });
-      var prev=btn('上一页',function(){pageNum--;showPage();}),next=btn('下一页',function(){pageNum++;showPage();});prev.disabled=pageNum===0;next.disabled=pageNum+1>=total;pager.appendChild(prev);pager.appendChild(el('span',null,(pageNum+1)+' / '+total));pager.appendChild(next);
-    }
-    select.onchange=type.onchange=function(){pageNum=0;showPage();};query.oninput=function(){pageNum=0;showPage();};jump.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();locate.click();}};showPage();
-    }
+  function reviewEntry(index,entry,pack){
+    var current=token;
+    openPackQuestionReview(pack,{apply:function(checked,dialog){
+      if(!alive(current)||entries[index]!==entry)throw new Error('待导入题包已变化，请重新选择。');
+      entry.result=checked;
+      dialog.m.remove();
+      status.textContent='审阅修改已应用，请确认导入后再使用题包。';
+      renderBatch();
+      var button=batch.children[index].querySelector('.pack-review-open');
+      if(button)button.focus();
+    }});
   }
   function checkImages(result,current){
     if(!result.ok||!result.summary.images)return Promise.resolve(result);
     status.textContent='正在检查插图…';return decodeQuestionPackImages(result.pack).then(function(errors){if(!alive(current))return null;return errors.length?{ok:false,errors:errors}:result;});
   }
-  function finish(current){if(!alive(current))return;busy=false;status.textContent='检查完成：'+entries.length+' 项。通过项可预览、勾选；失败及冲突项不会导入。';renderBatch();}
+  function finish(current){if(!alive(current))return;busy=false;status.textContent='检查完成，共 '+entries.length+' 项。使用前请点「审阅题目」，核对题干、答案和解析。';renderBatch();}
   function validateText(){
     clearDraft('正在检查粘贴的题包…');var current=token;busy=true;var result=QuestionPackSchema.parse(paste.value);checkImages(result,current).then(function(checked){if(!alive(current)||!checked)return;entries=[{name:'粘贴的JSON',result:checked,checked:true}];finish(current);});
   }
-  paste.oninput=function(){clearDraft('内容已变更，请点击“校验并预览”重新检查。');};
+  paste.oninput=function(){clearDraft('内容已变更，请点击“检查题包”重新检查。');};
   file.onchange=function(){
     clearDraft('正在读取本地题包…');var files=Array.prototype.slice.call(file.files||[]),current=token;if(!files.length){status.textContent='尚未选择文件。';return;}if(files.length>20){status.textContent='一次最多选择20个文件，请减少文件数。';return;}busy=true;
     function next(i){
@@ -229,16 +234,13 @@ function openQuestionPacks(){
       reader=new FileReader();reader.onload=function(){receive(QuestionPackSchema.parse(reader.result));};reader.onerror=function(){receive({ok:false,errors:[{path:'题包文件',message:'文件读取失败，请重新选择。'}]});};reader.readAsText(f,'utf-8');
     }next(0);
   };
-  var stored=renderPackManager(box,M,function(){epoch=PACK_EPOCH;file.value='';clearDraft('题库状态已更新，本次待导入预览已清除。请选择题包重新检查。');});
-  box.appendChild(el('p','note','题包保存在当前浏览器。迁移前分别备份题库、学习记录和代码草稿；恢复时先恢复题库。Word、PDF需先转换为题包JSON。'));
-  var topClose=btn('关闭题库管理',function(){M.m.remove();});topClose.classList.add('pack-workspace-close');shortcuts.appendChild(topClose);
-  var intro=el('div','pack-workspace-heading');intro.appendChild(el('span','pack-workspace-kicker','LOCAL ARCHIVE'));intro.appendChild(el('h3',null,'题库管理'));intro.appendChild(el('p',null,'导入、更新和备份本机题库。'));box.insertBefore(intro,shortcuts);
-  var importPanel=el('section','pack-import-panel');importPanel.setAttribute('aria-label','导入与更新题包');
-  Array.prototype.slice.call(box.children).forEach(function(n){if(n!==box.firstChild && n!==intro && n!==shortcuts && n!==stored)importPanel.appendChild(n);});
+  var stored=renderPackManager(box,function(){epoch=PACK_EPOCH;filePicker.reset();clearDraft('题库状态已更新，本次待导入预览已清除。请选择题包重新检查。');});
+  importPanel.appendChild(el('p','note','题包保存在当前浏览器。迁移前分别备份题库、学习记录和代码草稿；恢复时先恢复题库。Word、PDF需先转换为题包JSON。'));
   box.appendChild(importPanel);
   function showPanel(manage){stored.hidden=!manage;importPanel.hidden=manage;manageTab.setAttribute('aria-pressed',String(manage));importTab.setAttribute('aria-pressed',String(!manage));}
   showPanel(PACKS.length>0);
-
+  $('#foot').textContent=footText('题库保存在本机，可导出备份。');
+  title.focus({preventScroll:true});
 }
 function groupsForUpdate(rows,id){return rows.filter(function(r){return r.pack&&r.pack.id===id;}).length;}
 

@@ -37,6 +37,8 @@ def main():
         files['PUBLIC-MANIFEST.json']=(json.dumps({'app_version':version,'profile':'public','scope':'application HTML has no embedded questions; includes optional independently authored external demo JSON; no Git history or private evidence','files':public['files']},ensure_ascii=False,indent=2)+'\n').encode('utf-8')
         source_result=write_zip(dist/('code-station-'+version+'-public-candidate.zip'),'code-station-'+version,files)
     user_files={'做题器.html':(user_dir/'做题器.html').read_bytes(),'使用说明.md':(ROOT/'docs/发行版使用说明.md').read_bytes()}
+    release_notes=ROOT/'docs'/('RELEASE-NOTES-'+version+'.md')
+    if release_notes.is_file():user_files['版本更新说明.md']=release_notes.read_bytes()
     for name in ['LICENSE','LICENSE-SCOPE.md','COPYRIGHT.md']:user_files[name]=(ROOT/name).read_bytes()
     for name in ['TCC-COPYING.txt','WABT-LICENSE.txt','WABT-THIRD-PARTY-NOTICES.txt','LOCAL-MODIFICATIONS-NOTICE.txt']:user_files['licenses/'+name]=(ROOT/'licenses'/name).read_bytes()
     demo={name:(ROOT/'examples/demo-bank'/name).read_bytes() for name in ['示例题库.json','README.md','LICENSE','参考答案.md']}

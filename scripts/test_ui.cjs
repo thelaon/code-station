@@ -16,6 +16,21 @@ await p.evaluate(()=>__cquiz.startPaper('pack:ui-test:dated'));const ruler=p.loc
 await p.evaluate(()=>__cquiz.startPaper('pack:ui-test:undated'));assert.equal(await ruler.getAttribute('data-step'),'20');assert.ok(await p.locator('.progress-tick').count()<14);const dim=await p.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(dim.scroll<=dim.client+1,JSON.stringify({style,theme,width,dim}));report.layouts.push({style,theme,width});
 }
 report.checks.push('two styles, year/no-year groups, common archive icon, animated tabs/close, adaptive ruler and in-place progress');
+for(const style of ['classic','nasa']){
+  await p.setViewportSize({width:390,height:844});
+  await p.evaluate(style=>{__cquiz.setPREF({uiStyle:style,theme:'dark',motion:false});__cquiz.applyPref();__cquiz.startPaper('pack:ui-test:dated');},style);
+  const jump=p.getByRole('button',{name:'跳到答题卡',exact:true});
+  await jump.focus();await p.keyboard.press('Enter');
+  assert.equal(await p.evaluate(()=>document.activeElement.id),'practice-answer-card');
+  await p.keyboard.press('Tab');assert.equal(await p.evaluate(()=>document.activeElement.getAttribute('aria-current')),'true');
+  await p.keyboard.press('Tab');await p.keyboard.press('Enter');
+  assert.equal(await p.evaluate(()=>__cquiz.getSESSION().idx),1);
+  assert.equal(await p.evaluate(()=>document.activeElement.id),'practice-question');
+  await p.getByRole('button',{name:'返回当前题',exact:true}).click();
+  assert.equal(await p.evaluate(()=>document.activeElement.id),'practice-question');
+  await p.setViewportSize({width:1440,height:1000});assert.equal(await jump.isVisible(),false);
+}
+report.checks.push('both styles expose mobile answer-card shortcuts, native keyboard cells and focus return');
 await p.setViewportSize({width:1440,height:1000});await p.evaluate(()=>{__cquiz.setPREF({uiStyle:'nasa',theme:'light',fontSize:16,motion:false});__cquiz.applyPref();__cquiz.go('home');__cquiz.openSettings();});await p.keyboard.press('Escape');assert.equal(await p.locator('.modal').count(),0);await p.emulateMedia({reducedMotion:'reduce'});await p.evaluate(()=>{__cquiz.setPREF({motion:true});__cquiz.applyPref();__cquiz.openHelp();});await p.getByRole('tab').nth(1).click();assert.equal(await p.getByRole('tabpanel').evaluate(e=>getComputedStyle(e).animationName),'none');await p.keyboard.press('Escape');assert.equal(await p.locator('.modal').count(),0);await p.emulateMedia({reducedMotion:'no-preference'});report.checks.push('motion off and reduced motion skip closing and category animation');
 await p.evaluate(()=>{window.preExamReview=JSON.stringify(__cquiz.getREC());__cquiz.startExam('pack:ui-test:dated',60);});assert.equal(await p.locator('.header-tools').isVisible(),false);assert.equal(await p.locator('#nav button').count(),0);await p.locator('.opt').first().click();assert.equal(await p.locator('.answer-brief,.choice-analysis').count(),0);assert.equal(await p.locator('.exam-sheet .answered').count(),1);assert.equal(await p.evaluate(()=>JSON.stringify(__cquiz.getREC())===preExamReview),true);await p.evaluate(()=>__cquiz.go('stats'));assert.equal(await p.evaluate(()=>__cquiz.getVIEW()),'practice');await p.getByRole('button',{name:'放弃考试',exact:true}).click();assert.equal(await p.evaluate(()=>__cquiz.getSESSION()),null);assert.equal(await p.evaluate(()=>__cquiz.getEXAMS().length),0);assert.equal(await p.evaluate(()=>JSON.stringify(__cquiz.getREC())===preExamReview),true);assert.equal(await p.locator('.header-tools').isVisible(),true);
 await p.evaluate(()=>__cquiz.startExam('pack:ui-test:dated',60));await p.locator('.opt').first().click();await p.getByRole('button',{name:'交卷',exact:true}).click();assert.equal(await p.evaluate(()=>__cquiz.getEXAMS().length),1);assert.equal(await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()).score),1);assert.equal(await p.locator('.header-tools').isVisible(),true);report.checks.push('exam answers remain ungraded, no navigation escape, abandon leaves no score, submit grades once');

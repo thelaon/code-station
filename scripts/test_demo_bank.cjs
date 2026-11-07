@@ -8,7 +8,7 @@ const report={schema:checked.summary,answered:[],checks:[],errors:[],requests:[]
 const code='#include <stdio.h>\nint main(void){int a,b;if(scanf("%d%d",&a,&b)!=2)return 0;printf("%d",a+b);return 0;}';
 (async()=>{const browser=await chromium.launch({channel:process.env.CQUIZ_BROWSER||'msedge',headless:true});try{
  const c=await browser.newContext({acceptDownloads:true,viewport:{width:1440,height:1000}});await c.addInitScript(()=>window.__CQUIZ_TEST__=true);await c.route(/^https?:/,r=>{report.requests.push(r.request().url());return r.abort();});const p=await c.newPage();p.on('pageerror',e=>report.errors.push(e.message));p.on('dialog',d=>d.accept());await p.goto(pathToFileURL(app).href);await p.waitForFunction(()=>window.__cquiz);
- await p.evaluate(()=>__cquiz.questionPacks.open());await p.getByRole('button',{name:'导入 / 更新题包',exact:true}).click();await p.getByRole('button',{name:'粘贴JSON',exact:true}).click();await p.getByRole('textbox',{name:'粘贴题包JSON',exact:true}).fill(raw);await p.getByRole('button',{name:'校验并预览',exact:true}).click();await p.getByRole('button',{name:'确认导入',exact:true}).click();await p.keyboard.press('Escape');assert.equal(await p.evaluate(()=>__cquiz.questionPacks.installed().length),1);assert.equal(await p.locator('.nasa-paper,.classic-paper-table tbody tr').count(),5);report.checks.push('one real import adds five undated papers and 27 questions');
+ await p.evaluate(()=>__cquiz.questionPacks.open());await p.getByRole('button',{name:'导入 / 更新题包',exact:true}).click();await p.getByRole('button',{name:'粘贴JSON',exact:true}).click();await p.getByRole('textbox',{name:'粘贴题包JSON',exact:true}).fill(raw);await p.getByRole('button',{name:'检查题包',exact:true}).click();await p.getByRole('button',{name:'确认导入',exact:true}).click();assert.equal(await p.evaluate(()=>__cquiz.questionPacks.installed().length),1);await p.getByRole('button',{name:'进入题库',exact:true}).click();assert.equal(await p.locator('.nasa-paper,.classic-paper-table tbody tr').count(),5);report.checks.push('one real import adds five undated papers and 27 questions');
  async function submit(q){
   if(q.type==='single')await p.locator('.opt').nth(Object.keys(q.options).indexOf(q.answer)).click();
   else if(q.type==='multiple'){for(const answer of q.answer)await p.locator('.opt[data-letter="'+answer+'"]').click();await p.getByRole('button',{name:'提交',exact:true}).click();}
@@ -31,6 +31,28 @@ const code='#include <stdio.h>\nint main(void){int a,b;if(scanf("%d%d",&a,&b)!=2
  }
  assert.equal(report.answered.length,27);report.checks.push('all 27 supplied answers earn full points; both embedded diagrams decode; continuous display numbers match');report.checks.push('program sum compiles and passes two cases; GBK fix compiles and passes both Chinese-byte cases');
  await p.evaluate(()=>{__cquiz.startFullPaper('pack:code-station-demo:basic');});await p.locator('.opt').first().click();assert.equal(await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()).score),0);await p.evaluate(()=>{__cquiz.startFullPaper('pack:code-station-demo:basic');__cquiz.getSESSION().idx=6;__cquiz.renderPractice();});await p.locator('input.blk').nth(0).fill('1010');await p.locator('input.blk').nth(1).fill('0');await p.getByRole('button',{name:'提交',exact:true}).click();assert.equal(await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()).score),1);report.checks.push('wrong answer scores zero; one of two blanks scores one point');
- await p.evaluate(()=>__cquiz.startExam('pack:code-station-demo:programming',60));assert.equal(await p.evaluate(()=>__cquiz.getSESSION().order.length),2);assert.equal(await p.evaluate(()=>__cquiz.getSESSION().order.some(o=>o.program)),false);assert.equal(await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()).full),4);await p.locator('input.blk').fill('7');await p.getByRole('button',{name:'下一题 ›',exact:true}).click();const fix=pack.papers.find(x=>x.id==='programming').questions.find(x=>x.type==='fix');const lines=fix.code.split('\n');lines[fix.faults[0].line-1]=fix.faults[0].fixed+' /* fixed */';await p.locator('.fix-ta').fill(lines.join('\n'));assert.equal(await p.locator('.answer-feedback,.fix-rep').count(),0);await p.getByRole('button',{name:'交卷',exact:true}).click();await p.waitForFunction(()=>__cquiz.getSESSION().done);assert.equal(await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()).score),4);assert.equal(await p.evaluate(()=>__cquiz.getEXAMS().length),1);await p.reload();await p.waitForFunction(()=>window.__cquiz);assert.equal(await p.evaluate(()=>__cquiz.questionPacks.installed().length),1);assert.equal(await p.evaluate(()=>__cquiz.getEXAMS().length),1);report.checks.push('programming paper exam excludes program task, defers feedback, scores four and survives reload');
+ await p.evaluate(()=>__cquiz.startExam('pack:code-station-demo:programming',60));
+ assert.equal(await p.evaluate(()=>__cquiz.getSESSION().order.length),3);
+ assert.equal(await p.evaluate(()=>__cquiz.getSESSION().order.filter(o=>o.program).length),1);
+ assert.equal(await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()).full),6);
+ await p.locator('input.blk').fill('7');
+ await p.getByRole('button',{name:'下一题 ›',exact:true}).click();
+ const fix=pack.papers.find(x=>x.id==='programming').questions.find(x=>x.type==='fix');
+ const lines=fix.code.split('\n');
+ lines[fix.faults[0].line-1]=fix.faults[0].fixed+' /* fixed */';
+ await p.locator('.fix-ta').fill(lines.join('\n'));
+ await p.getByRole('button',{name:'下一题 ›',exact:true}).click();
+ await p.locator('.deferred-code').fill(code);
+ assert.equal(await p.locator('.answer-feedback,.fix-rep,.program-result').count(),0);
+ await p.getByRole('button',{name:'交卷',exact:true}).click();
+ await p.waitForFunction(()=>__cquiz.getSESSION().done);
+ assert.equal(await p.evaluate(()=>__cquiz.sessionStat(__cquiz.getSESSION()).score),6);
+ assert.equal(await p.evaluate(()=>Object.values(__cquiz.getSESSION().programs)[0].passed),2);
+ assert.equal(await p.evaluate(()=>__cquiz.getEXAMS().length),1);
+ await p.reload();
+ await p.waitForFunction(()=>window.__cquiz);
+ assert.equal(await p.evaluate(()=>__cquiz.questionPacks.installed().length),1);
+ assert.equal(await p.evaluate(()=>__cquiz.getEXAMS().length),1);
+ report.checks.push('timed demo includes the program task, grades all three questions on submit and preserves the 6-point result');
  assert.deepEqual(report.errors,[]);assert.deepEqual(report.requests,[]);console.log(JSON.stringify(report));await c.close();
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
