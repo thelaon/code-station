@@ -4,10 +4,10 @@
 
 ## 下载与使用
 
-此源码构建为 **v0.2.1 并入测试版**。公开下载入口仍指向 v0.2.0。
+当前版本：**v0.2.1**。
 
-1. 从[Releases](https://github.com/thelaon/code-station/releases/tag/v0.2.0)下载`code-station-v0.2.0.zip`并解压。
-2. 双击“做题器.html”。在“导入 / 管理题包”中选择JSON题包，预览后确认导入。
+1. 从[Releases](https://github.com/thelaon/code-station/releases/tag/v0.2.1)下载`code-station-v0.2.1.zip`并解压。
+2. 双击“做题器.html”。在「题库管理」中选择 JSON 题包，审阅后确认导入。
 3. 可先导入随附“示例题包/示例题库.json”体验；顶部“?”提供完整说明。
 
 页面不预装题目。随附示例由本项目独立编写，共5卷27题，含六种题型、两张插图和连续小问，不是考试真题；详见[示例说明](examples/demo-bank/README.md)。Word、PDF和ZIP不能直接作为题包导入。
