@@ -4,6 +4,50 @@ var ProgrammingPage=(function(){
   var KEY='cqframe.programming.v1',MAX_CODE=65536,MAX_INPUT=16384,MAX_OUTPUT=65536,encoder=null;
   function bytes(s){if(!encoder)encoder=new TextEncoder();return encoder.encode(s).length;}
   function normalize(s){return s.replace(/\r\n/g,'\n').replace(/\n$/,'');}
+  function makeTest(c){
+    var test={id:c.id,stdin:c.stdin,expected:c.stdout};
+    if(c.stdoutAlternatives)test.expectedAlternatives=c.stdoutAlternatives.slice();
+    if(c.inputFiles)test.inputFiles=c.inputFiles;
+    if(c.outputFiles)test.expectedFiles=c.outputFiles;
+    return test;
+  }
+  function previewTest(q,stdin){
+    var first=q.tests.find(function(test){return test.inputFiles||test.outputFiles;});
+    var test={id:'custom',stdin:stdin};
+    if(first){
+      test.inputFiles=first.inputFiles;
+      test.expectedFiles=first.outputFiles;
+    }
+    return test;
+  }
+  function inspectFiles(result,test){
+    var expected=test.expectedFiles||[],actual=result.outputFiles||[],remaining=65536;
+    if(!Array.isArray(actual)||actual.length!==expected.length)throw new Error('输出文件回包不完整');
+    return expected.map(function(file,i){
+      var got=actual[i];
+      if(!got||got.name!==file.name)throw new Error('输出文件名不匹配');
+      if(got.state==='present'){
+        if(typeof got.data!=='string'||got.data.length>Math.ceil(remaining/3)*4)throw new Error('输出文件回包超限');
+        var raw=atob(got.data);
+        if(btoa(raw)!==got.data||raw.length!==got.bytes||got.bytes>remaining)throw new Error('输出文件回包大小无效');
+        remaining-=got.bytes;
+      }else if(got.state==='too_large'){
+        if(!Number.isInteger(got.bytes)||got.bytes<=remaining)throw new Error('输出文件大小无效');
+      }else if(got.state!=='missing')throw new Error('输出文件状态无效');
+      return got;
+    });
+  }
+  function fileText(file){
+    if(file.state==='missing')return '未生成';
+    if(file.state==='too_large')return '超出核对上限（'+file.bytes+' 字节）';
+    var raw=atob(file.data);
+    if(!raw.length)return '空文件';
+    try{
+      var text=new TextDecoder('utf-8',{fatal:true}).decode(Uint8Array.from(raw,function(c){return c.charCodeAt(0);}));
+      if(!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(text))return text;
+    }catch(error){}
+    return 'Base64 '+file.data;
+  }
   function matchesExpected(actual,test){var candidates=[test.expected];if(test.expectedAlternatives!==undefined){if(!Array.isArray(test.expectedAlternatives)||test.expectedAlternatives.length<1||test.expectedAlternatives.length>3)throw new Error('候选输出数量无效');candidates=candidates.concat(test.expectedAlternatives);}return candidates.some(function(value){if(typeof value!=='string'||bytes(value)>MAX_OUTPUT)throw new Error('候选输出无效或超限');return normalize(actual)===normalize(value);});}
   function validateWorkspace(input,ids){
     if(!input||input.format!=='cquiz-programming-workspace'||input.version!==1||!input.drafts||typeof input.drafts!=='object'||Array.isArray(input.drafts))throw new Error('需要版本1的编程草稿备份。');
@@ -24,7 +68,32 @@ var ProgrammingPage=(function(){
     if(['compile_error','tool_error'].indexOf(response.status)>=0)return {status:response.status,diagnostics:diagnostics,items:[],passed:0,total:request.tests.length};
     if(response.status!=='completed'||!Array.isArray(response.cases)||response.cases.length!==request.tests.length)throw new Error('运行回包缺少测试结果');
     var seen=Object.create(null),map=Object.create(null);response.cases.forEach(function(c){if(!c||typeof c.id!=='string'||seen[c.id])throw new Error('运行回包含重复测试标识');seen[c.id]=true;map[c.id]=c;});
-    var items=request.tests.map(function(t){var c=map[t.id];if(!c||['completed','timeout','output_limit','runtime_error','tool_error'].indexOf(c.status)<0)throw new Error('运行回包测试标识或状态错误');var stdout=text(c.stdout,'标准输出',MAX_OUTPUT),stderr=text(c.stderr===undefined?'':c.stderr,'标准错误',MAX_OUTPUT);if(bytes(stdout)+bytes(stderr)>MAX_OUTPUT)throw new Error('回包合计输出超出展示上限');if(c.status==='completed'&&!Number.isInteger(c.exitCode))throw new Error('正常运行结果缺少退出码');var kind=c.status;if(kind==='completed')kind=c.exitCode!==0?'runtime_error':request.kind==='run'?'run':matchesExpected(stdout,t)?'pass':'wrong_output';return Object.assign({id:t.id,stdin:t.stdin,expected:t.expected,stdout:stdout,stderr:stderr,exitCode:c.exitCode,kind:kind},t.expectedAlternatives?{expectedAlternatives:t.expectedAlternatives.slice()}:{});});
+    var items=request.tests.map(function(t){
+      var c=map[t.id];
+      if(!c||['completed','timeout','output_limit','stack_limit','runtime_error','tool_error'].indexOf(c.status)<0)throw new Error('运行回包测试标识或状态错误');
+      var stdout=text(c.stdout,'标准输出',MAX_OUTPUT),stderr=text(c.stderr===undefined?'':c.stderr,'标准错误',MAX_OUTPUT);
+      if(bytes(stdout)+bytes(stderr)>MAX_OUTPUT)throw new Error('回包合计输出超出展示上限');
+      if(c.status==='completed'&&!Number.isInteger(c.exitCode))throw new Error('正常运行结果缺少退出码');
+      var kind=c.status,actualFiles=[];
+      if(kind==='completed'){
+        if(c.exitCode!==0)kind='runtime_error';
+        else{
+          actualFiles=inspectFiles(c,t);
+          if(request.kind==='run')kind='run';
+          else if(t.expectedFiles)kind=actualFiles.every(function(file,i){
+            return file.state==='present'&&file.data===t.expectedFiles[i].data;
+          })?'pass':'wrong_output';
+          else kind=matchesExpected(stdout,t)?'pass':'wrong_output';
+        }
+      }
+      return {id:t.id,stdin:t.stdin,expected:t.expected,stdout:stdout,stderr:stderr,exitCode:c.exitCode,
+        kind:kind,inputFiles:t.inputFiles,expectedFiles:t.expectedFiles,outputFiles:actualFiles,expectedAlternatives:t.expectedAlternatives};
+    });
+    items.forEach(function(item){
+      var limit=map[item.id].fileLimit;
+      if(limit!==undefined)item.fileLimit=text(limit,'文件限额提示',256);
+      if(map[item.id].fileFlushFailed===true)item.fileFlushFailed=true;
+    });
     return {status:'completed',diagnostics:diagnostics,items:items,passed:items.filter(function(c){return c.kind==='pass';}).length,total:items.length};
   }
   function createBridge(onChange){
@@ -50,7 +119,7 @@ var ProgrammingPage=(function(){
   function saveFile(text,name,type){var url=URL.createObjectURL(new Blob([text],{type:type||'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(url);a.remove();},500);}
   function abortRead(){fileToken++;if(reader&&reader.readyState===1)reader.abort();}
   function invalidate(message){bridge.cancel(message);if(lastResult&&ui){ui.result.classList.add('program-stale');ui.resultTitle.textContent='旧结果已失效 · 请重新运行';}notify(message||'代码已变更，请重新运行。');}
-  var labels={pass:'通过',wrong_output:'输出不符',run:'运行完成',timeout:'运行超时',output_limit:'输出超限',runtime_error:'运行异常',tool_error:'工具或环境限制'};
+  var labels={pass:'通过',wrong_output:'输出不符',run:'运行完成',timeout:'运行超时',output_limit:'输出超限',stack_limit:'栈空间超限（2 MiB）',runtime_error:'运行异常',tool_error:'工具或环境限制'};
   var bridge=createBridge(function(event){
     if(!ui)return;
     if(event.state==='done'){lastResult=event;renderResult(event);if(practiceContext&&practiceContext.onResult)practiceContext.onResult(event);}else notify(event.message);
@@ -60,6 +129,9 @@ var ProgrammingPage=(function(){
   function node(tag,cls,text){return el(tag,cls,text);}
   function panel(title){var p=node('section','card program-panel');p.appendChild(node('h3',null,title));return p;}
   function field(title,text,parent){parent.appendChild(node('h4',null,title));parent.appendChild(node('pre','program-text',text));}
+  function fileFields(title,files,parent){
+    (files||[]).forEach(function(file){field(title+' '+file.name,fileText(file),parent);});
+  }
   function updateLines(){ui.lines.textContent=Array.from({length:ui.code.value.split('\n').length},function(_,i){return i+1;}).join('\n');ui.lines.scrollTop=ui.code.scrollTop;ui.counter.textContent=bytes(ui.code.value)+' / '+MAX_CODE+' 字节';}
   function paintDirectory(){emptyNode(ui.directory);getBank().questions.forEach(function(q,i){var d=state.drafts[q.id],b=btn(String(i+1)+(d&&d.marked?' ★':''),function(){select(q.id);});b.className='program-cell'+(q.id===state.selected?' current':'')+(d&&d.code!==q.starter?' written':'');b.title=q.id+' · '+q.title+(d&&d.code!==q.starter?' · 已编写':' · 待编写');b.setAttribute('aria-label',b.title);b.setAttribute('aria-current',q.id===state.selected?'true':'false');ui.directory.appendChild(b);});ui.mark.textContent=draft().marked?'★ 已标记':'☆ 标记本题';}
   function select(id){if(state.selected===id)return;abortRead();invalidate('已切题；旧运行已停止。');state.selected=id;lastResult=null;persist();paintQuestion();}
@@ -83,10 +155,11 @@ var ProgrammingPage=(function(){
       details.open=selfTest;
       details.appendChild(node('summary',null,(selfTest?'自定义输入':'用例 '+(i+1))+' · '+labels[c.kind]));
       field('输入',c.stdin,details);
+      fileFields('输入文件',c.inputFiles,details);
       var outputs=node('div','program-case-outputs'),actual=node('div');
       field('实际标准输出',c.stdout,actual);
       outputs.appendChild(actual);
-      if(c.expected!==undefined){
+      if(c.expected!==undefined&&!c.expectedFiles){
         var expected=node('div');
         field('预期输出',c.expected,expected);
         (c.expectedAlternatives||[]).forEach(function(value){field('也接受以下输出',value,expected);});
@@ -94,13 +167,17 @@ var ProgrammingPage=(function(){
         outputs.appendChild(expected);
       }
       details.appendChild(outputs);
+      fileFields('实际输出文件',c.outputFiles,details);
+      if(!selfTest)fileFields('预期输出文件',c.expectedFiles,details);
       if(c.stderr)field('标准错误',c.stderr,details);
+      if(c.fileLimit)field('文件限额提示',c.fileLimit,details);
+      if(c.fileFlushFailed)field('文件写入失败','程序退出时有输出文件未能写入。',details);
       if(c.exitCode!==undefined)details.appendChild(node('p','note','退出码：'+c.exitCode));
       ui.resultBody.appendChild(details);
     });
     notify('');
   }
-  function request(kind){abortRead();var q=question(),d=draft();if(bytes(d.code)>MAX_CODE||bytes(d.input)>MAX_INPUT){notify('代码最多64KiB，自定义输入最多16KiB；请缩短后再运行。');return;}persist();try{bridge.run({questionId:q.id,kind:kind,code:d.code,tests:kind==='run'?[{id:'custom',stdin:d.input}]:q.tests.map(function(c){var test={id:c.id,stdin:c.stdin,expected:c.stdout};if(c.stdoutAlternatives)test.expectedAlternatives=c.stdoutAlternatives.slice();return test;})});}catch(e){notify(e.message);}}
+  function request(kind){abortRead();var q=question(),d=draft();if(bytes(d.code)>MAX_CODE||bytes(d.input)>MAX_INPUT){notify('代码最多64KiB，自定义输入最多16KiB；请缩短后再运行。');return;}persist();try{bridge.run({questionId:q.id,kind:kind,code:d.code,tests:kind==='run'?[previewTest(q,d.input)]:q.tests.map(makeTest)});}catch(e){notify(e.message);}}
   function readFile(file,max,done){abortRead();if(!file)return;if(file.size>max){notify('文件过大，未改变当前草稿。');return;}var token=fileToken,id=state.selected;reader=new FileReader();reader.onload=function(){if(!ui||token!==fileToken||id!==state.selected)return;done(reader.result);};reader.onerror=function(){if(ui&&token===fileToken)notify('文件读取失败，请重新选择。');};reader.readAsText(file,'utf-8');}
   function leave(){abortRead();bridge.cancel('已离开本题，任务已停止。');ui=null;lastResult=null;practiceContext=null;}
   function mount(host,options){
@@ -142,7 +219,7 @@ var ProgrammingPage=(function(){
     var id=main.querySelector('.program-id');if(id)id.remove();if(ui.title&&q.title&&q.statement&&q.title.indexOf(q.statement)>=0)ui.title.remove();var mark=ui.mark;if(mark)mark.remove();if(backup&&backup!==engine){var details=node('details','program-backup');details.appendChild(node('summary',null,'代码草稿备份'));details.appendChild(backup);main.appendChild(details);}
     return {main:main,side:side};
   }
-  return {renderPractice:renderPractice,mount:mount,leave:leave,connect:function(a){bridge.connect(a);},disconnect:function(){bridge.disconnect();},validateWorkspace:validateWorkspace,inspectResponse:inspectResponse,createBridge:createBridge,indent:indent,normalize:normalize,limits:{codeBytes:MAX_CODE,inputBytes:MAX_INPUT,outputBytes:MAX_OUTPUT}};
+  return {renderPractice:renderPractice,mount:mount,leave:leave,connect:function(a){bridge.connect(a);},disconnect:function(){bridge.disconnect();},validateWorkspace:validateWorkspace,inspectResponse:inspectResponse,createBridge:createBridge,indent:indent,normalize:normalize,makeTest:makeTest,previewTest:previewTest,fileText:fileText,limits:{codeBytes:MAX_CODE,inputBytes:MAX_INPUT,outputBytes:MAX_OUTPUT}};
 })();
 if(typeof window==='object')window.CQuizProgramming=ProgrammingPage;
 if(typeof module==='object'&&module.exports)module.exports=ProgrammingPage;

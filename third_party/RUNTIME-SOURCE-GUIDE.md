@@ -1,6 +1,14 @@
 # 当前运行组件的对应源码
 
-本包针对 382dc48c… 的 tcc.wasm、f488f4d4… 的 libc.wasm、038ec200… 的头文件容器及39d40f58…的运行桥。完整指纹见evidence/source-map.json及源码清单；没有采用后续整数转换候选。上游为44670/tcc-wasm提交8bff9fbc019a3008395eec4cda6e90752fb88ed9，加保留在源码及patches中的本地变更。修改版本整理日期2026-10-31，不能将本包冒充未修改的上游版本。
+本轮运行时精简与批量内存操作见 `patches/runtime-audit-2026-11-16.patch`。本轮源码及运行资源的指纹变化见 `evidence/runtime-audit.json`。
+
+本候选包含 wasm32 变长数组和浮点输出分流。对应补丁见 `patches/wasm32-vla-2026-11-16.patch` 和 `patches/printf-split-2026-11-16.patch`，构建指纹见 `evidence/vla-printf-revision.json`。
+
+前轮候选 libc.wasm 的 SHA-256 为 `5661d14b4bfb629e524762af3f84854a5e658baead345a1216fbdacd508672d4`。
+
+本包的应用栈修订见 `patches/app-stack-2026-11-16.patch`。考生程序预留 2 MiB 栈，修改记录见 `evidence/app-stack-revision.json`。
+
+本包包含 scanf 字节扫描集合、标准输入位置共享及前一轮文件刷新修复。该轮 libc.wasm SHA-256 为 97dbc85161681b76177f9da84415994292433eb2796da0d4350f46e9b9addb55。该轮补丁见 patches/scanf-scanset-2026-11-15.patch。
 
 项目由thelaon（https://github.com/thelaon）发起维护，主要通过AI辅助开发。本项目依法有权授权的自有工具/表达采用MIT，原文和范围见project-notices；它不覆盖本包中的上游组件及派生修改。版权异议的先行暂停与核查流程见project-notices/COPYRIGHT.md，不作为许可证附加条件。
 

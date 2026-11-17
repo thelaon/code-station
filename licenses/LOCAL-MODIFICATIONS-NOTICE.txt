@@ -55,3 +55,25 @@ notices and dated preparation statements. Seven changed embedded headers
 also carry their own notices. ANNOTATIONS.json maps original and annotated
 file hashes. Historical batch dates are evidence, not invented dates of
 every individual edit. Original license notices and exceptions are retained.
+
+2026-11-07: Updated the six strto integer conversions with checked overflow, base detection and end-pointer handling. Both annotated libc source copies were synchronized and rebuilt. See evidence/strto-revision.json in the corresponding-source archive.
+
+2026-11-07: Added anonymous tmpfile streams, positioned writes, seek validation, pushback position handling and buffer release through the existing memory-file runtime. See evidence/tmpfile-revision.json in the corresponding source archive.
+
+2026-11-07: Fixed incremental file scanning, update/append modes, owned stream buffers, flush publication and streamed formatted output. See evidence/stdio-revision.json in the corresponding source archive.
+
+2026-11-13: Added in-memory file resource limits and corresponding errno declarations. Distinguished fwrite length overflow from the file size quota. See evidence/file-quotas-revision.json.
+
+2026-11-13: Added a bounded host-side reader for published virtual file contents.
+
+2026-11-14: Flush open streams on fflush(NULL) and publish named output at normal termination.
+
+2026-11-15: Implement narrow scanf scansets and a shared cursor for seeded stdin.
+
+2026-11-16: Reserve a 2 MiB application stack and validate the stack pointer before it changes.
+
+2026-11-16: Implement wasm32 application variable-length arrays with checked size and stack restoration.
+2026-11-16: Use a bounded ties-to-even path at zero fixed precision and reduce the binary significand in the shared decimal conversion.
+Corresponding changes and binary fingerprints are recorded in evidence/vla-printf-revision.json.
+
+2026-11-16: Generate native Wasm bulk-memory operations, share VLA size storage and fwrite result handling, and use uppercase special values for %F. See evidence/runtime-audit.json.

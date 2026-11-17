@@ -36,7 +36,8 @@
     if (!active) return imports;
     exports.rt_stdio_set_hosted(1);
 
-    ['rt_stdio_set_hosted', 'rt_stdio_reset', 'rt_init_heap', 'rt_stdin_set'].forEach(function (name) {
+    ['rt_stdio_set_hosted', 'rt_stdio_reset', 'rt_init_heap', 'rt_stdin_set', 'rt_file_add', 'rt_file_result',
+      'rt_file_finish', 'rt_file_exit_flush_failed'].forEach(function (name) {
       if (typeof imports[name] === 'function') imports[name] = function () {
         throw new Error('PILOT_INTERNAL_API：实验版不开放运行库内部配置接口 '+name);
       };
@@ -52,7 +53,14 @@
     var current = active;
     Promise.resolve().then(function () {
       var artifact = attachWat(m.artifact, m.wat);
-      return runMeasured(artifact, {stdin:String(m.stdin || ''), timeoutMs:2000}, 2000);
+      var options = {stdin:String(m.stdin || ''), timeoutMs:2000, outputNames:m.outputNames};
+      if (m.inputFiles && m.inputFiles.length) {
+        options.files = Object.create(null);
+        m.inputFiles.forEach(function (file) {
+          options.files[file.name] = Uint8Array.from(atob(file.data), function (c) { return c.charCodeAt(0); });
+        });
+      }
+      return runMeasured(artifact, options, 2000);
     }).then(function (r) {
       r.stdout = new TextDecoder().decode(current.stdout.subarray(0,current.stdoutBytes));
       r.stderr = new TextDecoder().decode(current.stderr.subarray(0,current.stderrBytes));

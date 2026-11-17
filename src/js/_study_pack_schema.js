@@ -2,6 +2,31 @@
 var StudyPackSchema=(function(){
   var TYPES=['code_blank','fix','program'];
   function codeType(t){return TYPES.indexOf(t)>=0;}
+  function fileList(value){
+    if(value===undefined)return [];
+    if(!Array.isArray(value)||value.length<1||value.length>8)throw new Error('每组文件须有 1 至 8 项');
+    var names=new Set(),remaining=65536;
+    return value.map(function(file){
+      if(!file||typeof file!=='object'||Object.keys(file).length!==2||
+        typeof file.name!=='string'||!/^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$/.test(file.name)||names.has(file.name))
+        throw new Error('文件名须唯一，使用 1 至 64 个字母、数字、点、下划线或连字符，并以字母或数字开头');
+      if(typeof file.data!=='string'||file.data.length>Math.ceil(remaining/3)*4)throw new Error('文件内容超出 64 KiB 合计限制');
+      var raw=atob(file.data);
+      if(btoa(raw)!==file.data||raw.length>remaining)throw new Error('文件内容需使用规范 Base64，合计最多 64 KiB');
+      names.add(file.name);
+      remaining-=raw.length;
+      return {name:file.name,data:file.data};
+    });
+  }
+  function testFiles(input,output){
+    var ins=fileList(input),outs=fileList(output);
+    if(outs.some(function(file){return ins.some(function(seed){return seed.name===file.name;});}))
+      throw new Error('同一用例的输入文件和输出文件须使用不同名称');
+    var fields={};
+    if(ins.length)fields.inputFiles=ins;
+    if(outs.length)fields.outputFiles=outs;
+    return fields;
+  }
   function check(input,baseCheck){
     var errors=[];function fail(p,m){if(errors.length<100)errors.push({path:p,message:m});}
     function object(v){return !!v&&typeof v==='object'&&!Array.isArray(v);}
@@ -57,7 +82,20 @@ var StudyPackSchema=(function(){
           if(q.title!==undefined)item.title=text(q.title,at+'标题',100,false);
           item.starter=text(q.starter,at+'初始代码',65536,true);item.input=text(q.input,at+'输入说明',10000,false);item.output=text(q.output,at+'输出说明',10000,false);item.rangeNote=q.rangeNote===undefined?'':text(q.rangeNote,at+'范围',10000,true);
           item.examples=list(q.examples,at+'样例',10,0).map(function(t){if(!fields(t,['stdin','stdout','id','kind'],at+'样例'))return {};var meta={};['id','kind'].forEach(function(k){if(t[k]!==undefined)meta[k]=text(t[k],at+'样例'+k,120,false);});return Object.assign(meta,{stdin:text(t.stdin,at+'输入',16384,true),stdout:text(t.stdout,at+'输出',65536,true)});});
-          var seen=Object.create(null);item.tests=list(q.tests,at+'测试点',32).map(function(t){if(!fields(t,['id','stdin','stdout','stdoutAlternatives','kind','tags','basis'],at+'测试点'))return {};var id=text(t.id,at+'测试标识',120,false);if(seen[id])fail(at,'测试标识重复');seen[id]=true;var meta={};if(t.stdoutAlternatives!==undefined)meta.stdoutAlternatives=list(t.stdoutAlternatives,at+'候选输出',3).map(function(value){return text(value,at+'候选输出',65536,true);});if(t.tags!==undefined)meta.tags=list(t.tags,at+'测试标签',20,0).map(function(x){return text(x,at+'标签',100,false);});if(t.basis!==undefined)meta.basis=text(t.basis,at+'测试依据',10000,true);return Object.assign(meta,{id:id,stdin:text(t.stdin,at+'输入',16384,true),stdout:text(t.stdout,at+'输出',65536,true),kind:t.kind===undefined?'derived':text(t.kind,at+'测试类别',100,false)});});
+          var seen=Object.create(null);
+          item.tests=list(q.tests,at+'测试点',32).map(function(t){
+            if(!fields(t,['id','stdin','stdout','stdoutAlternatives','kind','tags','basis','inputFiles','outputFiles'],at+'测试点'))return {};
+            var id=text(t.id,at+'测试标识',120,false),meta={};
+            if(seen[id])fail(at,'测试标识重复');
+            seen[id]=true;
+            try{Object.assign(meta,testFiles(t.inputFiles,t.outputFiles));}
+            catch(error){fail(at+'测试文件',error.message);}
+            if(meta.outputFiles&&(t.stdout!==''||t.stdoutAlternatives!==undefined))fail(at,'文件判分用例的 stdout 须为空，不设置等价标准输出');
+            if(t.stdoutAlternatives!==undefined)meta.stdoutAlternatives=list(t.stdoutAlternatives,at+'候选输出',3).map(function(value){return text(value,at+'候选输出',65536,true);});
+            if(t.tags!==undefined)meta.tags=list(t.tags,at+'测试标签',20,0).map(function(x){return text(x,at+'标签',100,false);});
+            if(t.basis!==undefined)meta.basis=text(t.basis,at+'测试依据',10000,true);
+            return Object.assign(meta,{id:id,stdin:text(t.stdin,at+'输入',16384,true),stdout:text(t.stdout,at+'输出',65536,true),kind:t.kind===undefined?'derived':text(t.kind,at+'测试类别',100,false)});
+          });
           if(q.provenance!==undefined)item.provenance=text(q.provenance,at+'溯源',20000,true);
           delete item.code;
         }
@@ -87,6 +125,6 @@ var StudyPackSchema=(function(){
       p.questionOrder=source.questions.filter(function(q){return q.type!=='program';}).map(function(q){return q.type==='code_blank'||q.type==='blank'?{num:'b'+q.num,blank:true}:q.type==='fix'?{num:'x'+q.num,fix:true}:{num:q.num};});
     });return out;
   }
-  return {check:check,papers:papers,codeType:codeType};
+  return {check:check,papers:papers,codeType:codeType,testFiles:testFiles};
 })();
 if(typeof module==='object'&&module.exports)module.exports=StudyPackSchema;

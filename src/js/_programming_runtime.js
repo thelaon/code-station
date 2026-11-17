@@ -2,6 +2,14 @@
 var CQuizProgrammingRuntime = (function () {
   'use strict';
   var tasks = new Map(), sequence = 0;
+  var fileLimitMessages = [
+    '',
+    '单个内存文件最多 32 MiB，本次写入未完成。',
+    '文件缓冲合计最多 128 MiB，包含打开流的副本和临时缓冲。',
+    '每个用例最多同时打开 32 个文件流。',
+    '每个用例最多保留 256 个命名文件。',
+    '文件路径最多 1024 字节。'
+  ];
   function bounded(value, cap) {
     var text=String(value || ''), enc=new TextEncoder(), raw=enc.encode(text);
     if(raw.length<=cap)return text;
@@ -11,6 +19,7 @@ var CQuizProgrammingRuntime = (function () {
   }
   function resultStatus(r) {
     if(r.errorCategory==='output_limit')return 'output_limit';
+    if(r.stackLimit)return 'stack_limit';
     if(r.errorCategory==='tool'||r.errorCategory==='env')return 'tool_error';
     if(r.aborted||/^TLE/.test(r.error || ''))return 'timeout';
     if(r.error||!Number.isInteger(r.rc))return 'runtime_error';
@@ -63,12 +72,19 @@ var CQuizProgrammingRuntime = (function () {
         return response;
       }
       for(var i=0;i<request.tests.length;i++){
-        var test=request.tests[i],r=await client.request({type:'pilot-run',artifact:compiled.artifact,wat:compiled.wat,stdin:test.stdin},6500);
+        var test=request.tests[i];
+        var files=StudyPackSchema.testFiles(test.inputFiles,test.expectedFiles);
+        var r=await client.request({type:'pilot-run',artifact:compiled.artifact,wat:compiled.wat,stdin:test.stdin,
+          inputFiles:files.inputFiles,outputNames:(files.outputFiles||[]).map(function(file){return file.name;})},6500);
         var stdout=bounded(r.stdout,65536),remaining=65536-new TextEncoder().encode(stdout).length,stderr=bounded(r.stderr,remaining);
         var status=resultStatus(r);
 
         if(status==='completed'&&(stdout!==r.stdout||stderr!==r.stderr))status='tool_error';
-        response.cases.push({id:test.id,status:status,stdout:stdout,stderr:stderr,exitCode:r.rc,ms:r.ms,stdoutBytes:r.stdoutBytes,stderrBytes:r.stderrBytes});
+        var item={id:test.id,status:status,stdout:stdout,stderr:stderr,exitCode:r.rc,ms:r.ms,stdoutBytes:r.stdoutBytes,stderrBytes:r.stderrBytes};
+        if(fileLimitMessages[r.fileLimit])item.fileLimit=fileLimitMessages[r.fileLimit];
+        if(r.fileFlushFailed)item.fileFlushFailed=true;
+        if(r.outputFiles)item.outputFiles=r.outputFiles;
+        response.cases.push(item);
       }
       response.status='completed';return response;
     }catch(e){response.status='tool_error';response.diagnostics=bounded(e&&e.message || e,65536);response.cases=[];return response;}

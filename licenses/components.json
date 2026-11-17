@@ -12,7 +12,7 @@
         "vendor/c-runtime/tcc.wasm"
       ],
       "purpose": "在本机浏览器中编译 C 程序。",
-      "source": "上游固定提交、README 和 COPYING 已在线核对。对应源码包在隔离目录经 GCC → TCC → WAT → WABT 重建，与当前二进制逐字节一致。保留源文件自身的许可及例外。",
+      "source": "上游固定提交、README 和 COPYING 已在线核对。对应源码包在隔离目录经 GCC → TCC → WAT → WABT 重建，与当前二进制逐字节一致。保留源文件自身的许可及例外。 2 MiB 应用栈与下界检查的修改记录见 evidence/app-stack-revision.json。 wasm32 变长数组修改见 evidence/vla-printf-revision.json。 本轮修改记录见 evidence/runtime-audit.json。",
       "version": "44670/tcc-wasm @ 8bff9fbc019a3008395eec4cda6e90752fb88ed9，加本地修改（配置字符串 0.9.28rc）",
       "pending": "对应源码包已补齐文件内修改标记、已查证批次日期与本次整理日期；ANNOTATIONS.json可核对标记前后指纹。未伪造逐行历史编辑日，原许可证与例外保持。"
     },
@@ -37,7 +37,7 @@
         "vendor/c-runtime/libc.wasm"
       ],
       "purpose": "提供 C 程序所需的标准库运行功能。",
-      "source": "对应源码 SHA-256 为 9192688ab1be10dd7b5dc184062e8d7ebbb6d4f5320e4ade43d1ec42ba85c2e3；已从随附源码包实际重建，与当前 libc.wasm 逐字节相同。仓库 README/COPYING 是许可依据，缺少文件级告示不等于没有许可。",
+      "source": "运行库包含格式化输入修复和浮点输出分流，修改记录见 evidence/vla-printf-revision.json。SHA-256 为 03b3c6c6ad9c79daa2cd43f4d8b3a576e100a8ce4f84d1db9dfe6af2c8318ea7。 本轮修改记录见 evidence/runtime-audit.json。",
       "version": "固定提交的 lib/wasm32-libc.c，加已收录的本地修复",
       "pending": "对应源码包已补齐文件内修改标记、已查证批次日期与本次整理日期；ANNOTATIONS.json可核对标记前后指纹。未伪造逐行历史编辑日，原许可证与例外保持。"
     },

@@ -38,6 +38,15 @@ function programResultSummary(verdict){
   var summary=verdict.passed+' / '+verdict.total+' 个用例通过';
   if(verdict.good)return summary;
   if(verdict.compileError===true&&verdict.passed===0)return '编译错误 · '+summary;
+  if(Number.isInteger(verdict.fileFlushFailureCount)&&verdict.fileFlushFailureCount>0&&verdict.fileFlushFailureCount<=verdict.total){
+    summary='退出时文件写入失败 '+verdict.fileFlushFailureCount+' 个用例 · '+summary;
+  }
+  if(Number.isInteger(verdict.fileLimitCount)&&verdict.fileLimitCount>0&&verdict.fileLimitCount<=verdict.total){
+    summary='触及文件限额 '+verdict.fileLimitCount+' 个用例 · '+summary;
+  }
+  if(Number.isInteger(verdict.stackLimitCount)&&verdict.stackLimitCount>0&&verdict.stackLimitCount<=verdict.total-verdict.passed){
+    summary='栈空间超限 '+verdict.stackLimitCount+' 个用例 · '+summary;
+  }
   if(Number.isInteger(verdict.timeoutCount)&&verdict.timeoutCount>0&&verdict.timeoutCount<=verdict.total-verdict.passed){
     return '运行超时 '+verdict.timeoutCount+' 个用例 · '+summary;
   }
@@ -56,9 +65,13 @@ function renderDeferredProgram(cur,q){
   var input=el('textarea','program-stdin');input.rows=3;input.setAttribute('aria-label','自测输入');input.value=q.examples&&q.examples.length?q.examples[0].stdin:'';main.appendChild(el('h4',null,'自测输入'));main.appendChild(input);
   var output=el('pre','pack-text'),run=btn('运行输入',async function(){
     if(!examCanEdit())return;run.disabled=true;output.textContent='正在运行…';
-    try{if(new TextEncoder().encode(code.value).length>65536||new TextEncoder().encode(input.value).length>16384)throw new Error('代码或输入超限，请缩短后重试。');var request={protocol:1,requestId:'paper-run-'+Date.now(),kind:'run',code:code.value,tests:[{id:'custom',stdin:input.value}]},response=await CQuizProgrammingRuntime.execute(request);
+    try{if(new TextEncoder().encode(code.value).length>65536||new TextEncoder().encode(input.value).length>16384)throw new Error('代码或输入超限，请缩短后重试。');var request={protocol:1,requestId:'paper-run-'+Date.now(),kind:'run',code:code.value,tests:[ProgrammingPage.previewTest(q,input.value)]},response=await CQuizProgrammingRuntime.execute(request);
       if(owner!==SESSION||owner.order[owner.idx]!==cur||owner.done)return;
-      output.textContent=response.status==='completed'?response.cases.map(function(c){return c.stdout+(c.stderr?'\n'+c.stderr:'');}).join('\n'):response.diagnostics||'运行未完成';
+      output.textContent=response.status==='completed'?response.cases.map(function(c){
+        var files=(c.outputFiles||[]).map(function(file){return file.name+'\n'+ProgrammingPage.fileText(file);});
+        return [c.stdout,c.stderr,c.fileLimit,c.fileFlushFailed?'程序退出时有输出文件未能写入。':'',
+          c.status==='stack_limit'?'程序栈空间超限（2 MiB）。':''].concat(files).filter(Boolean).join('\n');
+      }).join('\n'):response.diagnostics||'运行未完成';
     }catch(e){output.textContent=e.message;}finally{run.disabled=false;}
   });main.appendChild(run);main.appendChild(el('small','note','自测仅展示输出，不提前批改。'));main.appendChild(output);return main;
 }
@@ -66,7 +79,7 @@ async function gradeDeferredPrograms(owner){
   var results={};
   for(var i=0;i<owner.order.length;i++){
     var o=owner.order[i];if(!o.program)continue;var key=qid(o.pid,o.num),q=findP(o.pid,o.num),code=owner.exam.codes[key];if(code===undefined||code===q.starter)continue;
-    var request={protocol:1,requestId:'paper-grade-'+Date.now()+'-'+i,questionId:q.id,kind:'submit',code:code,tests:q.tests.map(function(t){var test={id:t.id,stdin:t.stdin,expected:t.stdout};if(t.stdoutAlternatives)test.expectedAlternatives=t.stdoutAlternatives.slice();return test;})};
+    var request={protocol:1,requestId:'paper-grade-'+Date.now()+'-'+i,questionId:q.id,kind:'submit',code:code,tests:q.tests.map(ProgrammingPage.makeTest)};
     var response=await CQuizProgrammingRuntime.execute(request),result=ProgrammingPage.inspectResponse(request,response);
     if(result.status==='tool_error'||result.items.some(function(item){return item.kind==='tool_error';}))throw new Error(result.diagnostics||'运行环境暂时不可用');
     var good=result.status==='completed'&&result.total>0&&result.passed===result.total;
@@ -74,6 +87,12 @@ async function gradeDeferredPrograms(owner){
     if(result.status==='compile_error')verdict.compileError=true;
     var timeoutCount=result.items.filter(function(item){return item.kind==='timeout';}).length;
     if(timeoutCount)verdict.timeoutCount=timeoutCount;
+    var stackLimitCount=result.items.filter(function(item){return item.kind==='stack_limit';}).length;
+    if(stackLimitCount)verdict.stackLimitCount=stackLimitCount;
+    var fileLimitCount=result.items.filter(function(item){return !!item.fileLimit;}).length;
+    if(fileLimitCount)verdict.fileLimitCount=fileLimitCount;
+    var flushFailures=result.items.filter(function(item){return item.fileFlushFailed;}).length;
+    if(flushFailures)verdict.fileFlushFailureCount=flushFailures;
     results[key]=verdict;
   }
   return results;

@@ -373,6 +373,38 @@ function attachWat(bytes, wat) {
   return view;
 }
 
+function collectOutputFiles(out, names) {
+  var exports = out.libc.exports, remaining = 65536;
+  if (typeof exports.rt_file_result !== 'function') throw new Error('运行库未提供输出文件读取');
+  var encoder = new TextEncoder();
+  return names.map(function (name) {
+    var pathBytes = encoder.encode(name);
+    var path = exports.malloc(pathBytes.length + 1), data = 0;
+    if (!path) throw new Error('无法读取输出文件名');
+    try {
+      var view = new Uint8Array(out.memory.buffer);
+      view.set(pathBytes, path);
+      view[path + pathBytes.length] = 0;
+      var size = exports.rt_file_result(path, 0, 0);
+      if (size === -2) return {name:name, state:'missing'};
+      if (size < 0) throw new Error('读取输出文件失败');
+      if (size > remaining) return {name:name, state:'too_large', bytes:size};
+      if (!size) return {name:name, state:'present', bytes:0, data:''};
+      data = exports.malloc(size);
+      if (!data || exports.rt_file_result(path, data, size) !== size)
+        throw new Error('无法读取输出文件内容');
+      remaining -= size;
+      var bytes = new Uint8Array(out.memory.buffer,data,size), raw = '';
+      for (var offset = 0; offset < size; offset += 4096)
+        raw += String.fromCharCode.apply(null,bytes.subarray(offset,offset+4096));
+      return {name:name, state:'present', bytes:size, data:btoa(raw)};
+    } finally {
+      exports.free(data);
+      exports.free(path);
+    }
+  });
+}
+
 function runRaw(artifact, opts) {
   var o = opts || {};
   if (!(artifact instanceof Uint8Array) && artifact && artifact.byteLength)
@@ -380,16 +412,26 @@ function runRaw(artifact, opts) {
   var runOpts = { stdin: o.stdin || '', args: ['a.out'], timeoutMs: o.timeoutMs,
     executionEncoding: artifact && artifact.__executionEncoding || 'utf-8' };
   if (o.clock) runOpts.clock = o.clock;
+  if (o.files) runOpts.files = o.files;
   return runtime.run(artifact, runOpts)
     .then(function (out) {
-      return { rc: out.rc, stdout: out.stdout, stderr: out.stderr, aborted: false, error: '' };
+      var fileLimit = out.libc.exports.rt_file_limit_hit;
+      var flushFailed = out.fileFlushFailed === true;
+      var result = { rc: out.rc, stdout: out.stdout, stderr: out.stderr, aborted: false,
+        error: flushFailed ? '程序退出时有输出文件未能写入' : '',
+        fileFlushFailed: flushFailed, fileLimit: typeof fileLimit === 'function' ? fileLimit() : 0 };
+      if (out.rc === 0 && !flushFailed && o.outputNames && o.outputNames.length)
+        result.outputFiles = collectOutputFiles(out, o.outputNames);
+      return result;
     }, function (err) {
       var message = String(err && err.message || err);
       var info = self.JudgeDiagnostics.errorDetails(err);
       var category = self.JudgeDiagnostics.classifyRuntime(info, message);
-      return { rc: null, stdout: '', stderr: '', aborted: /^TLE\b/.test(message),
+      var failure = { rc: null, stdout: '', stderr: '', aborted: /^TLE\b/.test(message),
         error: /^TLE\b/.test(message) ? message : category.reason,
         errorInfo:info, errorCategory:category.verdict, debugError:message };
+      if (category.kind === 'stack_limit') failure.stackLimit = true;
+      return failure;
     });
 }
 
@@ -539,14 +581,23 @@ function patchAppRuntime() {
       if (entry.length >= 2 || o.args) argv = self_.writeArgv(memory, libc.exports, o.args || [entryName]);
       if (o.stdio !== 'inherit') self_.seedStdin(memory, libc.exports,
         o.executionEncoding === 'gbk' ? self.JudgeEncoding.encode(o.stdin || '') : o.stdin || '');
-      if (app.exports.__wasm_call_ctors) app.exports.__wasm_call_ctors();
-      var rc;
+      var rc, returned = false;
       try {
+        if (app.exports.__wasm_call_ctors) app.exports.__wasm_call_ctors();
         rc = argv ? entry(argv.argc, argv.argv) : entry();
+        returned = true;
       } catch (err) {
+        if (Runtime2.valueOf(app.exports.__cq_stack_limit_hit) === 1) {
+          var stackError = new Error('程序栈空间超限（2 MiB）。');
+          stackError.code = 'program_stack_limit';
+          throw stackError;
+        }
         if (err && err.name === 'WasmExit') rc = err.code;
         else throw err;                     
       }
+      var fileFlushFailed = returned && typeof libc.exports.rt_file_finish === 'function'
+        ? libc.exports.rt_file_finish() !== 0
+        : typeof libc.exports.rt_file_exit_flush_failed === 'function' && libc.exports.rt_file_exit_flush_failed() !== 0;
       function readOutput(ptrName, lenName) {
         if (o.executionEncoding !== 'gbk') return self_.readRuntimeBuffer(memory, libc.exports, ptrName, lenName);
         var ptr = libc.exports[ptrName](), len = libc.exports[lenName]();
@@ -554,6 +605,7 @@ function patchAppRuntime() {
       }
       return {
         rc: rc,
+        fileFlushFailed: fileFlushFailed,
         stdout: readOutput('rt_stdout_ptr', 'rt_stdout_len'),
         stderr: readOutput('rt_stderr_ptr', 'rt_stderr_len'),
         memory: memory, app: app, libc: libc,
