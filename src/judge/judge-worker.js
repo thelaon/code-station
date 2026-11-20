@@ -138,6 +138,17 @@ var libcModule = null;
 var tccModule = null;
 
 var RUN_TIMEOUT = 1000;
+var preparedApplications = new WeakMap();
+var lastCompilation = null, compilationSequence = 0;
+function resolveRunArtifact(message) {
+  if (message.compilationId !== undefined) {
+    if (!lastCompilation || message.compilationId !== lastCompilation.id)
+      throw new Error('编译结果已失效，请重新编译。');
+    return lastCompilation.artifact;
+  }
+  return message.wat ? attachWat(message.artifact, message.wat) : message.artifact;
+}
+function cqNow() { return performance.now(); }
 
 function reply(msg) { self.postMessage(msg); }
 
@@ -298,6 +309,7 @@ var __wiSeq = 0;
 })();
 
 async function compile(src, executionEncoding) {
+  var timing = {}, started = cqNow();
   if (executionEncoding === 'gbk') {
     try { src = self.JudgeEncoding.source(src); }
     catch (error) { return {ok:false, artifact:null, diagnostics:error.message,
@@ -312,6 +324,7 @@ async function compile(src, executionEncoding) {
     return {ok:false,artifact:null,diagnostics:'编译环境初始化失败。',
       errorInfo:self.JudgeDiagnostics.errorDetails(e) || {code:'compiler_environment',phase:'compiler',symbols:[]}};
   }
+  timing.hostMs = cqNow() - started;
   __jstage('compile:host:create:after', {});
   var pick = pickCompileFn(host);
   if (!pick) {
@@ -325,7 +338,9 @@ async function compile(src, executionEncoding) {
   try {
     
     __jstage('compile:call:before', { api: pick.name, srcLen: src.length });
+    started = cqNow();
     res = await pick.fn(src);
+    timing.sourceMs = cqNow() - started;
     __jstage('compile:call:after', { api: pick.name, hasWat: !!(res && res.wat) });
   } catch (e) {
     __jstage('compile:call:throw', { api: pick.name, msg: String(e && e.message || e).slice(0, 200) });
@@ -339,11 +354,13 @@ async function compile(src, executionEncoding) {
   }
   try {
     __jstage('assemble:before', { watLen: res.wat.length });
+    started = cqNow();
     var artifact = attachWat(assembleWat(res.wat), res.wat);
+    timing.assemblyMs = cqNow() - started;
     __jstage('assemble:after', { bytes: artifact.byteLength });
     if (executionEncoding === 'gbk') Object.defineProperty(artifact, '__executionEncoding', {value:'gbk'});
     return { ok: true, diagnostics: diagnostics, artifact: artifact, api: pick.name,
-      executionEncoding:executionEncoding || 'utf-8' };
+      executionEncoding:executionEncoding || 'utf-8', timings:timing };
   } catch (e) {
     return { ok: false, api: pick.name,
              diagnostics: diagnostics + '\nASSEMBLE: ' + (e && e.message || e), artifact: null };
@@ -410,7 +427,7 @@ function runRaw(artifact, opts) {
   if (!(artifact instanceof Uint8Array) && artifact && artifact.byteLength)
     artifact = new Uint8Array(artifact);
   var runOpts = { stdin: o.stdin || '', args: ['a.out'], timeoutMs: o.timeoutMs,
-    executionEncoding: artifact && artifact.__executionEncoding || 'utf-8' };
+    executionEncoding: artifact && artifact.__executionEncoding || 'utf-8', timings:o.timings };
   if (o.clock) runOpts.clock = o.clock;
   if (o.files) runOpts.files = o.files;
   return runtime.run(artifact, runOpts)
@@ -527,6 +544,51 @@ function injectGuard(wat, timeoutMs) {
   return { wat: text, loops: loops, timeoutMs: timeoutMs };
 }
 
+// Weak keys tie prepared code to one compiled artifact, not to a prior run.
+// Only the latest guard configuration is retained for an artifact.
+function prepareApplication(source, timeoutMs, timing) {
+  var wat = source && source.__wat || null;
+  var cacheable = source && typeof source === 'object';
+  var entry = cacheable && preparedApplications.get(source);
+  var limit = timeoutMs || 0;
+  timing.moduleCompileMs=0;timing.guardInjectMs=0;timing.guardAssemblyMs=0;timing.guardCompileMs=0;
+  if (entry && entry.wat === wat && entry.limit === limit) {
+    timing.preparedCacheHit = true;
+    return entry.promise;
+  }
+  timing.preparedCacheHit = false;
+  entry = {wat:wat,limit:limit};
+  if (cacheable) preparedApplications.set(source, entry);
+  entry.promise = Promise.resolve().then(function () {
+    var started = cqNow();
+    var guarded = wat && limit ? injectGuard(wat, limit) : null;
+    timing.guardInjectMs = cqNow() - started;
+    var debug = {hasWat:!!wat,timeoutMs:limit,loops:guarded ? guarded.loops : -1,
+                 used:!!(guarded && guarded.loops)};
+    var input = source;
+    if (debug.used) {
+      started = cqNow();
+      try { input = assembleWat(guarded.wat); }
+      catch (cause) {
+        var error = new Error('运行保护代码准备失败：' + String(cause && cause.message || cause));
+        error.code = 'runtime_environment';error.phase = 'runtime';
+        throw error;
+      }
+      timing.guardAssemblyMs = cqNow() - started;
+    }
+    started = cqNow();
+    return Runtime2.compileModule(input).then(function (module) {
+      timing[debug.used ? 'guardCompileMs' : 'moduleCompileMs'] = cqNow() - started;
+      return {module:module,debug:debug};
+    });
+  }).catch(function (error) {
+    if (cacheable && preparedApplications.get(source) === entry) preparedApplications.delete(source);
+    if (!error.code) { error.code = 'runtime_environment';error.phase = 'runtime'; }
+    throw error;
+  });
+  return entry.promise;
+}
+
 var _runPatched = false;
 function patchAppRuntime() {
   if (_runPatched || !Runtime2.AppRuntime) return;
@@ -537,22 +599,13 @@ function patchAppRuntime() {
     var self_ = this;
     var pages = o.pages || self_.pages;
     var memory = o.memory || new WebAssembly.Memory({ initial: pages, maximum: pages });
-    var hook = null;
-    return Promise.resolve(Runtime2.compileModule(appSource)).then(function (appModule) {
-      
-      var wat = (appSource && appSource.__wat) || null;
-      var guarded = wat && o.timeoutMs ? injectGuard(wat, o.timeoutMs) : null;
-      self_.__guardDbg = { hasWat: !!wat, timeoutMs: o.timeoutMs || 0,
-        loops: guarded ? guarded.loops : -1, used: !!(guarded && guarded.loops) };
-      if (guarded && guarded.loops) {
-        hook = makeStepHook(o.timeoutMs);
-        var bin;
-        try { bin = assembleWat(guarded.wat); }
-        catch (e) { bin = null; hook = null; self_.__guardDbg.error = String(e && e.message || e); }
-        if (bin) return Runtime2.compileModule(bin);
-      }
-      return appModule;
-    }).then(function (appModule) {
+    var hook = null, timing = o.timings || {}, runStarted = Date.now(), prepareStarted = cqNow();
+    return prepareApplication(appSource, o.timeoutMs, timing).then(function (prepared) {
+      timing.prepareMs = cqNow() - prepareStarted;
+      self_.__guardDbg = Object.assign({}, prepared.debug);
+      if (prepared.debug.used) hook = makeStepHook(o.timeoutMs, runStarted);
+      var appModule = prepared.module;
+      timing.instantiateStarted = cqNow();
       return WebAssembly.instantiate(self_.libcModule, Runtime2.createLibcImports(memory, o))
         .then(function (libc) {
           var libcImports = Runtime2.createAppLibcImports(memory, libc.exports);
@@ -563,10 +616,14 @@ function patchAppRuntime() {
           if (hook) envImports.__on_step = hook;
           return WebAssembly.instantiate(appModule, { env: envImports, libc: libcImports })
             .then(function (app) {
-              return { app: app, libc: libc, memory: memory, appModule: appModule };
+              Runtime2.bindAppInstance(libcImports, app, hook);
+              return { app: app, libc: libc, memory: memory, appModule: appModule, libcImports: libcImports };
             });
         });
     }).then(function (bundle) {
+      timing.instantiateMs = cqNow() - timing.instantiateStarted;
+      delete timing.instantiateStarted;
+      var seedStarted = cqNow();
       var app = bundle.app, libc = bundle.libc;
       var heapBase = Runtime2.valueOf(app.exports.__heap_base);
       var heapEnd = Runtime2.valueOf(app.exports.__heap_end);
@@ -581,10 +638,13 @@ function patchAppRuntime() {
       if (entry.length >= 2 || o.args) argv = self_.writeArgv(memory, libc.exports, o.args || [entryName]);
       if (o.stdio !== 'inherit') self_.seedStdin(memory, libc.exports,
         o.executionEncoding === 'gbk' ? self.JudgeEncoding.encode(o.stdin || '') : o.stdin || '');
+      timing.seedMs = cqNow() - seedStarted;
+      var executionStarted = cqNow();
       var rc, returned = false;
       try {
         if (app.exports.__wasm_call_ctors) app.exports.__wasm_call_ctors();
         rc = argv ? entry(argv.argc, argv.argv) : entry();
+        Runtime2.finishAppInstance(bundle.libcImports);
         returned = true;
       } catch (err) {
         if (Runtime2.valueOf(app.exports.__cq_stack_limit_hit) === 1) {
@@ -593,7 +653,9 @@ function patchAppRuntime() {
           throw stackError;
         }
         if (err && err.name === 'WasmExit') rc = err.code;
-        else throw err;                     
+        else throw err;
+      } finally {
+        timing.executionMs = cqNow() - executionStarted;
       }
       var fileFlushFailed = returned && typeof libc.exports.rt_file_finish === 'function'
         ? libc.exports.rt_file_finish() !== 0
@@ -615,8 +677,8 @@ function patchAppRuntime() {
 }
 
 var GUARD_CHECK_EVERY = 65536;
-function makeStepHook(timeoutMs) {
-  var t0 = Date.now();
+function makeStepHook(timeoutMs, startedAt) {
+  var t0 = startedAt == null ? Date.now() : startedAt;
   return function () {
     if (Date.now() - t0 > timeoutMs)
       throw new Error('TLE: 运行超时（超过 ' + timeoutMs + ' ms）');
@@ -743,10 +805,13 @@ function runMeasured(artifact, opts, fallbackMs) {
   var limit = (opts && opts.timeoutMs) || fallbackMs || 1000;
   var t0 = Date.now();
 
-  var runOptions = Object.assign({}, opts || {}, { timeoutMs: limit });
+  var runOptions = Object.assign({}, opts || {}, { timeoutMs: limit, timings:{} });
+  var measuredStarted = cqNow();
   return runRaw(artifact, runOptions).then(function (r) {
     var ms = Date.now() - t0;
     r.ms = ms;
+    r.timings = runOptions.timings;
+    r.timings.totalMs = cqNow() - measuredStarted;
     if (!r.error && limit > 0 && ms > limit) {
       r.aborted = true;
       r.error = 'TLE 运行超时（' + ms + ' ms > ' + limit + ' ms）';
@@ -817,6 +882,7 @@ self.onmessage = function (ev) {
       return;
     }
     if (m.type === 'init') {
+      preparedApplications = new WeakMap();lastCompilation = null;
       ctx.resources = normalizeResources(m.resources);
       tccModule = m.tccModule;
       libcModule = m.libcModule;
@@ -836,8 +902,13 @@ self.onmessage = function (ev) {
       return;
     }
     if (m.type === 'compile') {
+      lastCompilation = null;
       compile(m.src).then(function (result) {
-        if (result.artifact) result.wat = result.artifact.__wat;
+        if (result.artifact) {
+          result.wat = result.artifact.__wat;
+          result.compilationId = ++compilationSequence;
+          lastCompilation = {id:result.compilationId,artifact:result.artifact};
+        }
         reply({ type: 'result', id: m.id, result: result });
       }).catch(function (e) {
         reply({ type: 'error', id: m.id, message: String(e && e.message || e) });
@@ -845,7 +916,7 @@ self.onmessage = function (ev) {
       return;
     }
     if (m.type === 'run') {
-      var runArtifact = m.wat ? attachWat(m.artifact, m.wat) : m.artifact;
+      var runArtifact = resolveRunArtifact(m);
       runMeasured(runArtifact, m, m.timeoutMs || 5000).then(function (r) {
         reply({ type: 'result', id: m.id, result: r });
       }).catch(function (e) {

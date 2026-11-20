@@ -64,6 +64,17 @@
       "source": "已在线核对上游完整文件的 Git blob；当前运行桥原字节及对上游的差异补丁均已收录，对应当前 SHA-256。",
       "version": "固定提交 docs/runtime.js，加本地桥接修改",
       "pending": "对应源码包已补齐文件内修改标记、已查证批次日期与本次整理日期；ANNOTATIONS.json可核对标记前后指纹。未伪造逐行历史编辑日，原许可证与例外保持。"
+    },
+    {
+      "id": "softfloat",
+      "name": "Berkeley SoftFloat 3e",
+      "license": "BSD 3-Clause, Regents of the University of California",
+      "license_file": "licenses/SOFTFLOAT-LICENSE.txt",
+      "files": [],
+      "purpose": "binary128 四则运算、转换、比较和平方根。",
+      "source": "John R. Hauser 官方 SoftFloat-3e.zip，SHA-256 21130ce885d35c1fe73fc1e1bf2244178167e05c6747cad5f450cc991714c746。配套源码见运行组件对应源码包 quad/。",
+      "version": "Release 3e",
+      "pending": "本地集成于 2026-11-19，原上游源码和许可保留。"
     }
   ]
 }

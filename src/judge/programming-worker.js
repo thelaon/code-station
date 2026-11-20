@@ -52,7 +52,7 @@
     active = {cap:cap, total:0, stdout:new Uint8Array(cap), stderr:new Uint8Array(cap), stdoutBytes:0, stderrBytes:0, exceeded:false};
     var current = active;
     Promise.resolve().then(function () {
-      var artifact = attachWat(m.artifact, m.wat);
+      var artifact = resolveRunArtifact(m);
       var options = {stdin:String(m.stdin || ''), timeoutMs:2000, outputNames:m.outputNames};
       if (m.inputFiles && m.inputFiles.length) {
         options.files = Object.create(null);

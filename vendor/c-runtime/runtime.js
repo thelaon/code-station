@@ -184,10 +184,63 @@
     }
   }
 
+  const applicationCallbacks = new WeakMap();
+
+  function bindAppInstance(imports, instance, checkTime) {
+    const state = applicationCallbacks.get(imports);
+    if (state) { state.instance = instance; state.checkTime = checkTime; }
+  }
+
+  function finishAppInstance(imports) {
+    const state = applicationCallbacks.get(imports);
+    if (!state || state.finishing) return;
+    state.finishing = true;
+    try {
+      while (state.exits.length) state.invoke(state.exits.pop());
+    } finally { state.finishing = false; }
+  }
+
   function createAppLibcImports(memory, libcExports) {
     const view = () => new DataView(memory.buffer);
     const imports = Object.create(null);
     Object.assign(imports, libcExports);
+    const state = {instance:null, checkTime:null, exits:[], signals:new Map(), finishing:false};
+    state.invoke = (index, ...args) => {
+      if (state.checkTime) state.checkTime();
+      const table = state.instance && state.instance.exports.__indirect_function_table;
+      const callback = table && table.get(index >>> 0);
+      if (typeof callback !== 'function') throw new Error('Invalid application callback');
+      const result = callback(...args);
+      if (state.checkTime) state.checkTime();
+      return result;
+    };
+    applicationCallbacks.set(imports, state);
+    imports.atexit = callback => {
+      if (!callback || state.exits.length >= 32) return -1;
+      state.exits.push(callback); return 0;
+    };
+    imports.exit = code => { finishAppInstance(imports); return libcExports.exit(code); };
+    imports.abort = () => {
+      const callback = state.signals.get(6) || 0;
+      state.signals.delete(6);
+      if (callback && callback !== -2) state.invoke(callback, 6);
+      return libcExports.abort();
+    };
+    const signalError = () => { view().setInt32(libcExports.__errno_location(), 22, true); return -1; };
+    const validSignal = sig => [2,4,6,8,11,15].includes(sig);
+    imports.signal = (sig, callback) => {
+      if (!validSignal(sig) || callback === -1) return signalError();
+      const previous = state.signals.get(sig) || 0;
+      state.signals.set(sig, callback); return previous;
+    };
+    imports.raise = sig => {
+      if (!validSignal(sig)) return signalError();
+      const callback = state.signals.get(sig) || 0;
+      if (!callback) libcExports.abort();
+      else if (callback !== -2) state.invoke(callback, sig);
+      return 0;
+    };
+
 
     // Numeric conversion is supplied by the same C libc as scanf and the compiler.
 
@@ -379,6 +432,7 @@
         env,
         libc: libcImports
       });
+      bindAppInstance(libcImports, instance);
       this.instance = instance;
       this.libc = libc;
       this.exports = instance.exports;
@@ -565,6 +619,10 @@
         env: { memory },
         libc: libcImports
       });
+      const deadline = options.timeoutMs ? Date.now() + options.timeoutMs : 0;
+      bindAppInstance(libcImports, app, deadline ? () => {
+        if (Date.now() > deadline) throw new Error('TLE: callback execution timeout');
+      } : null);
       const heapBase = valueOf(app.exports.__heap_base);
       const heapEnd = valueOf(app.exports.__heap_end);
       if (heapBase === undefined || heapEnd === undefined)
@@ -587,6 +645,7 @@
       let rc;
       try {
         rc = argv ? entry(argv.argc, argv.argv) : entry();
+        finishAppInstance(libcImports);
       } catch (err) {
         if (!err || err.name !== "WasmExit")
           throw err;
@@ -677,9 +736,23 @@
     compileModule,
     createLibcImports,
     createAppLibcImports,
+    bindAppInstance,
+    finishAppInstance,
     readBytes,
     readString,
     runApp,
     valueOf
   };
 });
+
+/* CODE-STATION MODIFICATION NOTICE
+File: _tcc_test/wasm/runtime.js
+This is a locally modified Code Station project version, not an unmodified upstream file.
+Upstream basis: 44670/tcc-wasm @ 8bff9fbc019a3008395eec4cda6e90752fb88ed9.
+Changes: C stdio and C-locale completion, per-application exit/signal callbacks, static inline emission, aligned frames and aggregate variadic arguments; historical binary128 and judge fixes retained.
+Development records include batches dated 2026-10-20 through 2026-10-27;
+these are batch evidence, not asserted dates of every individual edit.
+This notice and the annotated source edition were prepared on 2026-11-20.
+Existing copyright, license notices and exceptions remain applicable.
+See licenses/LOCAL-MODIFICATIONS-NOTICE.txt and evidence/source-map.json.
+END CODE-STATION MODIFICATION NOTICE */

@@ -10,6 +10,7 @@
     "wabt": "来自 WebAssembly WABT 项目的官方 npm 发布包。保留 Apache 2.0 原许可及随附的第三方告示。",
     "libc": "基于 44670/tcc-wasm 的 C 运行库，包含本项目修改。对应源码及适用许可随附于源码包。",
     "headers": "来自 44670/tcc-wasm 的标准头文件及本项目配套修改；保留文件自身的版权、许可和例外。",
-    "runtime": "基于 44670/tcc-wasm 的浏览器运行桥，包含本项目修改。对应源码及修改说明随附于源码包。"
+    "runtime": "基于 44670/tcc-wasm 的浏览器运行桥，包含本项目修改。对应源码及修改说明随附于源码包。",
+    "softfloat": "Berkeley SoftFloat 3e，binary128 运算与转换。源码及原许可随包提供。"
   }
 }

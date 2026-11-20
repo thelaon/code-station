@@ -40,7 +40,7 @@ def main():
     release_notes=ROOT/'docs'/('RELEASE-NOTES-'+version+'.md')
     if release_notes.is_file():user_files['版本更新说明.md']=release_notes.read_bytes()
     for name in ['LICENSE','LICENSE-SCOPE.md','COPYRIGHT.md']:user_files[name]=(ROOT/name).read_bytes()
-    for name in ['TCC-COPYING.txt','WABT-LICENSE.txt','WABT-THIRD-PARTY-NOTICES.txt','LOCAL-MODIFICATIONS-NOTICE.txt']:user_files['licenses/'+name]=(ROOT/'licenses'/name).read_bytes()
+    for name in ['TCC-COPYING.txt','WABT-LICENSE.txt','WABT-THIRD-PARTY-NOTICES.txt','LOCAL-MODIFICATIONS-NOTICE.txt','SOFTFLOAT-LICENSE.txt']:user_files['licenses/'+name]=(ROOT/'licenses'/name).read_bytes()
     demo={name:(ROOT/'examples/demo-bank'/name).read_bytes() for name in ['示例题库.json','README.md','LICENSE','参考答案.md']}
     for name,data in demo.items():user_files['示例题包/'+name]=data
     for name,data in user_files.items():

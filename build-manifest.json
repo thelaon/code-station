@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "app_version": "v0.2.2",
+  "app_version": "v0.2.3",
   "default_profile": "public",
   "third_party": {
     "inventory": "licenses/components.json",
@@ -14,7 +14,8 @@
       "licenses/TCC-COPYING.txt",
       "licenses/WABT-LICENSE.txt",
       "licenses/LOCAL-MODIFICATIONS-NOTICE.txt",
-      "licenses/WABT-THIRD-PARTY-NOTICES.txt"
+      "licenses/WABT-THIRD-PARTY-NOTICES.txt",
+      "licenses/SOFTFLOAT-LICENSE.txt"
     ],
     "wabt_notice_record": "third_party/wabt-1.0.37/notice-delivery.json"
   },

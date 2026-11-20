@@ -43,7 +43,8 @@
     "docs/RELEASE-NOTES-v0.2.0.md",
     "docs/RELEASE-NOTES-v0.2.1.md",
     "docs/RELEASE-NOTES-v0.2.2.md",
-    "docs/WABT-dependency-notices-2026-10-31.md"
+    "docs/WABT-dependency-notices-2026-10-31.md",
+    "docs/RELEASE-NOTES-v0.2.3.md"
   ],
   "excluded": [
     ".git",

@@ -1,5 +1,11 @@
 # 当前运行组件的对应源码
 
+v0.2.3 的 TCC/libc 沿用 44670/tcc-wasm 固定上游并附本地修改，运行桥、头文件和 binary128 软件运算配套交付。Berkeley SoftFloat 3e 的原始许可和目标实现位于源码包 quad/。TCC Wasm 为 b59fc96d2aabf43c0f99abc5af21fd0ff26fc1541f61d20c0bb7f5811037e10e，libc Wasm 为 53392cc0db81b1b39570395b010f390f67b0bc18e50d1560d2dc64786d437018。
+
+最新接口、帧对齐和可变参数改动见源码包 evidence/c-completeness.json；binary128 及此前修补的材料同包保留。生成容器现含29份头文件，13份修改头文件带告示；21份源文件标记的指纹以 ANNOTATIONS.json 为准。evidence/headers.json 等旧材料是对应日期的历史记录。两份 Wasm 已由对应源码独立重建并逐字节核对。
+
+下列历次补丁说明按历史批次保留，其“本轮”“候选”和旧指纹不代表 v0.2.3 的当前资源。
+
 本轮运行时精简与批量内存操作见 `patches/runtime-audit-2026-11-16.patch`。本轮源码及运行资源的指纹变化见 `evidence/runtime-audit.json`。
 
 本候选包含 wasm32 变长数组和浮点输出分流。对应补丁见 `patches/wasm32-vla-2026-11-16.patch` 和 `patches/printf-split-2026-11-16.patch`，构建指纹见 `evidence/vla-printf-revision.json`。
@@ -27,7 +33,7 @@
     node _tcc_test/scripts/_patch_headers.js
     python tools/source_notices.py _tcc_test/wasm/_ide-resources-patched.js
 
-生成结果位于_tcc_test/wasm/_ide-resources-patched.js。对应28份头文件的原字节与修改情况见evidence/headers.json。当前源码交付版在修改文件及7份修改头文件内补有显著告示；日期明确区分历史批次记录与2026-10-31的标记整理日期，未伪造每一行的原编辑日。告示置于文件末尾以保留原行号和原许可。ANNOTATIONS.json记录标记前后指纹；去掉本次可逆告示后，运行桥和生成容器与冻结资源逐字节一致。Wasm二进制按标记后的源码重新构建核对。
+生成结果位于_tcc_test/wasm/_ide-resources-patched.js。历史28份头文件的原字节与修改情况见evidence/headers.json；当前容器和修改告示以本说明开头及 ANNOTATIONS.json 为准。告示日期区分历史批次与整理日期。告示置于文件末尾以保留原行号和原许可。ANNOTATIONS.json记录标记前后指纹；去掉本次可逆告示后，运行桥和生成容器与冻结资源逐字节一致。Wasm二进制按标记后的源码重新构建核对。
 
 ## 修改与替换
 

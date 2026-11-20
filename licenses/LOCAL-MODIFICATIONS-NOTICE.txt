@@ -77,3 +77,5 @@ every individual edit. Original license notices and exceptions are retained.
 Corresponding changes and binary fingerprints are recorded in evidence/vla-printf-revision.json.
 
 2026-11-16: Generate native Wasm bulk-memory operations, share VLA size storage and fwrite result handling, and use uppercase special values for %F. See evidence/runtime-audit.json.
+
+2026-11-20: Complete narrow stdio entry points and stream/namespace state, C locale, explicit synchronous signals and per-application exit callbacks. Fix static inline emission, stack realignment and aggregate variadic argument copies. Correct infinite math constants. This remains a bounded browser environment, not a complete hosted C implementation. See evidence/c-completeness.json.

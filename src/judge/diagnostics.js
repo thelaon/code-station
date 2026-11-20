@@ -103,6 +103,8 @@
 
   function classifyRuntime(info, text) {
     const details = errorDetails(info);
+    if (details && details.code === 'runtime_environment')
+      return {verdict:'env',kind:'runtime_environment',reason:'运行环境准备失败，本次未完成验证，请重试。'};
     if (details && details.code === 'program_stack_limit')
       return {verdict:'student', kind:'stack_limit', reason:'程序栈空间超限（2 MiB）。'};
     if (details && details.code === 'encoding_unsupported')

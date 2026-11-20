@@ -29,7 +29,7 @@ def main():
     source=notices['source_archive'];source_raw=base64.b64decode(source['base64']);source_path=ROOT/json.loads((ROOT/'build-manifest.json').read_text('utf-8'))['third_party']['source_archive']
     check('corresponding-source-embedded',source_raw==source_path.read_bytes() and hashlib.sha256(source_raw).hexdigest()==source['sha256'])
     with zipfile.ZipFile(io.BytesIO(source_raw)) as archive:
-        annotations=json.loads(archive.read('ANNOTATIONS.json'));check('modified-source-notice-coverage',len(annotations)==12 and '_tcc_test/tcc-source/include/errno.h' in annotations)
+        annotations=json.loads(archive.read('ANNOTATIONS.json'));check('modified-source-notice-coverage',len(annotations)==21 and '_tcc_test/tcc-source/include/errno.h' in annotations and all('_tcc_test/tcc-source/include/'+n in annotations for n in ['stdio.h','stdlib.h','locale.h','string.h','signal.h','iso646.h']))
         for name,entry in annotations.items():
             raw=archive.read(name);original=container(raw,False) if name.endswith('_ide-resources-patched.js') else strip_notice(raw)
             check('source-notice:'+name,START.encode() in raw and hashlib.sha256(raw).hexdigest()==entry['after_sha256'] and hashlib.sha256(original).hexdigest()==entry['before_sha256'])

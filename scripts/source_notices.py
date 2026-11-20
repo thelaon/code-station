@@ -1,10 +1,10 @@
 """Add dated, reversible notices without claiming unknown historical edit dates."""
 import argparse,base64,re
 from pathlib import Path
-STAMP='2026-10-31'
+STAMP='2026-11-20'
 START='\n/* CODE-STATION MODIFICATION NOTICE\n'
 END='END CODE-STATION MODIFICATION NOTICE */\n'
-CHANGED_HEADERS={'errno.h','inttypes.h','limits.h','stdio.h','stdlib.h','tccdefs.h','time.h'}
+CHANGED_HEADERS={'errno.h','inttypes.h','limits.h','stdio.h','stdlib.h','tccdefs.h','time.h','float.h','math.h','locale.h','string.h','signal.h','iso646.h'}
 def strip_notice(raw):
     at=raw.rfind(START.encode())
     return raw[:at] if at>=0 and raw.endswith(END.encode()) else raw
@@ -27,6 +27,6 @@ def container(raw,marked=True):
         return m[1]+m[2]+m[3]+base64.b64encode(value).decode()+m[5]
     text=re.sub(r'(")(/include/[^"\n]+)("\s*:\s*")([A-Za-z0-9+/=]+)(")',replace,raw.decode('utf-8'))
     result=text.encode('utf-8')
-    return annotate(result,'_ide-resources-patched.js','Generated container with seven locally changed headers; each changed embedded header carries its own notice.') if marked else result
+    return annotate(result,'_ide-resources-patched.js','Generated container with locally changed headers; each changed embedded header carries its own notice.') if marked else result
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('container',type=Path);args=ap.parse_args();args.container.write_bytes(container(args.container.read_bytes()))

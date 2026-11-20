@@ -52,7 +52,7 @@ class BuildTests(unittest.TestCase):
         self.assertNotIn('</script>',block)
         self.assertEqual(json.loads(block)['license_texts']['licenses/WABT-LICENSE.txt']['text'],text)
     def test_vendor_inventory_required(self):
-        p=self.root/'licenses/components.json';data=json.loads(p.read_text('utf-8'));data['components'].pop();p.write_text(json.dumps(data),encoding='utf-8')
+        p=self.root/'licenses/components.json';data=json.loads(p.read_text('utf-8'));data['components']=[item for item in data['components'] if item['id']!='libc'];p.write_text(json.dumps(data),encoding='utf-8')
         with self.assertRaisesRegex(ValueError,'every bundled vendor file'):self.mod.build(self.root/'incomplete.html')
     def test_wabt_supplement_required(self):
         p=self.root/'licenses/WABT-THIRD-PARTY-NOTICES.txt';p.write_bytes(p.read_bytes()+b'changed')

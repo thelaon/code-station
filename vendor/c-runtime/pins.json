@@ -2,24 +2,24 @@
   "version": 1,
   "resources": {
     "libc.wasm": {
-      "bytes": 147289,
-      "sha256": "03b3c6c6ad9c79daa2cd43f4d8b3a576e100a8ce4f84d1db9dfe6af2c8318ea7"
+      "bytes": 272258,
+      "sha256": "53392cc0db81b1b39570395b010f390f67b0bc18e50d1560d2dc64786d437018"
     },
     "runtime.js": {
-      "bytes": 22871,
-      "sha256": "39d40f588e151ce2acd35eb82b92963a03eb65c61cbf2a8c44f23b1037964142"
+      "bytes": 26293,
+      "sha256": "882c4dbe811c6af6722e1427b127e558b8158d9db539567ef105ace305c7b1c9"
     },
     "tcc.wasm": {
-      "bytes": 724771,
-      "sha256": "fb7b88e6799ca998605be27822c57a8f15d6950bef1b699ccb649871f0e87a27"
+      "bytes": 739464,
+      "sha256": "b59fc96d2aabf43c0f99abc5af21fd0ff26fc1541f61d20c0bb7f5811037e10e"
     },
     "wabt.js": {
       "bytes": 1248376,
       "sha256": "021f7a1f3609d46af0254404bba6d8ea1061904df9a687c650dc1416e46f59c9"
     },
     "_ide-resources-patched.js": {
-      "bytes": 76455,
-      "sha256": "fc7f20019a7f986593339785cf847bb69724656fce6100700f49c304ef832c21"
+      "bytes": 84532,
+      "sha256": "cbdf598d914944081bc59242f1f781839a5583e9c525af835167e29477d7a805"
     }
   }
 }
