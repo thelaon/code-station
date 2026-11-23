@@ -6,7 +6,7 @@
 
 当前版本为 **v0.2.3.1**。
 
-1. 下载并解压 `代码航站-v0.2.3.1-发行版.zip`。[GitHub Releases](https://github.com/thelaon/code-station/releases)
+1. 下载并解压 `code-station-v0.2.3.1.zip`。[GitHub Releases](https://github.com/thelaon/code-station/releases)
 2. 双击“做题器.html”。在「题库管理」中选择 JSON 题包，审阅后确认导入。
 3. 可先导入随附“示例题包/示例题库.json”体验；顶部“?”提供完整说明。
 
