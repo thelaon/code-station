@@ -1,5 +1,9 @@
 # 当前运行组件的对应源码
 
+本地紧急修补检验候选：TCC SHA-256 f4ce6a9d3d046772baa319becc8143654a995c754f41945422516c96b0af2126。对应源码包包含符号重编号修补、修改告示、清单及自建用例。历史说明与旧指纹保留如下。
+
+# 当前运行组件的对应源码
+
 v0.2.3 的 TCC/libc 沿用 44670/tcc-wasm 固定上游并附本地修改，运行桥、头文件和 binary128 软件运算配套交付。Berkeley SoftFloat 3e 的原始许可和目标实现位于源码包 quad/。TCC Wasm 为 b59fc96d2aabf43c0f99abc5af21fd0ff26fc1541f61d20c0bb7f5811037e10e，libc Wasm 为 53392cc0db81b1b39570395b010f390f67b0bc18e50d1560d2dc64786d437018。
 
 最新接口、帧对齐和可变参数改动见源码包 evidence/c-completeness.json；binary128 及此前修补的材料同包保留。生成容器现含29份头文件，13份修改头文件带告示；21份源文件标记的指纹以 ANNOTATIONS.json 为准。evidence/headers.json 等旧材料是对应日期的历史记录。两份 Wasm 已由对应源码独立重建并逐字节核对。
@@ -44,3 +48,5 @@ v0.2.3 的 TCC/libc 沿用 44670/tcc-wasm 固定上游并附本地修改，运�
 ## 范围
 
 本包按实际构建需要收录编译器源文件、头文件、运行桥、生成脚本、补丁及许可；排除了上游测试、示例网页和项目题库。WABT精确对应官方1.0.37原包，并附WABT-THIRD-PARTY-NOTICES.txt保守补充告示；不声称告示所列的每个可选库均已链接。历史构建使用Emsdk latest，精确工具编号保留为溯源限制，不猜填。本地来源核查、用户确认及逐文件标记均有对应记录；自有可许可部分已按MIT授权，具体范围见project-notices/LICENSE-SCOPE.md，不以重建成功替代整体权利判断。
+
+2026-11-23: Reject allocation-size rounding overflow and provide 16-byte heap alignment for binary128 long double; preserve realloc input on failure. See patches/allocator-boundaries-2026-11-23.patch and tests/allocator-boundaries.json.

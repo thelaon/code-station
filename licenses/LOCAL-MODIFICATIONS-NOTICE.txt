@@ -79,3 +79,7 @@ Corresponding changes and binary fingerprints are recorded in evidence/vla-print
 2026-11-16: Generate native Wasm bulk-memory operations, share VLA size storage and fwrite result handling, and use uppercase special values for %F. See evidence/runtime-audit.json.
 
 2026-11-20: Complete narrow stdio entry points and stream/namespace state, C locale, explicit synchronous signals and per-application exit callbacks. Fix static inline emission, stack realignment and aggregate variadic argument copies. Correct infinite math constants. This remains a bounded browser environment, not a complete hosted C implementation. See evidence/c-completeness.json.
+
+2026-11-22: Relocate deferred Wasm data and function-address symbol indices after duplicate symbol merging. See evidence/symbol-remap-2026-11-22.json in the corresponding source archive.
+
+2026-11-23: Reject allocation-size rounding overflow and provide 16-byte heap alignment for binary128 long double; preserve realloc input on failure. See patches/allocator-boundaries-2026-11-23.patch and tests/allocator-boundaries.json.

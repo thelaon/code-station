@@ -30,3 +30,5 @@ node scripts/regression.cjs 做题器.html
 scripts/test_full_feedback.cjs、test_pack_preview.cjs和test_upgrade.cjs可通过CQUIZ_APP指定当前待检HTML。升级脚本允许额外指定旧HTML；没有旧文件时使用旧行为夹具，不把夹具冒称为真实旧版。
 
 scripts/audit_release.py --history只读检查公开清单、递归源码包和Git对象。scripts/prepare_release.py按清单导出并核对发行源码与单独发行页面一致，不包含Git目录、私人取证或第三方真题。脚本不会自动上传或公开发布。
+
+本地紧急修补检验新增 `node scripts/test_c_symbols.cjs chrome` / `msedge`。详细检验保存在私人证据，不表示已经发布。

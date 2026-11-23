@@ -1,17 +1,17 @@
 {
   "product": "代码航站",
-  "app_version": "v0.2.3",
+  "app_version": "v0.2.3.1",
   "profile": "public",
   "builtin_questions": 0,
   "storage_prefix": "cqframe.",
-  "build_id": "release-v0.2.3-20261120",
-  "stamp": "2026-11-20 22:00",
-  "html_bytes": 5018433,
-  "html_sha256": "c33500fdf4db60e24c9e462743aee03a6046bb71480514a7db86c7b542844403",
+  "build_id": "v0.2.3.1-hotfix-20261123",
+  "stamp": "2026-11-23 23:00",
+  "html_bytes": 5027202,
+  "html_sha256": "2ee038c52cda33542fdc3ada3883cbd16616db1fe40f9a23302871240a1d5074",
   "inputs": {
     "build-manifest.json": {
-      "bytes": 2736,
-      "sha256": "2855b5393e5bb6225f40abaa59d5e7dec40f6c1af7bb369a58c60e3882e64852"
+      "bytes": 2738,
+      "sha256": "edb8a6d220cbcaacc0e226fd664bce63d56ac4db82c862df9e73638b65fc9ccb"
     },
     "src/template.html": {
       "bytes": 152469,
@@ -38,12 +38,12 @@
       "sha256": "5560ae6f7ff1cfeff923ba45367d86931f7c93286166a10bad9b149fd6aa0168"
     },
     "vendor/c-runtime/tcc.wasm": {
-      "bytes": 739464,
-      "sha256": "b59fc96d2aabf43c0f99abc5af21fd0ff26fc1541f61d20c0bb7f5811037e10e"
+      "bytes": 742943,
+      "sha256": "f4ce6a9d3d046772baa319becc8143654a995c754f41945422516c96b0af2126"
     },
     "vendor/c-runtime/libc.wasm": {
-      "bytes": 272258,
-      "sha256": "53392cc0db81b1b39570395b010f390f67b0bc18e50d1560d2dc64786d437018"
+      "bytes": 272662,
+      "sha256": "ecf1b905780caa41db16bb67f43d16268fb01e877da5f6f5ee934bb2b43e1d6a"
     },
     "vendor/c-runtime/wabt.js": {
       "bytes": 1248376,
@@ -66,8 +66,8 @@
       "sha256": "b513335b3bf269ced2360d8f8633d172664ada2a6dcf73a210b434e183674625"
     },
     "licenses/components.json": {
-      "bytes": 5728,
-      "sha256": "8ee3f7169802527d4407b8798d381638f01a9365a8fe9ea21bebb5509fc6183b"
+      "bytes": 5914,
+      "sha256": "fdf598185bc01ddcd22125664db2faa21708a40daeae70b8a0c6a2d9dc73f24e"
     },
     "licenses/project.json": {
       "bytes": 1038,
@@ -98,8 +98,8 @@
       "sha256": "1d2c1da880eb3805f6033e90d80205a8e44e826c5747ecf23853f4a33e909850"
     },
     "licenses/LOCAL-MODIFICATIONS-NOTICE.txt": {
-      "bytes": 5069,
-      "sha256": "49e16e3cea2bec155faf8fcb7031b300cf05d36e6c14885bf98045f13b31f56c"
+      "bytes": 5495,
+      "sha256": "8e1033d2a53bed46d2a49761bd63717fbd209d9dcea77d2ada46fae37e3e92c0"
     },
     "licenses/WABT-THIRD-PARTY-NOTICES.txt": {
       "bytes": 83088,
@@ -150,8 +150,8 @@
       "sha256": "ff420781e0005270cd1894a265e526dec4eb332f99df62a481b06672db202290"
     },
     "third_party/runtime-stable/runtime-corresponding-source.zip": {
-      "bytes": 1110861,
-      "sha256": "bc6c33f10b8acb68b2aa8358e866c68498db952fd5f7f024330922e584ec78df"
+      "bytes": 1113228,
+      "sha256": "356136401471cc85ed95b81bf399bf31f5f6db6bfb944774fad136f2f31d3d7e"
     },
     "src/js/_storage_safety.js": {
       "bytes": 6496,
@@ -255,8 +255,8 @@
     }
   },
   "resources": {
-    "res-tcc": "4f33ca61af96bff81460144cc0869f63b090acf995f76e721c1ed9ede30f4dbb",
-    "res-libc": "deeb55fbfa9a1317a1e28611c71c9f6d22fd355d075b9165d57f0d14e1b5167e",
+    "res-tcc": "c206c323d5761e1594425a0b59a54c1cf36184ab55c3b762e28e975e0c7c57cc",
+    "res-libc": "4600f5509ec5539042c2d29f4204cc2a4928e8cce41658f2b053a2240e86c849",
     "res-wabt": "021f7a1f3609d46af0254404bba6d8ea1061904df9a687c650dc1416e46f59c9",
     "res-runtime": "882c4dbe811c6af6722e1427b127e558b8158d9db539567ef105ace305c7b1c9",
     "res-ide": "cbdf598d914944081bc59242f1f781839a5583e9c525af835167e29477d7a805",

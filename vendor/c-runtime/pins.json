@@ -2,16 +2,16 @@
   "version": 1,
   "resources": {
     "libc.wasm": {
-      "bytes": 272258,
-      "sha256": "53392cc0db81b1b39570395b010f390f67b0bc18e50d1560d2dc64786d437018"
+      "bytes": 272662,
+      "sha256": "ecf1b905780caa41db16bb67f43d16268fb01e877da5f6f5ee934bb2b43e1d6a"
     },
     "runtime.js": {
       "bytes": 26293,
       "sha256": "882c4dbe811c6af6722e1427b127e558b8158d9db539567ef105ace305c7b1c9"
     },
     "tcc.wasm": {
-      "bytes": 739464,
-      "sha256": "b59fc96d2aabf43c0f99abc5af21fd0ff26fc1541f61d20c0bb7f5811037e10e"
+      "bytes": 742943,
+      "sha256": "f4ce6a9d3d046772baa319becc8143654a995c754f41945422516c96b0af2126"
     },
     "wabt.js": {
       "bytes": 1248376,

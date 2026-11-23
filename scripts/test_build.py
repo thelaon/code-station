@@ -10,6 +10,16 @@ class BuildTests(unittest.TestCase):
         for name in ['build.py','build-manifest.json','LICENSE','LICENSE-SCOPE.md','COPYRIGHT.md']:shutil.copyfile(ROOT/name,self.root/name)
         spec=importlib.util.spec_from_file_location('test_builder',self.root/'build.py');self.mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(self.mod)
     def tearDown(self):self.temp.cleanup()
+    def test_release_revision_version_contract(self):
+        spec_path=self.root/'build-manifest.json';spec=json.loads(spec_path.read_text('utf-8'))
+        for version in ['v0.2.3','v0.2.3.1']:
+            spec['app_version']=version;spec_path.write_text(json.dumps(spec),encoding='utf-8')
+            output=self.root/'version.html';result=self.mod.build(output,'version-check','2026-11-23 23:00','public')
+            self.assertEqual(result['app_version'],version)
+            self.assertIn("var APP_VERSION = '"+version+"';",output.read_text('utf-8'))
+        for version in ['v0.2.3.01','v0.2.3.1.2','v0.2.3.1-rc1','v0.2.3.','v0.2.3.hotfix1']:
+            spec['app_version']=version;spec_path.write_text(json.dumps(spec),encoding='utf-8')
+            with self.assertRaises(ValueError):self.mod.build(self.root/'invalid.html')
     def test_source_output_rejected(self):
         for name in ['src/template.html','build.py','vendor/c-runtime/tcc.wasm']:
             p=self.root/name;before=p.read_bytes()

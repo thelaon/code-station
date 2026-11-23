@@ -12,7 +12,7 @@
         "vendor/c-runtime/tcc.wasm"
       ],
       "purpose": "在本机浏览器中编译 C 程序。",
-      "source": "上游固定提交、README 和 COPYING 已在线核对。对应源码包在隔离目录经 GCC → TCC → WAT → WABT 重建，与当前二进制逐字节一致。保留源文件自身的许可及例外。 2 MiB 应用栈与下界检查的修改记录见 evidence/app-stack-revision.json。 wasm32 变长数组修改见 evidence/vla-printf-revision.json。 本轮修改记录见 evidence/runtime-audit.json。",
+      "source": "上游固定提交、README 和 COPYING 已在线核对。对应源码包在隔离目录经 GCC → TCC → WAT → WABT 重建，与当前二进制逐字节一致。保留源文件自身的许可及例外。 2 MiB 应用栈与下界检查的修改记录见 evidence/app-stack-revision.json。 wasm32 变长数组修改见 evidence/vla-printf-revision.json。 本轮修改记录见 evidence/runtime-audit.json。 2026-11-22 修复符号合并后的 Wasm 地址引用重编号；见 evidence/symbol-remap-2026-11-22.json。 2026-11-23 运行库修复分配大小溢出并提供 16 字节堆对齐。",
       "version": "44670/tcc-wasm @ 8bff9fbc019a3008395eec4cda6e90752fb88ed9，加本地修改（配置字符串 0.9.28rc）",
       "pending": "对应源码包已补齐文件内修改标记、已查证批次日期与本次整理日期；ANNOTATIONS.json可核对标记前后指纹。未伪造逐行历史编辑日，原许可证与例外保持。"
     },
